@@ -2,8 +2,7 @@
 import React from 'react'
 import Logo from '../../../public/Banner_2.jpg'
 import Image from 'next/image'
-import { Box, Button, Paper, Typography } from "@mui/material";
-import { styled } from '@mui/material/styles'
+import { Button, Paper, Typography } from "@mui/material";
 import { ButtonContainer, TextContainer } from '../shared/custom/bannerContainer';
 
 export default function Banner() {
@@ -30,9 +29,9 @@ export default function Banner() {
             <Typography variant="h3" 
               component={"h1"} 
               gutterBottom 
-              sx={{ display: { xs: 'none', sm: 'block'}}}
+              sx={{ display: { xs: 'none', sm: 'block'}, fontWeight: 'bold', textAlign: 'left'}}
             >
-              CONECTRAMOS OFERTAS <br /> CONECTAMOS TRANSPORTE
+              CONECTAMOS OFERTAS <br /> CONECTAMOS TRANSPORTE
             </Typography>
             <Typography variant="h4" 
               component={"h5"} 
@@ -42,7 +41,7 @@ export default function Banner() {
               CONECTRAMOS OFERTAS <br /> CONECTAMOS TRANSPORTE
             </Typography>
 
-            <Typography variant="h6" component="p">
+            <Typography variant="h6" component="p" fontWeight={'500'}>
               Conectrans es la plataforma ideal para encontrar y publicar todo tipo 
               de ofertas del sector del transporte.
             </Typography>

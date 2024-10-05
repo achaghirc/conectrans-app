@@ -10,7 +10,6 @@ import Logo from '../../../public/Conectrans_Logo_White.png';
 // Estilos para el contenedor del Footer
 const FooterContainer = styled(Box)(({ theme }) => ({
   backgroundColor: '#0B2C38',
-  borderRadius: '20px',
   color: 'white',
   padding: '40px 20px',
   [theme.breakpoints.down('sm')]: {

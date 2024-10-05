@@ -1,23 +1,20 @@
 'use client';
+
 import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import LogoutIcon from '@mui/icons-material/Logout';
-import LoginIcon from '@mui/icons-material/Login';
-import QuizOutlinedIcon from '@mui/icons-material/QuizOutlined';
-import MenuItem from '@mui/material/MenuItem';
-import Menu from '@mui/material/Menu';
 
-import { Button, Divider } from '@mui/material';
+import { Button, Drawer } from '@mui/material';
 import Logo from '../../../public/Logo_conectrans.svg';
 import Image from 'next/image';
+import DrawerCustom from './drawer';
 
 export default function Navbar() {
+  const [state, setState] = React.useState(false);
   const [auth, setAuth] = React.useState(true);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -29,6 +26,18 @@ export default function Navbar() {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const handleDrawer = (open: boolean) => 
+    (event: React.KeyboardEvent | React.MouseEvent) => {
+    if (
+      event.type === 'keydown' &&
+      ((event as React.KeyboardEvent).key === 'Tab' ||
+        (event as React.KeyboardEvent).key === 'Shift')
+    ) {
+      return;
+    }
+    setState(open);
+  }
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -63,49 +72,21 @@ export default function Navbar() {
                 aria-controls={open ? 'basic-menu' : undefined}
                 aria-haspopup="true"
                 aria-expanded={open ? 'true' : undefined}
-                onClick={handleClick}
+                onClick={handleDrawer(true)}
             >
                 <AccountCircle />
             </IconButton>
-            <Menu
-                sx={{ mt: 1 }}
-                id="basic-menu"
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-                MenuListProps={{
-                'aria-labelledby': 'basic-button',
-                }}
+            <Drawer
+                anchor='right'
+                open={state}
+                onClose={handleDrawer(false)}
             >
-                <Box>
-                    <MenuItem onClick={handleClose}>
-                        <Typography variant='body1' sx={{ color: 'black'}}>
-                            Empresa
-                        </Typography>
-                    </MenuItem>
-                    <MenuItem onClick={handleClose}>
-                        <Typography variant='body1' sx={{ color: 'black'}}>
-                            FAQS
-                        </Typography>
-                    </MenuItem>
-                    <Divider />
-                    {!auth ? (
-                        <MenuItem onClick={handleClose}>
-                            <LogoutIcon color='error' sx={{ mr: 1}}/>                    
-                            <Typography variant='body1' color='error'>
-                                Cerrar Sesión
-                            </Typography>
-                        </MenuItem>
-                    ) : (
-                        <MenuItem onClick={handleClose}>
-                            <LoginIcon sx={{ mr: 1, color: 'black'}}/>  
-                            <Typography variant='body1' sx={{ color: 'black'}}>
-                                Iniciar Sesión
-                            </Typography>
-                        </MenuItem>
-                    )}
-                </Box>
-            </Menu>
+                <DrawerCustom
+                    auth={auth} 
+                    handleClose={() => handleClose()} 
+                    handleDrawer={() => handleDrawer(false)}
+                />
+            </Drawer>
         </Box>
         <Box sx={{
             display: { xs: 'flex', md: 'none' },
@@ -116,63 +97,21 @@ export default function Navbar() {
                 aria-controls={open ? 'basic-menu' : undefined}
                 aria-haspopup="true"
                 aria-expanded={open ? 'true' : undefined}
-                onClick={handleClick}
+                onClick={handleDrawer(true)}
             >
                 <MenuIcon />
             </IconButton>
-            <Menu
-                sx={{ mt: 1 }}
-                id="basic-menu"
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-                MenuListProps={{
-                'aria-labelledby': 'basic-button',
-                }}
+            <Drawer
+                anchor='right'
+                open={state}
+                onClose={handleDrawer(false)}
             >
-                <Box>
-                    <Typography variant='body2' sx={{ ml: 1, mb: 1 }}>
-                        Menu
-                    </Typography>
-                    <Divider />
-                    <MenuItem onClick={handleClose}>
-                        <Typography variant='body1' sx={{ color: 'black'}}>
-                            Blog
-                        </Typography>
-                    </MenuItem>
-                    <MenuItem onClick={handleClose}>
-                        <Typography variant='body1' sx={{ color: 'black'}}>
-                            Ofertas
-                        </Typography>
-                    </MenuItem>
-                    <MenuItem onClick={handleClose}>
-                        <Typography variant='body1' sx={{ color: 'black'}}>
-                            Empresa
-                        </Typography>
-                    </MenuItem>
-                    <MenuItem onClick={handleClose}>
-                        <Typography variant='body1' sx={{ color: 'black'}}>
-                            FAQS
-                        </Typography>
-                    </MenuItem>
-                    <Divider />
-                    {!auth ? (
-                        <MenuItem onClick={handleClose}>
-                            <LogoutIcon color='error' sx={{ mr: 1}}/>                    
-                            <Typography variant='body1' color='error'>
-                                Cerrar Sesión
-                            </Typography>
-                        </MenuItem>
-                    ) : (
-                        <MenuItem onClick={handleClose}>
-                            <LoginIcon sx={{ mr: 1, color: 'black'}}/>  
-                            <Typography variant='body1' sx={{ color: 'black'}}>
-                                Iniciar Sesión
-                            </Typography>
-                        </MenuItem>
-                    )}
-                </Box>
-            </Menu>
+                <DrawerCustom 
+                    auth={auth} 
+                    handleClose={() => handleClose()} 
+                    handleDrawer={() => handleDrawer(false)}
+                />
+            </Drawer>
         </Box>
       </Toolbar>
     </AppBar>
