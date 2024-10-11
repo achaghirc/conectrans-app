@@ -1,14 +1,14 @@
 'use client';
 import React from 'react'
-import MuiCard from '@mui/material/Card';
-import { Box, Button, Card, Checkbox, CssBaseline, Divider, FormControl, FormControlLabel, FormLabel, Link, Stack, TextField, Typography } from '@mui/material';
-import Logo from '../../../public/Logo_conectrans.svg';
+import { Box, Button, Card, Checkbox, CssBaseline, Divider, FormControl, FormControlLabel, FormLabel, IconButton, InputAdornment, Link, Stack, TextField, Typography } from '@mui/material';
+import Logo from '../../../public/Conectrans_Logo_White.svg';
 import Image from 'next/image';
-import { styled } from '@mui/material/styles';
 import ForgotPassword from '../icons/forgotPassword';
-import { GoogleIcon } from '../icons/customIcons';
-import { BusinessOutlined, LockOutlined, PeopleOutline } from '@mui/icons-material';
+import { BusinessOutlined, LockOutlined, PeopleOutline, Visibility, VisibilityOff } from '@mui/icons-material';
 import { CardLogin, SignInContainer } from '../shared/auth/authComponents';
+import { signIn } from '@/auth';
+import { authenticate } from '@/lib/actions';
+import { useRouter } from 'next/navigation';
 type LoginProps = {
     open: boolean;
     handleClose: (open: boolean) => void;
@@ -20,6 +20,10 @@ export default function LoginModal() {
 	const [passwordError, setPasswordError] = React.useState(false);
 	const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
 	const [open, setOpen] = React.useState(false);
+	const [showPassword, setShowPassword] = React.useState(false);
+	const [isPending, setIsPending] = React.useState(false);
+	const [errorMessage, setErrorMessage] = React.useState<string | undefined>(undefined);
+	const router = useRouter();
 
 	const handleClickOpen = () => {
 		setOpen(true);
@@ -29,17 +33,35 @@ export default function LoginModal() {
 		setOpen(false);
 	};
 
-	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-		if (emailError || passwordError) {
-			event.preventDefault();
-			return;
-		}
-		const data = new FormData(event.currentTarget);
-		console.log({
-			email: data.get('email'),
-			password: data.get('password'),
-		});
-	};
+// Update the handleSubmit method in your LoginModal component
+const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    
+    const data = new FormData(event.currentTarget);
+    const email = data.get('email') as string;
+    const password = data.get('password') as string;
+
+    if (emailError || passwordError) {
+        return;
+    }
+	setIsPending(true);  // Set pending state to true
+
+    try {
+        const errorMsg = await authenticate(undefined, data);
+        if (errorMsg) {
+            setErrorMessage(errorMsg);  // Display error message to the user
+        } else {
+            // Handle successful login
+            console.log("Logged in successfully");
+			router.push('/');
+        }
+    } catch (error) {
+        console.error('Authentication error:', error);
+        setErrorMessage('An unexpected error occurred. Please try again.');
+    } finally {
+        setIsPending(false);  // Reset pending state
+    }
+};
 
 	const validateInputs = () => {
 		const email = document.getElementById('email') as HTMLInputElement;
@@ -68,21 +90,35 @@ export default function LoginModal() {
 		return isValid;
 	};
 
+	const inputPropShowPassword = () => {
+		return (
+		  <InputAdornment position="end">
+			<IconButton
+			  aria-label="toggle password visibility"
+			  onClick={() => setShowPassword(!showPassword)}
+			  edge="end"
+			>
+			  {showPassword ? <Visibility /> : <VisibilityOff />}  
+			</IconButton>
+		  </InputAdornment>
+		)
+	  }
+
 	return (
 		<>
 			<CssBaseline enableColorScheme />
 			<SignInContainer direction="column" justifyContent="space-between">
 				<CardLogin variant="outlined">
 					<Box sx={{ display: 'flex', flexDirection:'column', alignItems: 'center'}}>
-							<Image
-									src={Logo} 
-									alt="Conectrans Logo Black" 
-									width={130} 
-									height={90} 
-									/>   
-							<Box sx={{ display: 'flex', padding: '4px', mt: 1, color:'white', borderRadius: '50%', backgroundColor: '#0B2C38' }} >
-								<LockOutlined />
-							</Box>
+						<Image
+								src={Logo} 
+								alt="Conectrans Logo Black" 
+								width={130} 
+								height={90} 
+								/>   
+						<Box sx={{ display: 'flex', padding: '4px', mt: 1, color:'white', borderRadius: '50%', backgroundColor: '#0B2C38' }} >
+							<LockOutlined />
+						</Box>
 					</Box>
 					<Box
 						component="form"
@@ -102,8 +138,8 @@ export default function LoginModal() {
 								helperText={emailErrorMessage}
 								id="email"
 								type="email"
-								name="Correo Electrónico"
-								placeholder="tu_correo@email.com"
+								name="email"
+								placeholder="email@example.com"
 								autoComplete="email"
 								autoFocus
 								required
@@ -114,14 +150,13 @@ export default function LoginModal() {
 							/>
 						</FormControl>
 						<FormControl>
-							
 							<TextField
 								label="Contraseña"
 								error={passwordError}
 								helperText={passwordErrorMessage}
 								name="password"
 								placeholder="••••••"
-								type="password"
+								type={!showPassword ? "password": "text"}
 								id="password"
 								autoComplete="current-password"
 								autoFocus
@@ -129,6 +164,11 @@ export default function LoginModal() {
 								fullWidth
 								variant="outlined"
 								color={passwordError ? 'error' : 'primary'}
+								slotProps={{
+									input:{
+									  endAdornment: inputPropShowPassword()
+									}
+								  }}
 							/>
 						</FormControl>
 						<ForgotPassword open={open} handleClose={handleClose} />

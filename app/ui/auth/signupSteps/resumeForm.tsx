@@ -1,15 +1,16 @@
-import { Box, Typography, Divider } from '@mui/material';
+import { Box, Typography, Divider, Avatar } from '@mui/material';
 
 interface ResumeFormProps {
   formData: {
     empresa: {
       email: string;
-      razonSocial: string;
-      nombreComercial: string;
+      socialName: string;
+      comercialName: string;
       tipoActividad: string;
+      logo: File | null;
     };
     contacto: {
-      direccion: string;
+      streetAddress: string;
       codigoPostal: string;
       pais: string;
       provincia: string;
@@ -35,16 +36,29 @@ export default function ResumeForm({ formData }: ResumeFormProps) {
 
   return (
     <Box>
-      <Typography variant="h6">Datos de Empresa</Typography>
-      <Typography variant="body1">Correo Electrónico: {empresa.email}</Typography>
-      <Typography variant="body1">Razón Social: {empresa.razonSocial}</Typography>
-      <Typography variant="body1">Nombre Comercial: {empresa.nombreComercial}</Typography>
-      <Typography variant="body1">Tipo de Actividad: {empresa.tipoActividad}</Typography>
-
+      <Typography variant="h4" textAlign={'center'}>Resumen</Typography>
       <Divider sx={{ my: 2 }} />
-
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 2
+      }}>
+        <Avatar src={empresa.logo ? URL.createObjectURL(empresa.logo) : undefined} sx={{ width: 100, height: 100 }} />  
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1
+        }}>
+          <Typography variant="body1">Correo Electrónico: {empresa.email}</Typography>
+          <Typography variant="body1">Razón Social: {empresa.socialName}</Typography>
+          <Typography variant="body1">Nombre Comercial: {empresa.comercialName}</Typography>
+          <Typography variant="body1">Tipo de Actividad: {empresa.tipoActividad}</Typography>
+        </Box>
+      </Box>
+      <Divider sx={{ my: 2 }} />
       <Typography variant="h6">Datos de Contacto</Typography>
-      <Typography variant="body1">Dirección: {contacto.direccion}</Typography>
+      <Typography variant="body1">Dirección: {contacto.streetAddress}</Typography>
       <Typography variant="body1">Código Postal: {contacto.codigoPostal}</Typography>
       <Typography variant="body1">País: {contacto.pais}</Typography>
       <Typography variant="body1">Provincia: {contacto.provincia}</Typography>

@@ -5,7 +5,8 @@ import { Box, Typography, Button, Link } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { styled } from '@mui/material/styles';
 import Image from 'next/image';
-import Logo from '../../../public/Conectrans_Logo_White.png';
+import Logo from '../../../public/Conectrans_Logo_White.svg';
+import ConectransLogo from '../shared/logo/conectransLogo';
 
 // Estilos para el contenedor del Footer
 const FooterContainer = styled(Box)(({ theme }) => ({
@@ -61,12 +62,7 @@ export default function Footer() {
         {/* Logo en la esquina izquierda */}
         <Grid size={{xs:12, md:4}}>
           <Box>
-            <Image 
-                src={Logo} 
-                alt="Logo" 
-                width={180} 
-                height={120} 
-                />
+            <ConectransLogo width={180} height={120} fill='#0B2C38' textColor='white'/>
           </Box>
         </Grid>
 

@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_PRISMA_URL")
+}
+
+model Person {
+  id        Int      @id @default(autoincrement())
+  name      String
+  lastname  String
+  birthdate DateTime
+  phone     String
+  document  String
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  User      User     @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  name        String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  Person      Person?
+  Company     Company?
+}
+
+model Role {
+  id        Int      @id @default(autoincrement())
+  name      String
+  code      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model Activity {
+  id        Int      @id @default(autoincrement())
+  name      String
+  code      String
+  description String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Company   Company[]
+}
+
+model Location {
+  id        Int      @id @default(autoincrement())
+  street    String
+  number    String
+  city      String
+  state     String
+  country   String
+  zip       String
+  latitude  Float
+  longitude Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Company   Company?
+}
+
+model Company {
+  id          Int      @id @default(autoincrement())
+  name        String
+  socialName  String
+  cif         String
+  description String
+  address     String
+  phone       String
+  activityId  Int
+  userId      String   @unique
+  locationId  Int      @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  Activity    Activity @relation(fields: [activityId], references: [id])
+  User        User     @relation(fields: [userId], references: [id])
+  Location    Location @relation(fields: [locationId], references: [id])
+}

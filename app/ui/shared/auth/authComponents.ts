@@ -1,7 +1,7 @@
 import MuiCard from '@mui/material/Card';
 import { Stack, styled } from "@mui/material";
 
-export const CardLogin = styled(MuiCard)(({ theme }) => ({
+export const CardLogin = styled(MuiCard)(({ theme, sx }) => ({
 	mt: 2,
 	display: 'flex',
 	flexDirection: 'column',
@@ -12,7 +12,7 @@ export const CardLogin = styled(MuiCard)(({ theme }) => ({
 	borderRadius: '15px',
 	margin: 'auto',
 	[theme.breakpoints.up('sm')]: {
-		maxWidth: '850px',
+		maxWidth: '400px',
 	},
 	boxShadow:
 		'hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px',
@@ -21,6 +21,28 @@ export const CardLogin = styled(MuiCard)(({ theme }) => ({
 			'hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px',
 	}),
 }));
+
+export const CardSignUp = styled(MuiCard)(({ theme, sx }) => ({
+	mt: 2,
+	display: 'flex',
+	flexDirection: 'column',
+	alignSelf: 'center',
+	width: '100%',
+	padding: theme.spacing(4),
+	gap: theme.spacing(2),
+	borderRadius: '15px',
+	margin: 'auto',
+	[theme.breakpoints.up('sm')]: {
+		maxWidth: '750px',
+	},
+	boxShadow:
+		'hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px',
+	...theme.applyStyles('dark', {
+		boxShadow:
+			'hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px',
+	}),
+}));
+
 
 export const SignInContainer = styled(Stack)(({ theme }) => ({
 	width: '100%',

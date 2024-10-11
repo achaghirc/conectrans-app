@@ -5,19 +5,27 @@ import LoginIcon from '@mui/icons-material/Login';
 import Logo from '../../../public/Conectrans_Logo_Black.png';
 import Image from 'next/image';
 import Link from 'next/link';
+import { authConfig } from '@/auth.config';
+import { Session } from 'next-auth';
+import { signOut } from 'next-auth/react';
+import { log } from 'console';
+import { logout } from '@/lib/actions';
+import { useRouter } from 'next/navigation';
+import { AccountBoxOutlined, AccountCircleOutlined } from '@mui/icons-material';
 
 type DrawerProps = {
-    auth: boolean;
+		session: Session | null;
     handleClose: () => void;
     handleDrawer: (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => void;
 }
 
-export default function DrawerCustom({handleDrawer, handleClose, auth}: DrawerProps) {
-  const [openLogin, setOpenLogin] = React.useState(false);
+export default function DrawerCustom(
+	{
+		handleDrawer, handleClose, session
+	} : DrawerProps
+) {
 
-	const handleLogin = (state: boolean) => {
-			setOpenLogin(state);
-	}
+	const router = useRouter();
 
 	return (
     <>
@@ -57,15 +65,28 @@ export default function DrawerCustom({handleDrawer, handleClose, auth}: DrawerPr
 							</Typography>
 					</MenuItem>
 					<Divider variant={'middle'} />
-					{!auth ? (
+					{session ? (
+						  <>
 							<MenuItem onClick={handleClose} sx={{ mt: 1 }}>
+								<AccountCircleOutlined  sx={{ mr: 1}} />
+								<Typography variant='body1' sx={{ color: 'black'}}>
+										Cuenta
+								</Typography>
+							</MenuItem>
+							<MenuItem 
+								onClick={async () => {
+									await logout();
+									router.push('/');
+								}} 
+								sx={{ mt: 1 }}>
 									<LogoutIcon color='error' sx={{ mr: 1}}/>                    
 									<Typography variant='body1' color='error'>
 											Cerrar Sesión
 									</Typography>
 							</MenuItem>
+							</>
 					) : (
-						<Link href={'/auth/login'}>
+						<Link href={'/auth/login'} style={{ textDecoration: 'none' }} >
 							<MenuItem sx={{ mt: 1 }}>
 									<LoginIcon sx={{ mr: 1, color: 'black'}}/>  
 									<Typography variant='body1' sx={{ color: 'black'}}>
