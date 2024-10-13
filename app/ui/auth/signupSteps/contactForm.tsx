@@ -1,23 +1,11 @@
 import {  TextField } from '@mui/material';
 import { ChangeEvent, useRef, useState } from 'react';
 import Grid from '@mui/material/Grid2';
-import { PlaceAutocompleteResult } from '@googlemaps/google-maps-services-js';
-import { ZodIssue } from 'zod';
-import { State } from '@/lib/actions';
+import { SignUpCompanyFormData, State } from '@/lib/definitions';
+import { handleZodError, handleZodHelperText } from '@/lib/utils';
 
 interface ContactoFormProps {
-  formData: {
-    streetAddress: string;
-    codigoPostal: string;
-    pais: string;
-    provincia: string;
-    localidad: string;
-    telefonoMovil: string;
-    telefonoFijo: string;
-    sitioWeb: string;
-    emailContacto: string;
-    descripcion: string;
-  };
+  formData: SignUpCompanyFormData
   setFormData: (data: any) => void;
   errors: State;
 }
@@ -27,7 +15,7 @@ export default function ContactForm({ formData, errors, setFormData }: ContactoF
   
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ contacto: { ...formData, [name]: value } });
+    setFormData({ contactInfo: { ...formData.contactInfo, [name]: value } });
   };
 
   return (
@@ -38,10 +26,10 @@ export default function ContactForm({ formData, errors, setFormData }: ContactoF
           type='text'
           label="Dirección"
           name="streetAddress"
-          value={formData.streetAddress}
+          value={formData.contactInfo.streetAddress}
           onChange={handleInputChange}
-          error={errors.errors?.some((el) => el.path.includes('streetAddress'))}
-          helperText={errors.errors?.some((el) => el.path.includes('streetAddress')) ? errors.errors?.filter((el) => el.path.includes('streetAddress'))[0].message : ''}
+          error={handleZodError(errors, 'streetAddress')}
+          helperText={handleZodHelperText(errors, 'streetAddress')}
           required
         />
       </Grid>
@@ -49,11 +37,11 @@ export default function ContactForm({ formData, errors, setFormData }: ContactoF
         <TextField
           fullWidth
           label="Código Postal"
-          name="codigoPostal"
-          value={formData.codigoPostal}
+          name="zip"
+          value={formData.contactInfo.zip}
           onChange={handleInputChange}
-          error={errors.errors?.some((el) => el.path.includes('codigoPostal'))}
-          helperText={errors.errors?.some((el) => el.path.includes('codigoPostal')) ? errors.errors?.filter((el) => el.path.includes('codigoPostal'))[0].message : ''}
+          error={handleZodError(errors, 'zip')}
+          helperText={handleZodHelperText(errors, 'zip')}
           required
         />
       </Grid>
@@ -61,11 +49,11 @@ export default function ContactForm({ formData, errors, setFormData }: ContactoF
         <TextField
           fullWidth
           label="País"
-          name="pais"
-          value={formData.pais}
+          name="country"
+          value={formData.contactInfo.country}
           onChange={handleInputChange}
-          error={errors.errors?.some((el) => el.path.includes('pais'))}
-          helperText={errors.errors?.some((el) => el.path.includes('pais')) ? errors.errors?.filter((el) => el.path.includes('pais'))[0].message : ''}
+          error={handleZodError(errors, 'country')}
+          helperText={handleZodHelperText(errors, 'country')}
           required
           />
         </Grid>
@@ -73,11 +61,11 @@ export default function ContactForm({ formData, errors, setFormData }: ContactoF
           <TextField
             fullWidth
             label="Provincia"
-            name="provincia"
-            value={formData.provincia}
+            name="province"
+            value={formData.contactInfo.province}
             onChange={handleInputChange}
-            error={errors.errors?.some((el) => el.path.includes('provincia'))}
-            helperText={errors.errors?.some((el) => el.path.includes('provincia')) ? errors.errors?.filter((el) => el.path.includes('provincia'))[0].message : ''}
+            error={handleZodError(errors, 'province')}
+            helperText={handleZodHelperText(errors, 'province')}
             required
           />
         </Grid>
@@ -85,11 +73,11 @@ export default function ContactForm({ formData, errors, setFormData }: ContactoF
           <TextField
             fullWidth
             label="Localidad"
-            name="localidad"
-            value={formData.localidad}
+            name="locality"
+            value={formData.contactInfo.locality}
             onChange={handleInputChange}
-            error={errors.errors?.some((el) => el.path.includes('localidad'))}
-            helperText={errors.errors?.some((el) => el.path.includes('localidad')) ? errors.errors?.filter((el) => el.path.includes('localidad'))[0].message : ''}
+            error={handleZodError(errors, 'locality')}
+            helperText={handleZodHelperText(errors, 'locality')}
             required
           />
         </Grid>
@@ -97,11 +85,11 @@ export default function ContactForm({ formData, errors, setFormData }: ContactoF
           <TextField
             fullWidth
             label="Teléfono Móvil"
-            name="telefonoMovil"
-            value={formData.telefonoMovil}
+            name="mobilePhone"
+            value={formData.contactInfo.mobilePhone}
             onChange={handleInputChange}
-            error={errors.errors?.some((el) => el.path.includes('telefonoMovil'))}
-            helperText={errors.errors?.some((el) => el.path.includes('telefonoMovil')) ? errors.errors?.filter((el) => el.path.includes('telefonoMovil'))[0].message : ''}
+            error={handleZodError(errors, 'mobilePhone')}
+            helperText={handleZodHelperText(errors, 'mobilePhone')}
             required
           />
         </Grid>
@@ -109,8 +97,8 @@ export default function ContactForm({ formData, errors, setFormData }: ContactoF
           <TextField
             fullWidth
             label="Teléfono Fijo"
-            name="telefonoFijo"
-            value={formData.telefonoFijo}
+            name="landlinePhone"
+            value={formData.contactInfo.landlinePhone}
             onChange={handleInputChange}
           />
         </Grid>
@@ -118,8 +106,8 @@ export default function ContactForm({ formData, errors, setFormData }: ContactoF
           <TextField
             fullWidth
             label="Sitio Web"
-            name="sitioWeb"
-            value={formData.sitioWeb}
+            name="website"
+            value={formData.contactInfo.website}
             onChange={handleInputChange}
           />
         </Grid>
@@ -127,11 +115,11 @@ export default function ContactForm({ formData, errors, setFormData }: ContactoF
           <TextField
             fullWidth
             label="Correo Electrónico de Contacto"
-            name="emailContacto"
-            value={formData.emailContacto}
+            name="contactEmail"
+            value={formData.contactInfo.contactEmail}
             onChange={handleInputChange}
-            error={errors.errors?.some((el) => el.path.includes('emailContacto'))}
-            helperText={errors.errors?.some((el) => el.path.includes('emailContacto')) ? errors.errors?.filter((el) => el.path.includes('emailContacto'))[0].message : ''}
+            error={handleZodError(errors, 'contactEmail')}
+            helperText={handleZodHelperText(errors, 'contactEmail')}
             required
           />
         </Grid>
@@ -139,14 +127,14 @@ export default function ContactForm({ formData, errors, setFormData }: ContactoF
           <TextField
             fullWidth
             label="Descripción"
-            name="descripcion"
-            value={formData.descripcion}
+            name="description"
+            value={formData.contactInfo.description}
             onChange={handleInputChange}
             multiline
             rows={4}
             maxRows={6}
-            error={errors.errors?.some((el) => el.path.includes('descripcion'))}
-            helperText={errors.errors?.some((el) => el.path.includes('descripcion')) ? errors.errors?.filter((el) => el.path.includes('descripcion'))[0].message : ''}
+            error={handleZodError(errors, 'description')}
+            helperText={handleZodHelperText(errors, 'description')}
             required
           />
         </Grid>

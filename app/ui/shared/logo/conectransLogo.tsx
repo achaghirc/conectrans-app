@@ -16,19 +16,19 @@ const ConectransLogo = ({width, height, fill, textColor}:ConectransLogoProps) =>
             <path d="M288.33 148C299.183 148 307.981 138.899 307.981 127.673C307.981 116.446 299.183 107.346 288.33 107.346C277.477 107.346 268.679 116.446 268.679 127.673C268.679 138.899 277.477 148 288.33 148Z" fill="#01717A"/>
             <path d="M253.395 44C253.395 43.4477 253.842 43 254.395 43H292.194C292.51 43 292.809 43.1501 292.997 43.4047L331.804 95.7876C331.931 95.9598 332 96.1685 332 96.3828V132.343C332 132.895 331.552 133.343 331 133.343L319.899 133.343C319.347 133.343 318.892 132.9 318.849 132.349C318.646 129.707 317.613 122.091 312.349 113.016C305.798 101.723 288.33 101.723 288.33 101.723V101.723C288.33 101.723 275.229 101.723 266.495 110.757C259.298 118.203 259.515 128.716 259.814 132.184C259.867 132.797 259.387 133.343 258.771 133.343H254.395C253.842 133.343 253.395 132.895 253.395 132.343V44Z" fill="#01717A"/>
             <path d="M259.945 53.1399H290.514L305.798 80.2428L259.945 71.2085V53.1399Z" fill={fill}/>
-            <path d="M130.936 132.449V46.1056H236.11V132.449H191.5H130.936Z" fill={fill} stroke="#01717A" stroke-width="4"/>
-            <line x1="236.11" y1="116.38" x2="236.11" y2="102.829" stroke={fill} stroke-width="4"/>
-            <line x1="236.11" y1="89.2771" x2="236.11" y2="75.7257" stroke={fill} stroke-width="4"/>
-            <path d="M131 125.274V53" stroke={fill} stroke-width="5"/>
-            <path d="M94 73.2084L163.872 73.2084" stroke="#01717A" stroke-width="4" stroke-linecap="round"/>
-            <path d="M94 59.657L137.67 59.657" stroke="#01717A" stroke-width="4" stroke-linecap="round"/>
-            <path d="M94 89.0186H137.67" stroke="#01717A" stroke-width="4" stroke-linecap="round"/>
-            <path d="M94 102.57H157.321" stroke="#01717A" stroke-width="4" stroke-linecap="round"/>
-            <line x1="216.275" y1="46.1056" x2="203.174" y2="46.1056" stroke={fill} stroke-width="4"/>
-            <line x1="185.706" y1="46.1056" x2="172.605" y2="46.1056" stroke={fill}stroke-width="4"/>
-            <path d="M190 132.5H141.963" stroke={fill}stroke-width="5"/>
-            <line x1="155.138" y1="46.1056" x2="142.037" y2="46.1056" stroke={fill}stroke-width="4"/>
-            <line x1="236.11" y1="62.1743" x2="236.11" y2="53.14" stroke={fill} stroke-width="4"/>
+            <path d="M130.936 132.449V46.1056H236.11V132.449H191.5H130.936Z" fill={fill} stroke="#01717A" strokeWidth="4"/>
+            <line x1="236.11" y1="116.38" x2="236.11" y2="102.829" stroke={fill} strokeWidth="4"/>
+            <line x1="236.11" y1="89.2771" x2="236.11" y2="75.7257" stroke={fill} strokeWidth="4"/>
+            <path d="M131 125.274V53" stroke={fill} strokeWidth="5"/>
+            <path d="M94 73.2084L163.872 73.2084" stroke="#01717A" strokeWidth="4" strokeLinecap="round"/>
+            <path d="M94 59.657L137.67 59.657" stroke="#01717A" strokeWidth="4" strokeLinecap="round"/>
+            <path d="M94 89.0186H137.67" stroke="#01717A" strokeWidth="4" strokeLinecap="round"/>
+            <path d="M94 102.57H157.321" stroke="#01717A" strokeWidth="4" strokeLinecap="round"/>
+            <line x1="216.275" y1="46.1056" x2="203.174" y2="46.1056" stroke={fill} strokeWidth="4"/>
+            <line x1="185.706" y1="46.1056" x2="172.605" y2="46.1056" stroke={fill}strokeWidth="4"/>
+            <path d="M190 132.5H141.963" stroke={fill}strokeWidth="5"/>
+            <line x1="155.138" y1="46.1056" x2="142.037" y2="46.1056" stroke={fill}strokeWidth="4"/>
+            <line x1="236.11" y1="62.1743" x2="236.11" y2="53.14" stroke={fill} strokeWidth="4"/>
             <path d="M166.055 148C176.908 148 185.707 138.899 185.707 127.673C185.707 116.446 176.908 107.346 166.055 107.346C155.202 107.346 146.404 116.446 146.404 127.673C146.404 138.899 155.202 148 166.055 148Z" fill="#01717A"/>
         </svg>
     )

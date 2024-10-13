@@ -11,13 +11,28 @@ model Person {
   id        Int      @id @default(autoincrement())
   name      String
   lastname  String
-  birthdate DateTime
+  birthdate DateTime?
   phone     String
-  document  String
+  document  String?
   userId    String   @unique
+  locationId Int     
   createdAt DateTime @default(now())
   updatedAt DateTime
   User      User     @relation(fields: [userId], references: [id])
+  Location  Location @relation(fields: [locationId], references: [id])
+}
+
+model ContactPerson {
+  id              Int      @id @default(autoincrement())
+  name            String
+  lastname        String
+  phone           String
+  document        String?
+  companyPosition String
+  email           String   @default("")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime
+  Company         Company[]
 }
 
 model User {
@@ -25,10 +40,12 @@ model User {
   email       String   @unique
   password    String
   name        String   @default("")
+  roleId      Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime
   Person      Person?
   Company     Company?
+  Role        Role     @relation(fields: [roleId], references: [id])
 }
 
 model Role {
@@ -37,6 +54,7 @@ model Role {
   code      String
   createdAt DateTime @default(now())
   updatedAt DateTime
+  User      User[]
 }
 
 model Activity {
@@ -62,22 +80,40 @@ model Location {
   createdAt DateTime @default(now())
   updatedAt DateTime
   Company   Company?
+  Person    Person[]
 }
 
 model Company {
-  id          Int      @id @default(autoincrement())
-  name        String
-  socialName  String
-  cif         String
-  description String
-  address     String
-  phone       String
-  activityId  Int
-  userId      String   @unique
-  locationId  Int      @unique
-  createdAt   DateTime @default(now())
+  id              Int      @id @default(autoincrement())
+  name            String
+  socialName      String
+  description     String
+  landlinePhone   String
+  phone           String
+  cifnif          String
+  activityId      Int
+  userId          String   @unique
+  contactPersonId Int      @unique
+  locationId      Int      @unique
+  assetId         Int?     @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime
+  Activity        Activity @relation(fields: [activityId], references: [id])
+  User            User     @relation(fields: [userId], references: [id])
+  Location        Location @relation(fields: [locationId], references: [id])
+  Asset           Asset?    @relation(fields: [assetId], references: [id])
+  ContactPerson   ContactPerson @relation(fields: [contactPersonId], references: [id])
+}
+
+model Asset {
+  id          Int     @id @default(autoincrement())
+  publicId    String
+  secureUrl   String
+  url         String
+  width       Int
+  height      Int
+  format      String
+  createdAt   DateTime   @default(now())
   updatedAt   DateTime
-  Activity    Activity @relation(fields: [activityId], references: [id])
-  User        User     @relation(fields: [userId], references: [id])
-  Location    Location @relation(fields: [locationId], references: [id])
+  Company   Company?
 }

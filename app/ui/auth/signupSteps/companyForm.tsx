@@ -1,22 +1,16 @@
-import { State, validateCompanyData } from '@/lib/actions';
+import { validateCIFNIFFormat, validateCompanyData } from '@/lib/actions';
 import { getActitivies } from '@/lib/data/activity';
-import { Activity } from '@/lib/definitions';
+import { Activity, SignUpCompanyFormData, State, ValidationCIFNIFResult } from '@/lib/definitions';
+import { handleZodError, handleZodHelperText } from '@/lib/utils';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { TextField, MenuItem, Typography, Box, Avatar, InputAdornment, IconButton } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { ChangeEvent, useActionState, useState } from 'react';
+import { ChangeEvent, useState } from 'react';
+import { ZodIssue } from 'zod';
 
 type PasswordType = 'password' | 'confirmPassword';
-interface EmpresaFormProps {
-  formData: {
-    email: string;
-    password: string;
-    confirmPassword: string;
-    socialName: string;
-    comercialName: string;
-    tipoActividad: string;
-    logo: File | null;
-  };
+interface CompanyFormProps {
+  formData: SignUpCompanyFormData
   errors: State;
   setFormData: (data: any) => void;
   activities: Activity[] | undefined;
@@ -24,14 +18,21 @@ interface EmpresaFormProps {
 
 const tiposDeActividad = ['Tecnología', 'Construcción', 'Salud', 'Educación'];
 
-export default function CompanyForm({ formData,activities, errors, setFormData }: EmpresaFormProps) {
+export default function CompanyForm({ formData,activities, errors, setFormData }: CompanyFormProps) {
   const [logo, setLogo] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [cifError, setCifError] = useState<string | null>(null);
+
+  console.log(errors);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ empresa: { ...formData, [name]: value } });
+    let { name, value } = e.target;
+    if (name === 'cifnif' && value.length == 0) {
+      if (value.length == 0) setCifError(null);
+      value = value.toUpperCase();
+    }
+    setFormData({ company: { ...formData.company, [name]: value } });
   };
 
   const handleClickShowPassword = (type: PasswordType) => {
@@ -41,13 +42,25 @@ export default function CompanyForm({ formData,activities, errors, setFormData }
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFormData({ empresa: { ...formData, logo: e.target.files[0] } });
+      setFormData({ company: { ...formData.company, logo: e.target.files[0] } });
 			setLogo(URL.createObjectURL(e.target.files[0]));
     }
   };
+  //Validación de CIF/NIF
+  const handleCifNifValidation = async (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const valid: ValidationCIFNIFResult | undefined = await validateCIFNIFFormat(value);
+    if (valid && valid.valid) {
+      setCifError(null);
+      setFormData({ company: { ...formData.company, [name]: value } });
+    } else {
+      const message = valid?.message || 'El CIF/NIF introducido no es válido';
+      setCifError(message);
+    }
+  }
 
   const handleRemoveLogo = () => {  
-    setFormData({ empresa: { ...formData, logo: null } });
+    setFormData({ company: { ...formData, logo: null } });
     setLogo(null);
   }
 
@@ -65,6 +78,23 @@ export default function CompanyForm({ formData,activities, errors, setFormData }
     )
   }
 
+  const cifnifError = () => {
+    if (cifError) {
+      return true;
+    } else {
+      return handleZodError(errors, 'cifnif');
+    }
+  }
+
+  const cifnifHelperText = () => {
+    if (cifError) {
+      return cifError;
+    } else {
+      return handleZodHelperText(errors, 'cifnif');
+    }
+  }
+
+
   return (
     <Grid container spacing={2}>
       <Grid size={{xs:12}}>
@@ -72,11 +102,11 @@ export default function CompanyForm({ formData,activities, errors, setFormData }
           fullWidth
           label="Correo electrónico"
           name="email"
-          value={formData.email}
+          value={formData.company.email}
           onChange={handleInputChange}
           placeholder='example@email.com'
-          error={errors.errors?.some((el) => el.path.includes('email'))}
-          helperText={errors.errors?.some((el) => el.path.includes('email')) ? 'Correo electrónico no válido': ''}
+          error={handleZodError(errors, 'email')}
+          helperText={handleZodHelperText(errors,'email')}
         />
       </Grid>
       <Grid size={{xs:12, sm: 6}}>
@@ -85,10 +115,10 @@ export default function CompanyForm({ formData,activities, errors, setFormData }
           label="Contraseña"
           type={!showPassword ? "password" : "text"}
           name="password"
-          value={formData.password}
+          value={formData.company.password}
           onChange={handleInputChange}
-          error={errors.errors?.some((el) => el.path.includes('password'))}
-          helperText={errors.errors?.some((el) => el.path.includes('password')) ? errors.errors?.filter((el) => el.path.includes('password'))[0].message : ''}
+          error={handleZodError(errors,'password')}
+          helperText={handleZodHelperText(errors,'password')}
           slotProps={{
             input:{
               endAdornment: inputPropShowPassword('password')
@@ -102,10 +132,10 @@ export default function CompanyForm({ formData,activities, errors, setFormData }
           label="Confirmar Contraseña"
           type={!showConfirmPassword ? "password" : "text"}
           name="confirmPassword"
-          value={formData.confirmPassword}
+          value={formData.company.confirmPassword}
           onChange={handleInputChange}
-          error={errors.errors?.some((el) => el.path.includes('confirmPassword'))}
-          helperText={errors.errors?.some((el) => el.path.includes('confirmPassword')) ? errors.errors?.filter((el) => el.path.includes('confirmPassword'))[0].message : ''}
+          error={handleZodError(errors,'confirmPassword')}
+          helperText={handleZodHelperText(errors,'confirmPassword')}
           slotProps={{
             input:{
               endAdornment: inputPropShowPassword('confirmPassword')
@@ -118,10 +148,10 @@ export default function CompanyForm({ formData,activities, errors, setFormData }
           fullWidth
           label="Razón Social"
           name="socialName"
-          value={formData.socialName}
+          value={formData.company.socialName}
           onChange={handleInputChange}
-          error={errors.errors?.some((el) => el.path.includes('socialName'))}
-          helperText={errors.errors?.some((el) => el.path.includes('socialName')) ? 'Campo obligatorio': ''}
+          error={handleZodError(errors,'socialName')}
+          helperText={handleZodHelperText(errors,'socialName')}
         />
       </Grid>
       <Grid size={{xs:12}}>
@@ -129,10 +159,23 @@ export default function CompanyForm({ formData,activities, errors, setFormData }
           fullWidth
           label="Nombre Comercial"
           name="comercialName"
-          value={formData.comercialName}
+          value={formData.company.comercialName}
           onChange={handleInputChange}
-          error={errors.errors?.some((el) => el.path.includes('comercialName'))}
-          helperText={errors.errors?.some((el) => el.path.includes('comercialName')) ? 'Campo obligatorio': ''}
+          error={handleZodError(errors,'comercialName')}
+          helperText={handleZodHelperText(errors,'comercialName')}
+        />
+      </Grid>
+      <Grid size={{xs:12}}>
+        <TextField
+          fullWidth
+          label="CIF/NIF"
+          name="cifnif"
+          value={formData.company.cifnif}
+          onBlur={handleCifNifValidation}
+          onChange={handleInputChange}
+          error={cifnifError()}
+          helperText={cifnifHelperText()}
+          required
         />
       </Grid>
       <Grid size={{xs:12}}>
@@ -140,9 +183,12 @@ export default function CompanyForm({ formData,activities, errors, setFormData }
           fullWidth
           select
           label="Tipo de Actividad"
-          name="tipoActividad"
-          value={formData.tipoActividad}
+          name="activityType"
+          value={formData.company.activityType}
           onChange={handleInputChange}
+          error={handleZodError(errors,'activityType')}
+          helperText={handleZodHelperText(errors,'activityType')}
+          required
         >
           {activities && activities.map((tipo) => (
             <MenuItem key={tipo.code} value={tipo.code}>

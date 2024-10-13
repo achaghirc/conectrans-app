@@ -1,16 +1,11 @@
 import { TextField } from '@mui/material';
 import { ChangeEvent } from 'react';
 import  Grid from '@mui/material/Grid2';
-import { State } from '@/lib/actions';
+import { SignUpCompanyFormData, State } from '@/lib/definitions';
+import { handleZodError, handleZodHelperText } from '@/lib/utils';
 
 interface PersonContactFormProps {
-  formData: {
-    nombre: string;
-    apellidos: string;
-    cargo: string;
-    telefono: string;
-    email: string;
-  };
+  formData: SignUpCompanyFormData;
   errors: State;
   setFormData: (data: any) => void;
   
@@ -19,7 +14,7 @@ interface PersonContactFormProps {
 export default function PersonContactForm({ formData, errors, setFormData }: PersonContactFormProps) {
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ personaContacto: { ...formData, [name]: value } });
+    setFormData({ contactPerson: { ...formData.contactPerson, [name]: value } });
   };
 
   return (
@@ -28,11 +23,11 @@ export default function PersonContactForm({ formData, errors, setFormData }: Per
         <TextField
           fullWidth
           label="Nombre"
-          name="nombre"
-          value={formData.nombre}
+          name="name"
+          value={formData.contactPerson.name}
           onChange={handleInputChange}
-          error={errors.errors?.some((el) => el.path.includes('nombre'))}
-          helperText={errors.errors?.some((el) => el.path.includes('nombre')) ? errors.errors?.filter((el) => el.path.includes('nombre'))[0].message : ''}
+          error={handleZodError(errors,'name')}
+          helperText={handleZodHelperText(errors,'name')}
           required
         />
       </Grid>
@@ -40,11 +35,11 @@ export default function PersonContactForm({ formData, errors, setFormData }: Per
         <TextField
           fullWidth
           label="Apellidos"
-          name="apellidos"
-          value={formData.apellidos}
+          name="lastnames"
+          value={formData.contactPerson.lastnames}
           onChange={handleInputChange}
-          error={errors.errors?.some((el) => el.path.includes('apellidos'))}
-          helperText={errors.errors?.some((el) => el.path.includes('apellidos')) ? errors.errors?.filter((el) => el.path.includes('apellidos'))[0].message : ''}
+          error={handleZodError(errors,'lastnames')}
+          helperText={handleZodHelperText(errors,'lastnames')}
           required
         />
       </Grid>
@@ -52,11 +47,11 @@ export default function PersonContactForm({ formData, errors, setFormData }: Per
         <TextField
           fullWidth
           label="Cargo en la Empresa"
-          name="cargo"
-          value={formData.cargo}
+          name="companyPosition"
+          value={formData.contactPerson.companyPosition}
           onChange={handleInputChange}
-          error={errors.errors?.some((el) => el.path.includes('cargo'))}
-          helperText={errors.errors?.some((el) => el.path.includes('cargo')) ? errors.errors?.filter((el) => el.path.includes('cargo'))[0].message : ''}
+          error={handleZodError(errors,'companyPosition')}
+          helperText={handleZodHelperText(errors,'companyPosition')}
           required
         />
       </Grid>
@@ -64,11 +59,11 @@ export default function PersonContactForm({ formData, errors, setFormData }: Per
         <TextField
           fullWidth
           label="Teléfono"
-          name="telefono"
-          value={formData.telefono}
+          name="phoneNumber"
+          value={formData.contactPerson.phoneNumber}
           onChange={handleInputChange}
-          error={errors.errors?.some((el) => el.path.includes('telefono'))}
-          helperText={errors.errors?.some((el) => el.path.includes('telefono')) ? errors.errors?.filter((el) => el.path.includes('telefono'))[0].message : ''}
+          error={handleZodError(errors,'phoneNumber')}
+          helperText={handleZodHelperText(errors,'phoneNumber')}
           required
         />
       </Grid>
@@ -77,10 +72,10 @@ export default function PersonContactForm({ formData, errors, setFormData }: Per
           fullWidth
           label="Correo Electrónico"
           name="email"
-          value={formData.email}
+          value={formData.contactPerson.email}
           onChange={handleInputChange}
-          error={errors.errors?.some((el) => el.path.includes('email'))}
-          helperText={errors.errors?.some((el) => el.path.includes('email')) ? errors.errors?.filter((el) => el.path.includes('email'))[0].message : ''}
+          error={handleZodError(errors,'email')}
+          helperText={handleZodHelperText(errors,'email')}
           required
         />
       </Grid>
