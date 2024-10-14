@@ -91,6 +91,7 @@ model Company {
   landlinePhone   String
   phone           String
   cifnif          String
+  email           String? @default("")
   activityId      Int
   userId          String   @unique
   contactPersonId Int      @unique

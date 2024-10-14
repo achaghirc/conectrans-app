@@ -125,3 +125,9 @@ export type CloudinaryUploadResponse = {
     height: number;
     format: string;
 }
+
+
+export type AuthenticateMessageErr ={
+    message: string,
+    type: string,
+}

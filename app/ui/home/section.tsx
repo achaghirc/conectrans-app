@@ -5,7 +5,7 @@ import { Box } from "@mui/material";
 import Grid from '@mui/material/Grid2';
 import BusinessMan from '../../../public/BusinessMan.png';
 import BusinessTable from '../../../public/BusinessTable.png';
-import { CardSectionCustom } from '../shared/custom/sectionCustom';
+import { CardSectionCustom } from '../shared/custom/components/sectionCustom';
 
 export default function SectionCards() {
   return (

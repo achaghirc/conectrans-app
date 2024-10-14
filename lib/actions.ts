@@ -3,12 +3,18 @@
 import { signIn, signOut} from "@/auth";
 import { AuthError } from "next-auth";
 import { z } from "zod";
-import { SignUpCompanyFormData, State, ValidationCIFNIFResult } from "./definitions";
+import { AuthenticateMessageErr, SignUpCompanyFormData, State, ValidationCIFNIFResult } from "./definitions";
+import { getUserByEmail } from "./data/user";
 
 const FormCompanySchema = z.object({
     email: z.string({
         invalid_type_error: 'Correo electrónico no válido',
-    }).email('Correo electrónico no válido'),
+    }).email('Correo electrónico no válido').refine(async (email) => {
+        const user = await getUserByEmail(email);
+        return !user;
+    }, {
+        message: 'El correo electrónico ya está en uso',
+    }),
     password: z.string().min(8, 'Contraseña no válida, debe tener al menos 8 caracteres'),
     confirmPassword: z.string().min(8, 'Contraseña no válida, debe tener al menos 8 caracteres'),
     socialName: z.string({
@@ -102,8 +108,7 @@ const FormDataSchema = z.object({
 });
 
 export async function validateCompanyData(prevState: State, formData: SignUpCompanyFormData) {
-    console.log('formData', formData);
-    const validatedFields = FormCompanySchema.safeParse({
+    const validatedFields = await FormCompanySchema.safeParseAsync({
         email: formData.company.email,
         password: formData.company.password,
         confirmPassword: formData.company.confirmPassword,
@@ -250,16 +255,31 @@ export async function validateCIFNIFFormat(cifnif:string): Promise<ValidationCIF
 export async function authenticate(
     prevState: string | undefined,
     formData: FormData
-): Promise<string | undefined> {
+): Promise<AuthenticateMessageErr | undefined> {
     try {
         await signIn('credentials', formData);
-    } catch (error) {
+    } catch (error: any) {
         if(error instanceof AuthError) {
+            let authErr: AuthenticateMessageErr = {} as AuthenticateMessageErr;
             switch (error.type) {
-                case 'CredentialsSignin': 
-                    return 'Invalid credentials. Please try again.';
+                case 'CredentialsSignin':
+                    authErr.message= error.message;
+                    authErr.type= 'email';
+                    return authErr;
+                case 'AccessDenied':
+                    authErr.message= error.message;
+                    authErr.type= 'general';
+                    return authErr;
+                case 'CallbackRouteError':
+                    return {
+                        message: error.cause?.err?.message || 'An error occurred while signing in. Please try again.',
+                        type: error.cause?.err?.name || 'general',
+                    }
                 default:
-                    return 'An error occurred while signing in. Please try again.';
+                    return {
+                        message: 'An error occurred while signing in. Please try again.',
+                        type: 'general',                        
+                    }
             }
         }
         throw error;

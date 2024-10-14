@@ -1,30 +1,55 @@
 'use client';
-import React from 'react'
+import { FormEvent, Fragment, useLayoutEffect, useState } from 'react'
 import { Box, Button, Card, Checkbox, CssBaseline, Divider, FormControl, FormControlLabel, FormLabel, IconButton, InputAdornment, Link, Stack, TextField, Typography } from '@mui/material';
 import Logo from '../../../public/Conectrans_Logo_White.svg';
 import Image from 'next/image';
 import ForgotPassword from '../icons/forgotPassword';
 import { BusinessOutlined, LockOutlined, PeopleOutline, Visibility, VisibilityOff } from '@mui/icons-material';
-import { CardLogin, SignInContainer } from '../shared/auth/authComponents';
+import { CardLogin, SignInContainer, SignInForm, SignInMobileForm, TextFieldCustom } from '../shared/auth/authComponents';
 import { signIn } from '@/auth';
 import { authenticate } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
+import { AuthenticateMessageErr } from '@/lib/definitions';
 type LoginProps = {
     open: boolean;
     handleClose: (open: boolean) => void;
 }
 
 export default function LoginModal() {
-	const [emailError, setEmailError] = React.useState(false);
-	const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
-	const [passwordError, setPasswordError] = React.useState(false);
-	const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
-	const [open, setOpen] = React.useState(false);
-	const [showPassword, setShowPassword] = React.useState(false);
-	const [isPending, setIsPending] = React.useState(false);
-	const [errorMessage, setErrorMessage] = React.useState<string | undefined>(undefined);
-	const router = useRouter();
+	const [mediaQuery, setMediaQuery] = useState<boolean | null>(null);
+	//Manage media query for responsive design when the screen is resized
+	useLayoutEffect(() => {
+		const mediaQuery = window.matchMedia('(min-width: 600px)');
+		setMediaQuery(mediaQuery.matches);
+		mediaQuery.addEventListener('change', (e) => {
+			setMediaQuery(e.matches);
+		});
+	},[]);
+	return (
+		mediaQuery == null ? null : mediaQuery ? (
+			<SignInForm>
+				<FormLogin />
+			</SignInForm>
+		) : (
+			<SignInMobileForm>
+				<FormLogin />
+			</SignInMobileForm>
+		
+		)
+	)	
+}
 
+
+const FormLogin = () => {
+	const [emailError, setEmailError] = useState(false);
+	const [emailErrorMessage, setEmailErrorMessage] = useState('');
+	const [passwordError, setPasswordError] = useState(false);
+	const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
+	const [showPassword, setShowPassword] = useState(false);
+	const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
+	const [open, setOpen] = useState(false);
+	const [isPending, setIsPending] = useState(false);
+	const router = useRouter();
 	const handleClickOpen = () => {
 		setOpen(true);
 	};
@@ -34,7 +59,7 @@ export default function LoginModal() {
 	};
 
 // Update the handleSubmit method in your LoginModal component
-const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
     const data = new FormData(event.currentTarget);
@@ -44,19 +69,33 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     if (emailError || passwordError) {
         return;
     }
-	setIsPending(true);  // Set pending state to true
+		setIsPending(true);  // Set pending state to true
 
     try {
-        const errorMsg = await authenticate(undefined, data);
+        const errorMsg: AuthenticateMessageErr | undefined = await authenticate(undefined, data);
         if (errorMsg) {
-            setErrorMessage(errorMsg);  // Display error message to the user
+						console.log('Error:', errorMsg);
+            switch (errorMsg.type) {
+							case 'NoUserFound':
+								setEmailError(true);
+								setEmailErrorMessage(errorMsg.message);
+								break;
+							case 'PasswordIncorrect':
+								setPasswordError(true);
+								setPasswordErrorMessage(errorMsg.message);
+								break;
+							default:
+								setErrorMessage(errorMsg.message);
+								break;
+						}
         } else {
             // Handle successful login
-            console.log("Logged in successfully");
-			router.push('/');
+            setPasswordError(false);
+						setPasswordErrorMessage('');
+						router.push('/');
         }
-    } catch (error) {
-        console.error('Authentication error:', error);
+    } catch (error: any) {
+        console.error('Authentication error:', error.cause);
         setErrorMessage('An unexpected error occurred. Please try again.');
     } finally {
         setIsPending(false);  // Reset pending state
@@ -102,132 +141,128 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 			</IconButton>
 		  </InputAdornment>
 		)
-	  }
-
+	}
 	return (
-		<>
-			<CssBaseline enableColorScheme />
-			<SignInContainer direction="column" justifyContent="space-between">
-				<CardLogin variant="outlined">
-					<Box sx={{ display: 'flex', flexDirection:'column', alignItems: 'center'}}>
-						<Image
-								src={Logo} 
-								alt="Conectrans Logo Black" 
-								width={130} 
-								height={90} 
-								/>   
-						<Box sx={{ display: 'flex', padding: '4px', mt: 1, color:'white', borderRadius: '50%', backgroundColor: '#0B2C38' }} >
-							<LockOutlined />
-						</Box>
-					</Box>
-					<Box
-						component="form"
-						onSubmit={handleSubmit}
-						noValidate
-						sx={{
-							display: 'flex',
-							flexDirection: 'column',
-							width: '100%',
-							gap: 2,
-						}}
+		<Fragment>
+			<Box sx={{ display: 'flex', flexDirection:'column', alignItems: 'center'}}>
+				<Image
+						src={Logo} 
+						alt="Conectrans Logo Black" 
+						width={130} 
+						height={90} 
+						/>   
+				<Box sx={{ display: 'flex', padding: '4px', mt: 1, color:'white', borderRadius: '50%', backgroundColor: '#0B2C38' }} >
+					<LockOutlined />
+				</Box>
+			</Box>
+			<Box
+				component="form"
+				onSubmit={handleSubmit}
+				noValidate
+				sx={{
+					display: 'flex',
+					flexDirection: 'column',
+					width: '100%',
+					gap: 2,
+				}}
+			>
+				<FormControl>
+					<TextFieldCustom
+						label="Correo electrónico"
+						error={emailError}
+						helperText={emailErrorMessage}
+						id="email"
+						type="email"
+						name="email"
+						placeholder="email@example.com"
+						autoComplete="email"
+						autoFocus
+						required
+						fullWidth
+						variant="outlined"
+						color={emailError ? 'error' : 'primary'}
+						sx={{ ariaLabel: 'email'}}	
+					/>
+				</FormControl>
+				<FormControl>
+					<TextField
+						label="Contraseña"
+						error={passwordError}
+						helperText={passwordErrorMessage}
+						name="password"
+						placeholder="••••••"
+						type={!showPassword ? "password": "text"}
+						id="password"
+						autoComplete="current-password"
+						autoFocus
+						required
+						fullWidth
+						variant="outlined"
+						color={passwordError ? 'error' : 'primary'}
+						slotProps={{
+							input:{
+								endAdornment: inputPropShowPassword()
+							}
+							}}
+					/>
+				</FormControl>
+				<ForgotPassword open={open} handleClose={handleClose} />
+				<Button
+					type="submit"
+					fullWidth
+					variant="outlined"
+					onClick={validateInputs}
+					aria-disabled={isPending}
+				>
+					Iniciar sesión
+				</Button>
+				<Box sx={{ display: 'flex', justifyContent: 'center' }}>
+						<Link
+							color='textSecondary'
+							component="button"
+							type="button"
+							onClick={handleClickOpen}
+							variant="body2"
+							sx={{ alignSelf: 'baseline' }}
+						>
+							¿Has olvidado tu contraseña?
+						</Link>
+				</Box>
+			</Box>
+			<Divider></Divider>
+			<Typography sx={{ textAlign: 'center' }}>
+				¿Aún no tienes una cuenta?{' '}
+			</Typography>
+			<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+				<Link
+					href="/auth/signup/company"	
+				>
+				<Button
+					fullWidth
+					variant="contained"
+					sx={{ backgroundColor: '#0B2C38', borderColor: '#0B2C38' }}
+					startIcon={<BusinessOutlined />}
 					>
-						<FormControl>
-							<TextField
-								label="Correo electrónico"
-								error={emailError}
-								helperText={emailErrorMessage}
-								id="email"
-								type="email"
-								name="email"
-								placeholder="email@example.com"
-								autoComplete="email"
-								autoFocus
-								required
-								fullWidth
-								variant="outlined"
-								color={emailError ? 'error' : 'primary'}
-								sx={{ ariaLabel: 'email' }}
-							/>
-						</FormControl>
-						<FormControl>
-							<TextField
-								label="Contraseña"
-								error={passwordError}
-								helperText={passwordErrorMessage}
-								name="password"
-								placeholder="••••••"
-								type={!showPassword ? "password": "text"}
-								id="password"
-								autoComplete="current-password"
-								autoFocus
-								required
-								fullWidth
-								variant="outlined"
-								color={passwordError ? 'error' : 'primary'}
-								slotProps={{
-									input:{
-									  endAdornment: inputPropShowPassword()
-									}
-								  }}
-							/>
-						</FormControl>
-						<ForgotPassword open={open} handleClose={handleClose} />
-						<Button
-							type="submit"
-							fullWidth
-							variant="outlined"
-							onClick={validateInputs}
-						>
-							Iniciar sesión
-						</Button>
-						<Box sx={{ display: 'flex', justifyContent: 'center' }}>
-								<Link
-									color='textSecondary'
-									component="button"
-									type="button"
-									onClick={handleClickOpen}
-									variant="body2"
-									sx={{ alignSelf: 'baseline' }}
-								>
-									¿Has olvidado tu contraseña?
-								</Link>
-						</Box>
-					</Box>
-					<Divider></Divider>
-					<Typography sx={{ textAlign: 'center' }}>
-						¿Aún no tienes una cuenta?{' '}
-					</Typography>
-					<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-						<Link
-							href="/auth/signup/company"	
-						>
-						<Button
-							fullWidth
-							variant="contained"
-							sx={{ backgroundColor: '#0B2C38', borderColor: '#0B2C38' }}
-							startIcon={<BusinessOutlined />}
-							>
-							Comenzar como empresa
-						</Button>
-						</Link>
-						<Link
-							href="/auth/signup/candidate"	
-						>
-						<Button
-							fullWidth
-							variant="outlined"
-							sx={{ color: '#0B2C38', borderColor: '#0B2C38' }}
-							startIcon={<PeopleOutline />}
-						>
-							Comenzar como candidato
-						</Button>
-						</Link>
-					</Box>
-				</CardLogin>
-			</SignInContainer>
-		</>
-		);
+					Comenzar como empresa
+				</Button>
+				</Link>
+				<Link
+					href="/auth/signup/candidate"	
+				>
+				<Button
+					fullWidth
+					variant="outlined"
+					sx={{ color: '#0B2C38', borderColor: '#0B2C38' }}
+					startIcon={<PeopleOutline />}
+				>
+					Comenzar como candidato
+				</Button>
+				</Link>
+			</Box>
+		</Fragment>
+	)
 }
+
 
 const style = {
     position: 'absolute',

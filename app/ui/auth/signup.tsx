@@ -1,7 +1,7 @@
 'use client';
-import React, { useState } from 'react'
-import { CardSignUp, SignInContainer } from '../shared/auth/authComponents'
-import { Box, Button, Step, StepLabel, Stepper, TextField, Typography } from '@mui/material';
+import React, { useEffect, useLayoutEffect, useState } from 'react'
+import { CardSignUp, SignUpForm, SignUpMobileForm } from '../shared/auth/authComponents'
+import { Box, Button, IconButton, Snackbar, Step, StepLabel, Stepper, TextField, Typography } from '@mui/material';
 import ContactForm from './signupSteps/contactForm';
 import PersonContactForm from './signupSteps/personContactForm';
 import ResumenForm from './signupSteps/resumeForm';
@@ -14,6 +14,9 @@ import companySignUp from '@/lib/services/signup';
 import { getUserByEmail } from '@/lib/data/user';
 import { signIn } from '@/auth';
 import { useRouter } from 'next/navigation';
+import SnackbarCustom, { SnakbarCustomProps } from '../shared/custom/components/snackbarCustom';
+import { ArrowBack } from '@mui/icons-material';
+import theme from '@/app/theme';
 
 const steps = ['Datos de Empresa', 'Datos de Contacto', 'Persona de Contacto', 'Resumen'];
 
@@ -23,6 +26,8 @@ type SignUpProps = {
 
 export default function Signup({ activities }: SignUpProps) {
   const router = useRouter();
+  const [mediaQuery, setMediaQuery] = useState<boolean | null>(null);
+  const [snackbarProps, setSnackbarProps] = useState<SnakbarCustomProps>({} as SnakbarCustomProps);
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState<State>({message: null, errors:[]});
   const [formData, setFormData] = useState<SignUpCompanyFormData>({
@@ -56,6 +61,16 @@ export default function Signup({ activities }: SignUpProps) {
       email: 'prueba@gmail.com',
     },
   });
+
+  //Manage media query for responsive design when the screen is resized
+  useLayoutEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 600px)');
+    setMediaQuery(mediaQuery.matches);
+    mediaQuery.addEventListener('change', (e) => {
+      setMediaQuery(e.matches);
+    });
+  },[]);
+
   const handleSamePassword = ():ZodIssue | undefined => {
     if (formData.company.password !== formData.company.confirmPassword) {  
       return {code: 'invalid_literal',expected: '', received: '', path: ['confirmPassword'], message: 'Las contraseñas no coinciden, por favor revisa que sean iguales'}
@@ -118,22 +133,30 @@ export default function Signup({ activities }: SignUpProps) {
 
   const handleSubmit = async () => {
     // Aquí puedes realizar alguna acción con los datos finales, como enviar una solicitud al backend.
-    const cloudinaryResponse:CloudinaryUploadResponse = formData.company.logo !== null ? await uploadImage(formData.company.logo) : null;
+    
     const formDataCopy = {...formData, company: {...formData.company, logo: null}};
-    await companySignUp(formDataCopy,cloudinaryResponse)
-    
-    console.log('Empresa creada correctamente');
-    
-    let formDataLogin = new FormData();
-    formDataLogin.append('email', formData.company.email);
-    formDataLogin.append('password', formDataCopy.company.password);
-    const errorMsg = await authenticate(undefined, formDataLogin);
-    if (errorMsg) {
-      setErrors({message: errorMsg, errors: []});
-      return;
+    try {
+      const cloudinaryResponse: CloudinaryUploadResponse = formData.company.logo !== null ? await uploadImage(formData.company.logo) : null;
+      const user = await companySignUp(formDataCopy, cloudinaryResponse);
+      if(!user) {
+        setSnackbarProps({...snackbarProps, open: true, message: 'Error al crear la empresa', severity: 'error'});
+        return;
+      }
+      console.log('Empresa creada correctamente');
+      let formDataLogin = new FormData();
+      formDataLogin.append('email', formData.company.email);
+      formDataLogin.append('password', formDataCopy.company.password);
+      const errorMsg = await authenticate(undefined, formDataLogin);
+      if (errorMsg) {
+        setErrors({message: errorMsg.message, errors: []});
+        return;
+      }
+      console.log("Logged in successfully");
+      router.push('/');
+    }catch(err) {
+      console.error(err);
+      setSnackbarProps({...snackbarProps, open: true, message: 'Error al crear la empresa', severity: 'error'});
     }
-    console.log("Logged in successfully");
-    router.push('/');
     
   };
 
@@ -158,36 +181,58 @@ export default function Signup({ activities }: SignUpProps) {
   };
 
   return (
-		<SignInContainer direction="column" justifyContent="space-between">
-			<CardSignUp variant="outlined">
-				<Box>
-					<Stepper 
+    mediaQuery == null ? null :
+    mediaQuery ? (
+      <SignUpForm>
+        <>
+          <StepperComponent activeStep={activeStep} />
+          {getStepContent(activeStep)}
+          <FormNavigation 
             activeStep={activeStep} 
-            alternativeLabel
-          >
-						{steps.map((label) => (
-							<Step key={label} sx={{ fontSize: { xs: '0.5rem', sm: '1.125' } }}>
-								<StepLabel>
-                  <Typography variant="body2" fontSize={{ xs:'0.8rem', sm: '1.125' }}>
-                    {label}
-                  </Typography>
-                </StepLabel>
-							</Step>
-						))}
-					</Stepper>
-				</Box>
-				{getStepContent(activeStep)}
-				<Box component={'form'} noValidate autoComplete='off' sx={{ display: 'flex', justifyContent: 'space-evenly', mt: 3 }}>
-					{activeStep >= 1 && (
-						<Button onClick={() => handleBack()}>
-							Volver
-						</Button>
-					)}
-					<Button onClick={() => handleNext()}>
-						{activeStep === steps.length - 1 ? 'Finalizar' : 'Siguiente'}
-					</Button>
-				</Box>
-			</CardSignUp>
-		</SignInContainer>
-  )
+            handleBack={handleBack} 
+            handleNext={handleNext} 
+            isLastStep={isLastStep} 
+          />
+        </>
+      </SignUpForm>
+    ) : (
+      <SignUpMobileForm>
+        <ArrowBack onClick={() => router.back()}/>
+        <StepperComponent activeStep={activeStep} />
+        {getStepContent(activeStep)}
+        <FormNavigation 
+          activeStep={activeStep} 
+          handleBack={handleBack} 
+          handleNext={handleNext} 
+          isLastStep={isLastStep} 
+        />
+      </SignUpMobileForm>
+    
+    )
+  );
+}
+const FormNavigation = ({ activeStep, handleBack, handleNext, isLastStep }: { activeStep: number, handleBack: () => void, handleNext: () => void, isLastStep: boolean }) => {
+  return (
+    <Box component={'form'} noValidate autoComplete='off' sx={{ display: 'flex', justifyContent: 'space-evenly', mt: 3 }}>
+      {activeStep >= 1 && (
+        <Button onClick={handleBack}>
+          Volver
+        </Button>
+      )}
+      <Button onClick={handleNext}>
+        {isLastStep ? 'Finalizar' : 'Siguiente'}
+      </Button>
+    </Box>
+  );
+};
+const StepperComponent = ({ activeStep }: { activeStep: number }) => {
+  return (
+    <Stepper activeStep={activeStep} alternativeLabel>
+      {steps.map((label) => (
+        <Step key={label}>
+          <StepLabel>{label}</StepLabel>
+        </Step>
+      ))}
+    </Stepper>
+  );
 }

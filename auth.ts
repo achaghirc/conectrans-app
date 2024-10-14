@@ -47,15 +47,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
                 user = await getUser(email.toString());
                 if (!user) {
-                    throw new Error('No user found')
+                    throw new CustomError('No encontramos una cuenta con ese correo. ¿Te gustaría registrarte?', 'NoUserFound')
                 }
                 
                 const passwordHash = await bcrypt.compare(password.toString(), user.password)
                 if (!passwordHash) {
-                    throw new Error('Password is incorrect')
+                    throw new CustomError('La contraseña proporcionada es incorrecta. Por favor, inténtalo de nuevo.', 'PasswordIncorrect')
                 }
                 return user
             },
         }),
     ],
 })
+
+class CustomError extends Error {
+    public name: string;
+    constructor(message: string, name: string) {
+        super(message);
+        this.name = name;
+    }
+}
