@@ -4,7 +4,7 @@ import { Box, Button, Card, Checkbox, CssBaseline, Divider, FormControl, FormCon
 import Logo from '../../../public/Conectrans_Logo_White.svg';
 import Image from 'next/image';
 import ForgotPassword from '../icons/forgotPassword';
-import { BusinessOutlined, LockOutlined, PeopleOutline, Visibility, VisibilityOff } from '@mui/icons-material';
+import { ArrowBack, BusinessOutlined, LockOutlined, PeopleOutline, Visibility, VisibilityOff } from '@mui/icons-material';
 import { CardLogin, SignInContainer, SignInForm, SignInMobileForm, TextFieldCustom } from '../shared/auth/authComponents';
 import { signIn } from '@/auth';
 import { authenticate } from '@/lib/actions';
@@ -144,6 +144,7 @@ const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 	}
 	return (
 		<Fragment>
+			<ArrowBack sx={{ display: { sm: 'none' } }} onClick={() => router.back()}/>
 			<Box sx={{ display: 'flex', flexDirection:'column', alignItems: 'center'}}>
 				<Image
 						src={Logo} 
