@@ -1,3 +1,4 @@
+import { Dayjs } from "dayjs";
 import { ZodIssue } from "zod";
 
 export type User = {
@@ -110,6 +111,32 @@ export type SignUpCompanyCompanyFormData = {
     logo: File | null;
 };
 
+export type SignUpCandidateFormData = {
+    email: string;
+    password: string;
+    confirmPassword: string;
+    name: string;
+    lastname: string;
+    cifnif: string;
+    phone: string;
+    landlinePhone?: string;
+    birthdate: Dayjs | string;
+    licence: Licence;
+    contactInfo: SignUpCompanyContactFormData;
+}
+
+export type SignUpCandidateContactFormData = Partial<SignUpCompanyContactFormData>;
+
+export type Licence = {
+    id: number;
+    name: string;
+    code: string;
+    country: string;
+    expiresAt: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
 export type ValidationCIFNIFResult = {
     valid: boolean;
     message?: string;
@@ -131,3 +158,13 @@ export type AuthenticateMessageErr ={
     message: string,
     type: string,
 }
+
+export type StepperProps = {
+    children: React.JSX.Element | null;
+    activeStep: number;
+    steps: string[];
+    handleNext: () => void;
+    handleBack: () => void;
+    isLastStep: boolean;
+}
+export type PasswordType = 'password' | 'confirmPassword';

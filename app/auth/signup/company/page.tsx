@@ -1,4 +1,4 @@
-import Signup from '@/app/ui/auth/signup'
+import Signup from '@/app/ui/auth/company/signup';
 import { getActitivies } from '@/lib/data/activity';
 import React from 'react'
 

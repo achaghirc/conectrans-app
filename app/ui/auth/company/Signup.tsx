@@ -1,22 +1,19 @@
 'use client';
-import React, { useEffect, useLayoutEffect, useState } from 'react'
-import { CardSignUp, SignUpForm, SignUpMobileForm } from '../shared/auth/authComponents'
-import { Box, Button, IconButton, Snackbar, Step, StepLabel, Stepper, TextField, Typography } from '@mui/material';
-import ContactForm from './signupSteps/contactForm';
-import PersonContactForm from './signupSteps/personContactForm';
-import ResumenForm from './signupSteps/resumeForm';
-import CompanyForm from './signupSteps/companyForm';
+import React, { useLayoutEffect, useState } from 'react'
+import { SignUpForm, SignUpMobileForm } from '../../shared/auth/authComponents'
+import ContactForm from './steps/ContactForm';
+import PersonContactForm from './steps/PersonContactForm';
+import ResumenForm from './steps/ResumeForm';
+import CompanyForm from './steps/CompanyForm';
 import { Activity, CloudinaryUploadResponse, SignUpCompanyFormData, State } from '@/lib/definitions';
 import { authenticate, validateCompanyData, validateContactData, validatePersonContactData } from '@/lib/actions';
 import { ZodIssue } from 'zod';
 import { uploadImage } from '@/lib/services/cloudinary';
 import companySignUp from '@/lib/services/signup';
-import { getUserByEmail } from '@/lib/data/user';
-import { signIn } from '@/auth';
 import { useRouter } from 'next/navigation';
-import SnackbarCustom, { SnakbarCustomProps } from '../shared/custom/components/snackbarCustom';
+import { SnakbarCustomProps } from '../../shared/custom/components/snackbarCustom';
 import { ArrowBack } from '@mui/icons-material';
-import theme from '@/app/theme';
+import StepperComponent from '../../shared/custom/components/stepper';
 
 const steps = ['Datos de Empresa', 'Datos de Contacto', 'Persona de Contacto', 'Resumen'];
 
@@ -185,54 +182,29 @@ export default function Signup({ activities }: SignUpProps) {
     mediaQuery ? (
       <SignUpForm>
         <>
-          <StepperComponent activeStep={activeStep} />
-          {getStepContent(activeStep)}
-          <FormNavigation 
+          <StepperComponent 
+            children={getStepContent(activeStep)} 
             activeStep={activeStep} 
-            handleBack={handleBack} 
-            handleNext={handleNext} 
-            isLastStep={isLastStep} 
+            steps={steps}
+            handleNext={handleNext}
+            handleBack={handleBack}
+            isLastStep={isLastStep}
           />
         </>
       </SignUpForm>
     ) : (
       <SignUpMobileForm>
         <ArrowBack onClick={() => router.back()}/>
-        <StepperComponent activeStep={activeStep} />
-        {getStepContent(activeStep)}
-        <FormNavigation 
+        <StepperComponent 
+          children={getStepContent(activeStep)} 
           activeStep={activeStep} 
-          handleBack={handleBack} 
-          handleNext={handleNext} 
-          isLastStep={isLastStep} 
+          steps={steps}
+          handleNext={handleNext}
+          handleBack={handleBack}
+          isLastStep={isLastStep}
         />
       </SignUpMobileForm>
     
     )
-  );
-}
-const FormNavigation = ({ activeStep, handleBack, handleNext, isLastStep }: { activeStep: number, handleBack: () => void, handleNext: () => void, isLastStep: boolean }) => {
-  return (
-    <Box component={'form'} noValidate autoComplete='off' sx={{ display: 'flex', justifyContent: 'space-evenly', mt: 3 }}>
-      {activeStep >= 1 && (
-        <Button onClick={handleBack}>
-          Volver
-        </Button>
-      )}
-      <Button onClick={handleNext}>
-        {isLastStep ? 'Finalizar' : 'Siguiente'}
-      </Button>
-    </Box>
-  );
-};
-const StepperComponent = ({ activeStep }: { activeStep: number }) => {
-  return (
-    <Stepper activeStep={activeStep} alternativeLabel>
-      {steps.map((label) => (
-        <Step key={label}>
-          <StepLabel>{label}</StepLabel>
-        </Step>
-      ))}
-    </Stepper>
   );
 }
