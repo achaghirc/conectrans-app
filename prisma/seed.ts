@@ -7,6 +7,7 @@ const seedUsers = () => {
             email: '',
             password: bcrypt.hashSync('123456', 10),
             updatedAt: new Date(),
+            roleId: 1,
         },
     ];
 }

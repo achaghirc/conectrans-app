@@ -1,7 +1,8 @@
+'use client';
 import React, { useLayoutEffect, useState } from 'react'
-import { SignUpCandidateFormData, State, ValidationCIFNIFResult } from '@/lib/definitions';
+import { Country, Province, SignUpCandidateFormData, State, ValidationCIFNIFResult } from '@/lib/definitions';
 import Grid from '@mui/material/Grid2';
-import { Box, MenuItem, TextField } from '@mui/material';
+import { Box, FormControl, FormHelperText, FormLabel, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/es';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
@@ -15,14 +16,16 @@ type CadidateUserFormProps = {
     formData: SignUpCandidateFormData;
     setFormData: (data: any) => void;
     errors: State;
+	countries: Country[];
 }
 
 
-export default function CandidatePersonalDataForm({formData, errors, setFormData}: CadidateUserFormProps) {
+export default function CandidatePersonalDataForm({formData, errors, countries, setFormData}: CadidateUserFormProps) {
 	dayjs.locale('es');
 	const [mediaQuery, setMediaQuery] = useState<boolean | null>(null);
 	const [cifError, setCifError] = useState<string | null>(null);
-
+	const [provinces, setProvinces] = useState<Province[]>([]);
+	
 	useLayoutEffect(() => {
 		const mediaQuery = window.matchMedia('(min-width: 600px)');
 		setMediaQuery(mediaQuery.matches);
@@ -37,8 +40,35 @@ export default function CandidatePersonalDataForm({formData, errors, setFormData
       if (value.length == 0) setCifError(null);
       value = value.toUpperCase();
     }
-		setFormData({ ...formData, [name]: value });
+		setFormData({contactInfo: {...formData.contactInfo, [name]: value }});
 	}
+	const handleSelectChange = async (e: SelectChangeEvent<string>) => {
+		const { name, value } = e.target;
+		let contactInfo = formData.contactInfo;
+		//Get provinces of the selected country
+		if(name === 'country') {
+			const country = countries.find((country) => country.cod_iso2 === value);
+			if (country && country.cod_iso2) {
+				const provinces: Province[] | undefined = await fetchProvinces(country.cod_iso2);
+				if (provinces == undefined || provinces.length == 0) {
+						contactInfo.province = '';
+						setProvinces([]);		
+				}else {
+						setProvinces(provinces);
+				}
+			}
+		}
+		setFormData({contactInfo: {...contactInfo, [name]: value }});
+	}
+
+	const fetchProvinces = async (countryCode: string): Promise<Province[] | undefined> => {
+		return await fetch(`/api/provinces?countryCode=${countryCode}`)
+									.then((response) => response.json())
+									.catch((error) => {
+										console.error('Error:', error);
+									});
+	}
+
 	//Validación de CIF/NIF
   const handleCifNifValidation = async (e: React.FocusEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -127,19 +157,20 @@ export default function CandidatePersonalDataForm({formData, errors, setFormData
 				}
 			</Grid>
 			<Grid size={{xs:12, sm: 12}}>
-				<TextField
-						fullWidth
-						type='text'
-						label="Dirección"
-						name="streetAddress"
-						value={formData.contactInfo.streetAddress}
-						onChange={handleInputChange}
-						error={handleZodError(errors, 'streetAddress')}
-						helperText={handleZodHelperText(errors, 'streetAddress')}
-						required
-					/>
-				</Grid>
-				<Grid size={{ xs: 12, sm: 6 }}>
+			<TextField
+					fullWidth
+					type='text'
+					label="Dirección"
+					name="streetAddress"
+					value={formData.contactInfo.streetAddress}
+					onChange={handleInputChange}
+					error={handleZodError(errors, 'streetAddress')}
+					helperText={handleZodHelperText(errors, 'streetAddress')}
+					required
+				/>
+			</Grid>
+			<Grid size={{ xs: 12, sm: 6 }}> 
+				{ countries == undefined || countries.length == 0  ? (
 					<TextField
 						fullWidth
 						label="País"
@@ -150,8 +181,45 @@ export default function CandidatePersonalDataForm({formData, errors, setFormData
 						helperText={handleZodHelperText(errors, 'country')}
 						required
 						/>
-				</Grid>
-				<Grid size={{ xs: 12, sm: 6 }}>
+				) : ( 
+					<FormControl fullWidth error={handleZodError(errors, 'country')} required>
+						<InputLabel>País</InputLabel>
+						<Select 
+							label="País"
+							id='country'
+							name='country'
+							value={formData.contactInfo.country ?? ''}
+							onChange={(e:SelectChangeEvent<string>) => handleSelectChange(e)}
+							MenuProps={{
+								PaperProps: {
+									style: {
+										maxHeight: 300,
+										overflow: 'auto',
+									},
+								},
+								anchorOrigin: {
+									vertical: 'bottom',
+									horizontal: 'left',
+								},
+								transformOrigin: {
+									vertical: 'top',
+									horizontal: 'left',
+								},
+							}}	
+						>
+							{countries.map((country) => (
+								<MenuItem key={country.id} value={country.cod_iso2 ?? 'ES'}>
+									{country.name_es}
+								</MenuItem>
+							))}
+						</Select>
+						<FormHelperText>{handleZodHelperText(errors, 'country')}</FormHelperText>
+					</FormControl>
+				)	
+				}
+			</Grid>
+			<Grid size={{ xs: 12, sm: 6 }}>
+				{provinces.length == 0 ? (
 					<TextField
 						fullWidth
 						label="Provincia"
@@ -162,52 +230,86 @@ export default function CandidatePersonalDataForm({formData, errors, setFormData
 						helperText={handleZodHelperText(errors, 'province')}
 						required
 					/>
-				</Grid>
-				<Grid size={{ xs: 12, sm: 6 }}>
-					<TextField
-						fullWidth
-						label="Código Postal"
-						name="zip"
-						value={formData.contactInfo.zip}
-						onChange={handleInputChange}
-						error={handleZodError(errors, 'zip')}
-						helperText={handleZodHelperText(errors, 'zip')}
-						required
+				) : (
+					<FormControl fullWidth error={handleZodError(errors, 'province')} required>
+						<InputLabel>Provincia</InputLabel>
+						<Select
+							label='Provincia'
+							name='province'
+							value={formData.contactInfo.province ?? ''}
+							onChange={(e:SelectChangeEvent<string>) => handleSelectChange(e)}
+							MenuProps={{
+								PaperProps: {
+									style: {
+										maxHeight: 300,
+										overflow: 'auto',
+									}
+								},
+								anchorOrigin: {
+									vertical: 'bottom',
+									horizontal: 'left',
+								},
+								transformOrigin: {
+									vertical: 'top',
+									horizontal: 'left',
+								}
+							}}
+							>
+							{provinces.map((province) => (
+								<MenuItem key={province.id} value={province.cod_iso2}>
+									{province.name}
+								</MenuItem>
+							))}
+							</Select>
+					</FormControl>
+				)
+				}
+			</Grid>
+			<Grid size={{ xs: 12, sm: 6 }}>
+				<TextField
+					fullWidth
+					label="Código Postal"
+					name="zip"
+					value={formData.contactInfo.zip}
+					onChange={handleInputChange}
+					error={handleZodError(errors, 'zip')}
+					helperText={handleZodHelperText(errors, 'zip')}
+					required
+			/>
+			</Grid>
+			<Grid size={{ xs: 12, sm: 6 }}>
+				<TextField
+					fullWidth
+					label="Localidad"
+					name="locality"
+					value={formData.contactInfo.locality}
+					onChange={handleInputChange}
+					error={handleZodError(errors, 'locality')}
+					helperText={handleZodHelperText(errors, 'locality')}
+					required
+				/>
+			</Grid>
+			<Grid size={{ xs: 12, sm: 6 }}>
+				<TextField
+					fullWidth
+					label="Teléfono Móvil"
+					name="phone"
+					value={formData.phone}
+					onChange={handleInputChange}
+					error={handleZodError(errors, 'phone')}
+					helperText={handleZodHelperText(errors, 'phone')}
+					required
 				/>
 				</Grid>
-				<Grid size={{ xs: 12, sm: 6 }}>
-					<TextField
-						fullWidth
-						label="Localidad"
-						name="locality"
-						value={formData.contactInfo.locality}
-						onChange={handleInputChange}
-						error={handleZodError(errors, 'locality')}
-						helperText={handleZodHelperText(errors, 'locality')}
-						required
-					/>
-				</Grid>
-				<Grid size={{ xs: 12, sm: 6 }}>
-          <TextField
-            fullWidth
-            label="Teléfono Móvil"
-            name="phone"
-            value={formData.phone}
-            onChange={handleInputChange}
-            error={handleZodError(errors, 'phone')}
-            helperText={handleZodHelperText(errors, 'phone')}
-            required
-          />
-        </Grid>
-				<Grid size={{ xs: 12, sm: 6 }}>
-          <TextField
-            fullWidth
-            label="Teléfono Fijo"
-            name="landlinePhone"
-            value={formData.contactInfo.landlinePhone}
-            onChange={handleInputChange}
-          />
-        </Grid>
+			<Grid size={{ xs: 12, sm: 6 }}>
+				<TextField
+					fullWidth
+					label="Teléfono Fijo"
+					name="landlinePhone"
+					value={formData.contactInfo.landlinePhone}
+					onChange={handleInputChange}
+				/>
+			</Grid>
     </Grid>
   )
 }

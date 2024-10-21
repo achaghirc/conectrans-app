@@ -1,5 +1,5 @@
 'use client';
-import { SignUpCandidateFormData, State } from '@/lib/definitions'
+import { SignUpCandidateFormData, SignUpCandidateProps, State } from '@/lib/definitions'
 import React, { useLayoutEffect, useState } from 'react'
 import { SignUpForm, SignUpMobileForm } from '../../shared/auth/authComponents';
 import StepperComponent from '../../shared/custom/components/stepper';
@@ -8,9 +8,10 @@ import CandidateProfesionalDataForm from './steps/CandidateProfesionalDataForm';
 import CadidateUserForm from './steps/CandidateUserForm';
 import dayjs from 'dayjs';
 
-const steps = ['Datos de usuario', 'Datos de candidato', 'Resumen'];
+const steps = ['Datos de usuario', 'Datos de candidato', 'Datos Profesionales', 'Resumen'];
 
-export default function SignupCandidate() {
+
+export default function SignupCandidate({ countries }: SignUpCandidateProps) {
 	const [mediaQuery, setMediaQuery] = useState<boolean | null>(null);
 	const [formData, setFormData] = useState<SignUpCandidateFormData>({
 		email: '',
@@ -21,6 +22,7 @@ export default function SignupCandidate() {
 		lastname: '',
 		birthdate: dayjs(new Date()),
 		phone: '',
+		workRange: [] as string[],
 		contactInfo: {},
 		licence: {}
 	} as SignUpCandidateFormData)
@@ -53,10 +55,12 @@ export default function SignupCandidate() {
 			case 0: 
 				return <CadidateUserForm formData={formData} setFormData={handleFormDataChange} errors={errors } />
 			case 1:
-				return <CandidatePersonalDataForm formData={formData} setFormData={handleFormDataChange} errors={errors } />
+				return <CandidatePersonalDataForm formData={formData} setFormData={handleFormDataChange} errors={errors } countries={countries}/>
 			case 2:
-				return <CandidateProfesionalDataForm formData={formData} setFormData={handleFormDataChange} errors={errors } />
-				default:
+				return <CandidateProfesionalDataForm formData={formData} setFormData={handleFormDataChange} errors={errors } countries={countries}/>
+			case 3: 
+				return <div>HOLA</div>
+			default:
 				return null;
 		}
 	}

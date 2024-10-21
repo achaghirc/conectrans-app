@@ -121,6 +121,7 @@ export type SignUpCandidateFormData = {
     phone: string;
     landlinePhone?: string;
     birthdate: Dayjs | string;
+    workRange: string[];
     licence: Licence;
     contactInfo: SignUpCompanyContactFormData;
 }
@@ -131,6 +132,9 @@ export type Licence = {
     id: number;
     name: string;
     code: string;
+    adrCode: string[];
+    digitalTachograph: 'Si' | 'No' ;
+    capCertificate: 'Si' | 'No';
     country: string;
     expiresAt: Date;
     createdAt?: Date;
@@ -168,3 +172,29 @@ export type StepperProps = {
     isLastStep: boolean;
 }
 export type PasswordType = 'password' | 'confirmPassword';
+
+
+export type Country = {
+    id: number;
+    name_es: string;
+    name_en: string;
+    cod_iso2: string | null;
+    cod_iso3: string | null;
+    phone_code: string | null;
+}
+
+export type Province = {
+    id: number;
+    name: string;
+    cod_iso2: string;
+    country_id: number | null;   
+}
+
+export type ProvinceCountryType = {
+    country: Country;
+    provinces: Province[];
+}
+
+export type SignUpCandidateProps = {
+    countries: Country[];
+}
