@@ -1,30 +1,29 @@
 'use client';
-import React, { useEffect, useLayoutEffect, useState } from 'react'
-import { CardSignUp, SignUpForm, SignUpMobileForm } from '../shared/auth/authComponents'
-import { Box, Button, IconButton, Snackbar, Step, StepLabel, Stepper, TextField, Typography } from '@mui/material';
-import ContactForm from './signupSteps/contactForm';
-import PersonContactForm from './signupSteps/personContactForm';
-import ResumenForm from './signupSteps/resumeForm';
-import CompanyForm from './signupSteps/companyForm';
-import { Activity, CloudinaryUploadResponse, SignUpCompanyFormData, State } from '@/lib/definitions';
-import { authenticate, validateCompanyData, validateContactData, validatePersonContactData } from '@/lib/actions';
+import React, { useLayoutEffect, useState } from 'react'
+import { SignUpForm, SignUpMobileForm } from '../../shared/auth/AuthComponents'
+import ContactForm from './steps/ContactForm';
+import PersonContactForm from './steps/PersonContactForm';
+import ResumenForm from './steps/ResumeForm';
+import CompanyForm from './steps/CompanyForm';
+import { Activity, CloudinaryUploadResponse, Country, SignUpCompanyFormData, State, Subscriptions } from '@/lib/definitions';
+import { authenticate } from '@/lib/actions';
+import { validateCompanyData, validateContactData, validatePersonContactData } from '@/lib/validations/companySignupValidate';
 import { ZodIssue } from 'zod';
-import { uploadImage } from '@/lib/services/cloudinary';
-import companySignUp from '@/lib/services/signup';
-import { getUserByEmail } from '@/lib/data/user';
-import { signIn } from '@/auth';
+import { uploadFileToCloud } from '@/lib/services/cloudinary';
+import { companySignUp, createSubscriptionPlan } from '@/lib/services/signup';
 import { useRouter } from 'next/navigation';
-import SnackbarCustom, { SnakbarCustomProps } from '../shared/custom/components/snackbarCustom';
+import { SnakbarCustomProps } from '../../shared/custom/components/snackbarCustom';
 import { ArrowBack } from '@mui/icons-material';
-import theme from '@/app/theme';
+import StepperComponent from '../../shared/custom/components/stepper';
 
-const steps = ['Datos de Empresa', 'Datos de Contacto', 'Persona de Contacto', 'Resumen'];
+const steps = ['Datos de Empresa', 'Datos de Contacto', 'Persona de Contacto', 'Plan de Suscripción'];
 
 type SignUpProps = {
   activities: Activity[] | undefined;
+  countries: Country[] | undefined;
 }
 
-export default function Signup({ activities }: SignUpProps) {
+export default function Signup({ activities, countries}: SignUpProps) {
   const router = useRouter();
   const [mediaQuery, setMediaQuery] = useState<boolean | null>(null);
   const [snackbarProps, setSnackbarProps] = useState<SnakbarCustomProps>({} as SnakbarCustomProps);
@@ -44,7 +43,7 @@ export default function Signup({ activities }: SignUpProps) {
     contactInfo: {
       streetAddress: 'Calle Olivo 12',
       zip: '06400',
-      country: 'España',
+      country: 64,
       province: 'Badajoz',
       locality: 'Zalamea de la Serena',
       mobilePhone: '640493049',
@@ -60,6 +59,7 @@ export default function Signup({ activities }: SignUpProps) {
       phoneNumber: '987654321',
       email: 'prueba@gmail.com',
     },
+    subscriptionPlan: {} as Subscriptions
   });
 
   //Manage media query for responsive design when the screen is resized
@@ -136,23 +136,28 @@ export default function Signup({ activities }: SignUpProps) {
     
     const formDataCopy = {...formData, company: {...formData.company, logo: null}};
     try {
-      const cloudinaryResponse: CloudinaryUploadResponse = formData.company.logo !== null ? await uploadImage(formData.company.logo) : null;
+      const cloudinaryResponse: CloudinaryUploadResponse = formData.company.logo !== null ? await uploadFileToCloud(formData.company.logo) : null;
       const user = await companySignUp(formDataCopy, cloudinaryResponse);
-      if(!user) {
+      if(!user || user.id == undefined) {
         setSnackbarProps({...snackbarProps, open: true, message: 'Error al crear la empresa', severity: 'error'});
         return;
       }
+      //Llama a la función para crear el plan de suscripción de la empresa, es asincrona y no bloquea la ejecución
+      await createSubscriptionPlan(formData.subscriptionPlan.planId, user.id);
       console.log('Empresa creada correctamente');
       let formDataLogin = new FormData();
       formDataLogin.append('email', formData.company.email);
       formDataLogin.append('password', formDataCopy.company.password);
       const errorMsg = await authenticate(undefined, formDataLogin);
-      if (errorMsg) {
-        setErrors({message: errorMsg.message, errors: []});
-        return;
-      }
-      console.log("Logged in successfully");
-      router.push('/');
+      if(errorMsg?.success) {
+				console.log('Usuario autenticado correctamente');
+				router.push('/');
+				return;
+			}
+			if(errorMsg) {
+				setSnackbarProps({...snackbarProps, open: true, message: errorMsg.message, severity: 'error'});
+				return;
+			}
     }catch(err) {
       console.error(err);
       setSnackbarProps({...snackbarProps, open: true, message: 'Error al crear la empresa', severity: 'error'});
@@ -170,11 +175,11 @@ export default function Signup({ activities }: SignUpProps) {
           errors={errors}
         />;
       case 1:
-        return <ContactForm formData={formData} setFormData={handleFormDataChange} errors={errors} />;
+        return <ContactForm formData={formData} setFormData={handleFormDataChange} errors={errors} countries={countries}/>;
       case 2:
         return <PersonContactForm formData={formData} setFormData={handleFormDataChange} errors={errors}/>;
       case 3:
-        return <ResumenForm formData={formData} />;
+        return <ResumenForm formData={formData} setFormData={handleFormDataChange} />;
       default:
         return null;
     }
@@ -184,55 +189,28 @@ export default function Signup({ activities }: SignUpProps) {
     mediaQuery == null ? null :
     mediaQuery ? (
       <SignUpForm>
-        <>
-          <StepperComponent activeStep={activeStep} />
-          {getStepContent(activeStep)}
-          <FormNavigation 
+          <StepperComponent 
+            children={getStepContent(activeStep)} 
             activeStep={activeStep} 
-            handleBack={handleBack} 
-            handleNext={handleNext} 
-            isLastStep={isLastStep} 
+            steps={steps}
+            handleNext={handleNext}
+            handleBack={handleBack}
+            isLastStep={isLastStep}
           />
-        </>
       </SignUpForm>
     ) : (
       <SignUpMobileForm>
         <ArrowBack onClick={() => router.back()}/>
-        <StepperComponent activeStep={activeStep} />
-        {getStepContent(activeStep)}
-        <FormNavigation 
+        <StepperComponent 
+          children={getStepContent(activeStep)} 
           activeStep={activeStep} 
-          handleBack={handleBack} 
-          handleNext={handleNext} 
-          isLastStep={isLastStep} 
+          steps={steps}
+          handleNext={handleNext}
+          handleBack={handleBack}
+          isLastStep={isLastStep}
         />
       </SignUpMobileForm>
     
     )
-  );
-}
-const FormNavigation = ({ activeStep, handleBack, handleNext, isLastStep }: { activeStep: number, handleBack: () => void, handleNext: () => void, isLastStep: boolean }) => {
-  return (
-    <Box component={'form'} noValidate autoComplete='off' sx={{ display: 'flex', justifyContent: 'space-evenly', mt: 3 }}>
-      {activeStep >= 1 && (
-        <Button onClick={handleBack}>
-          Volver
-        </Button>
-      )}
-      <Button onClick={handleNext}>
-        {isLastStep ? 'Finalizar' : 'Siguiente'}
-      </Button>
-    </Box>
-  );
-};
-const StepperComponent = ({ activeStep }: { activeStep: number }) => {
-  return (
-    <Stepper activeStep={activeStep} alternativeLabel>
-      {steps.map((label) => (
-        <Step key={label}>
-          <StepLabel>{label}</StepLabel>
-        </Step>
-      ))}
-    </Stepper>
   );
 }

@@ -2,185 +2,10 @@
 
 import { signIn, signOut} from "@/auth";
 import { AuthError } from "next-auth";
-import { z } from "zod";
-import { AuthenticateMessageErr, SignUpCompanyFormData, State, ValidationCIFNIFResult } from "./definitions";
-import { getUserByEmail } from "./data/user";
-
-const FormCompanySchema = z.object({
-    email: z.string({
-        invalid_type_error: 'Correo electrónico no válido',
-    }).email('Correo electrónico no válido').refine(async (email) => {
-        const user = await getUserByEmail(email);
-        return !user;
-    }, {
-        message: 'El correo electrónico ya está en uso',
-    }),
-    password: z.string().min(8, 'Contraseña no válida, debe tener al menos 8 caracteres'),
-    confirmPassword: z.string().min(8, 'Contraseña no válida, debe tener al menos 8 caracteres'),
-    socialName: z.string({
-        invalid_type_error: 'Campo obligatorio',
-        required_error: 'Campo obligatorio',
-    }).min(1, 'Campo obligatorio'),
-    comercialName: z.string({
-        required_error: 'Campo obligatorio',
-    }).min(1, 'Campo obligatorio'),
-    cifnif: z.string({
-        required_error: 'Campo obligatorio',
-    }).min(1, 'Campo obligatorio'),
-    activityType: z.string({
-        required_error: 'Debe seleccionar una actividad. Obligatorio',
-    }).min(1, 'Debe seleccionar una actividad. Obligatorio'),
-    logo: z.string().nullable(),
-});
-
-const FormContactSchema = z.object({
-    streetAddress: z.string({
-        required_error: 'La dirección es obligatoria',
-    }).min(1, 'La dirección es obligatoria'),
-    zip: z.string().min(1, 'El código postal es obligatorio'),
-    country: z.string().min(1, 'El país es obligatorio'),
-    province: z.string().min(1, 'La provincia es obligatoria'),
-    locality: z.string().min(1, 'La localidad es obligatoria'),
-    mobilePhone: z.string().min(1, 'El teléfono móvil es obligatorio'),
-    landlinePhone: z.string(),
-    website: z.string(),
-    contactEmail: z.string({
-        invalid_type_error: 'Correo electrónico no válido',
-    }).email('Correo electrónico no válido'),
-    description: z.string({
-        required_error: 'Campo obligatorio',
-    }).min(1).max(250, 'Maximo 250 caracteres'),
-});
-
-const FormPersonContactSchema = z.object({
-    name: z.string().min(1, 'El nombre es obligatorio'),
-    lastnames: z.string().min(1, 'Los apellidos son obligatorios'),
-    companyPosition: z.string().min(1, 'El cargo es obligatorio'),
-    phoneNumber: z.string().min(1, 'El teléfono es obligatorio'),
-    email: z.string().email('Correo electrónico no válido'),
-});
+import { AuthenticateMessage, ValidationCIFNIFResult } from "./definitions";
+import { redirect } from "next/dist/server/api-utils";
 
 
-const FormDataSchema = z.object({
-    company: z.object({
-        email: z.string({
-            invalid_type_error: 'Correo electrónico no válido',
-        }).email(),
-        password: z.string().min(8, 'Contraseña no válida, debe tener al menos 8 caracteres'),
-        confirmPassword: z.string().min(8, 'Contraseña no válida, debe tener al menos 8 caracteres'),
-        socialName: z.string({
-            invalid_type_error: 'Campo obligatorio',
-            required_error: 'Campo obligatorio',
-        }).min(1),
-        comercialName: z.string({
-            required_error: 'Campo obligatorio',
-        }).min(1),
-        activityType: z.string({
-            required_error: 'Debe seleccionar una actividad. Obligatorio',
-        }).min(1),
-        logo: z.string().nullable(),
-    }),
-    contactInfo: z.object({
-        streetAddress: z.string({
-            required_error: 'La dirección es obligatoria',
-        }).min(1, 'La dirección es obligatoria'),
-        zip: z.string().min(1, 'El código postal es obligatorio'),
-        country: z.string().min(1, 'El país es obligatorio'),
-        province: z.string().min(1, 'La provincia es obligatoria'),
-        locality: z.string().min(1, 'La localidad es obligatoria'),
-        mobilePhone: z.string().min(1, 'El teléfono móvil es obligatorio'),
-        landlinePhone: z.string(),
-        website: z.string(),
-        contactEmail: z.string({
-            invalid_type_error: 'Correo electrónico no válido',
-        }).email('Correo electrónico no válido'),
-        description: z.string({
-            required_error: 'Campo obligatorio',
-        }).min(1).max(250, 'Maximo 250 caracteres'),
-    }),
-    contactPerson: z.object({
-        name: z.string().min(1, 'El nombre es obligatorio'),
-        lastnames: z.string().min(1, 'Los apellidos son obligatorios'),
-        companyPosition: z.string().min(1, 'El cargo es obligatorio'),
-        phoneNumber: z.string().min(1, 'El teléfono es obligatorio'),
-        email: z.string().email('Correo electrónico no válido'),
-    }),
-});
-
-export async function validateCompanyData(prevState: State, formData: SignUpCompanyFormData) {
-    const validatedFields = await FormCompanySchema.safeParseAsync({
-        email: formData.company.email,
-        password: formData.company.password,
-        confirmPassword: formData.company.confirmPassword,
-        socialName: formData.company.socialName,
-        comercialName: formData.company.comercialName,
-        cifnif: formData.company.cifnif,
-        activityType: formData.company.activityType,
-        logo: formData.company.logo,
-    });
-    if (!validatedFields.success) {
-        return {
-            ...prevState,
-            errors: validatedFields.error.errors,
-            message: 'Error en los campos del formulario',
-        };
-    }
-
-    return {};
-}
-
-export async function validateContactData(prevState: State, formData: SignUpCompanyFormData) {
-    const validatedFields = FormContactSchema.safeParse({
-        streetAddress: formData.contactInfo.streetAddress,
-        zip: formData.contactInfo.zip,
-        country: formData.contactInfo.country,
-        province: formData.contactInfo.province,
-        locality: formData.contactInfo.locality,
-        mobilePhone: formData.contactInfo.mobilePhone,
-        landlinePhone: formData.contactInfo.landlinePhone,
-        website: formData.contactInfo.website,
-        contactEmail: formData.contactInfo.contactEmail,
-        description: formData.contactInfo.description,
-    });
-    if (!validatedFields.success) {
-        return {
-            ...prevState,
-            errors: validatedFields.error.errors,
-            message: 'Error en los campos del formulario',
-        };
-    }
-    return {};
-}
-
-export async function validatePersonContactData(prevState: State, formData: SignUpCompanyFormData) {
-    const validatedFields = FormPersonContactSchema.safeParse({
-        name: formData.contactPerson.name,
-        lastnames: formData.contactPerson.lastnames,
-        companyPosition: formData.contactPerson.companyPosition,
-        phoneNumber: formData.contactPerson.phoneNumber,
-        email: formData.contactPerson.email,
-    });
-    if (!validatedFields.success) {
-        return {
-            ...prevState,
-            errors: validatedFields.error.errors,
-            message: 'Error en los campos del formulario',
-        };
-    }
-    return {};
-}
-
-export async function validateFormData(prevState: State, formData: SignUpCompanyFormData) {
-    const validatedFields = FormDataSchema.safeParse(formData);
-    if (!validatedFields.success) {
-        return {
-            ...prevState,
-            errors: validatedFields.error.errors,
-            message: 'Error en los campos del formulario',
-        };
-    }
-    return {};
-}
 
 export async function validateCIFNIFFormat(cifnif:string): Promise<ValidationCIFNIFResult | undefined> {
     const letrasNIF = 'TRWAGMYFPDXBNJZSQVHLCKE';
@@ -255,30 +80,39 @@ export async function validateCIFNIFFormat(cifnif:string): Promise<ValidationCIF
 export async function authenticate(
     prevState: string | undefined,
     formData: FormData
-): Promise<AuthenticateMessageErr | undefined> {
+): Promise<AuthenticateMessage | undefined> {
     try {
-        await signIn('credentials', formData);
+        await signIn('credentials', {
+            email: formData.get('email') as string,
+            password: formData.get('password') as string,
+            redirect: false,
+        });
+        return { message: 'Logged in successfully', type: 'Success', success: true };
     } catch (error: any) {
         if(error instanceof AuthError) {
-            let authErr: AuthenticateMessageErr = {} as AuthenticateMessageErr;
+            let authErr: AuthenticateMessage = {
+              success: false,
+            } as AuthenticateMessage;
             switch (error.type) {
                 case 'CredentialsSignin':
-                    authErr.message= error.message;
+                    authErr.message= error.cause?.err?.message ?? 'Please provide an email and password';
                     authErr.type= 'email';
                     return authErr;
                 case 'AccessDenied':
-                    authErr.message= error.message;
+                    authErr.message= error.cause?.err?.message ?? 'Access denied';
                     authErr.type= 'general';
                     return authErr;
                 case 'CallbackRouteError':
                     return {
                         message: error.cause?.err?.message || 'An error occurred while signing in. Please try again.',
                         type: error.cause?.err?.name || 'general',
+                        success: false,
                     }
                 default:
                     return {
                         message: 'An error occurred while signing in. Please try again.',
-                        type: 'general',                        
+                        type: 'general',
+                        success: false,                     
                     }
             }
         }

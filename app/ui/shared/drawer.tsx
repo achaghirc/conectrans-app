@@ -5,13 +5,10 @@ import LoginIcon from '@mui/icons-material/Login';
 import Logo from '../../../public/Conectrans_Logo_Black.png';
 import Image from 'next/image';
 import Link from 'next/link';
-import { authConfig } from '@/auth.config';
 import { Session } from 'next-auth';
-import { signOut } from 'next-auth/react';
-import { log } from 'console';
 import { logout } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
-import { AccountBoxOutlined, AccountCircleOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined } from '@mui/icons-material';
 
 type DrawerProps = {
 		session: Session | null;
@@ -67,7 +64,7 @@ export default function DrawerCustom(
 					<Divider variant={'middle'} />
 					{session ? (
 						  <>
-							<MenuItem onClick={handleClose} sx={{ mt: 1 }}>
+							<MenuItem onClick={() => router.push('/account')} sx={{ mt: 1 }}>
 								<AccountCircleOutlined  sx={{ mr: 1}} />
 								<Typography variant='body1' sx={{ color: 'black'}}>
 										Cuenta

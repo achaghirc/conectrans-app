@@ -1,10 +1,14 @@
-import Signup from '@/app/ui/auth/signup'
+import SignupCandidate from '@/app/ui/auth/candidate/SignupCandidate'
+import { getEncoderTypeData } from '@/lib/data/encoderType';
+import { getCountries } from '@/lib/data/geolocate';
 import React from 'react'
 
-export default function Page() {
+export default async function Page() {
+  const countries = await getCountries();
+  const encoders = await getEncoderTypeData();
   return (
     <>
-      {/* <Signup /> */}
+      <SignupCandidate countries={countries ?? []} encoders={encoders ?? []} />
     </>
   
   )

@@ -1,8 +1,12 @@
-import bcrypt from 'bcrypt';
+'use server';
+import bcrypt from 'bcryptjs';
 import z from 'zod';
-import { User } from "@/lib/definitions";
 import prisma from '@/app/lib/prisma/prisma';
 import { getRoleByCode } from './role';
+import { NavbarSessionData, PersonDTO, User } from '../definitions';
+import { getCompanyByUserId } from './company';
+import { CompanyDTO } from '../definitions';
+import { getPersonByUserId } from './person';
 
 const createUserSchema = z.object({
     email: z.string({
@@ -42,7 +46,7 @@ export async function createUserHandler(
                 email: validatedData.data?.email,
                 password: hashPassword,
                 updatedAt: new Date(),
-                roleId: role?.id,
+                roleId: role?.id as number,
             },
         });
         return user;
@@ -57,11 +61,19 @@ export async function getUserByEmail(email: string): Promise<User | undefined> {
             where: {
                 email: email,
             },
+            include: {
+                Role: {
+                    select: {
+                        code: true,
+                    },
+                }
+            },
         });
         if (!user) {
             return undefined;
         }
-        return user as User;
+        return {...user, roleCode: user.Role.code};
+
     } catch (error) {
         throw new Error(`Error getting users ${error}`);
     }
@@ -73,5 +85,75 @@ async function getAllUsers(): Promise<User[] | string> {
         return users;
     } catch (error) {
         return `Error getting users ${error}`;
+    }
+}
+
+async function getUserById(id: string): Promise<User | string> {
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                id: id,
+            },
+            include: {
+                Role: {
+                    select: {
+                        code: true,
+                    },
+                },
+            },
+        });
+        if (!user) {
+            return 'User not found';
+        }
+        return {...user, roleCode: user.Role.code};
+    } catch (error) {
+        return `Error getting user ${error}`;
+    }
+}
+
+export async function getUserDataSideNav(id: string): Promise<NavbarSessionData | undefined> {
+    try {
+        const responseUser : User | String = await getUserById(id);
+        if (typeof responseUser === 'string') {
+            return undefined;
+        }
+        const user: User = responseUser as User;
+        let data : NavbarSessionData= {} as NavbarSessionData;
+        switch (user.roleCode) {
+            case 'COMPANY':
+                const company: CompanyDTO | undefined = await getCompanyByUserId(user.id!);
+                if (!company) {
+                    return undefined;
+                }
+                data = {...data, 
+                    name: company.name,
+                    email: user.email,
+                    role: user.roleCode,
+                    companyId: company.id!,
+                    userId: user.id,
+                    assetUrl: company.assetUrl!,
+                };
+                break;
+            case 'ADMIN':
+                break;
+            case 'USER':
+                const personData : PersonDTO | undefined = await getPersonByUserId(user.id!);
+                if (!personData) {
+                    return undefined;
+                }
+                data= {...data,
+                    name: personData.name,
+                    email: user.email,
+                    role: user.roleCode!,
+                    companyId: 0,
+                    userId: user.id,
+                    assetUrl: personData.assetUrl!,
+                };
+                break;
+        }
+
+        return data;
+    } catch (error) {
+        throw new Error(`Error getting user ${error}`);
     }
 }

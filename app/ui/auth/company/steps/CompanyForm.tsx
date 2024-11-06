@@ -1,14 +1,15 @@
-import { validateCIFNIFFormat, validateCompanyData } from '@/lib/actions';
+import { validateCompanyData } from '@/lib/validations/companySignupValidate';
 import { getActitivies } from '@/lib/data/activity';
-import { Activity, SignUpCompanyFormData, State, ValidationCIFNIFResult } from '@/lib/definitions';
+import { Activity, PasswordType, SignUpCompanyFormData, State, ValidationCIFNIFResult } from '@/lib/definitions';
 import { handleZodError, handleZodHelperText } from '@/lib/utils';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { TextField, MenuItem, Typography, Box, Avatar, InputAdornment, IconButton } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { ChangeEvent, useState } from 'react';
 import { ZodIssue } from 'zod';
+import { validateCIFNIFFormat } from '@/lib/actions';
 
-type PasswordType = 'password' | 'confirmPassword';
+
 interface CompanyFormProps {
   formData: SignUpCompanyFormData
   errors: State;
@@ -23,8 +24,6 @@ export default function CompanyForm({ formData,activities, errors, setFormData }
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [cifError, setCifError] = useState<string | null>(null);
-
-  console.log(errors);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     let { name, value } = e.target;

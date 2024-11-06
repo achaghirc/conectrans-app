@@ -110,7 +110,7 @@ export const CardSignUp = styled(MuiCard)(({ theme, sx }) => ({
 	borderRadius: '15px',
 	margin: 'auto',
 	[theme.breakpoints.up('sm')]: {
-		maxWidth: '750px',
+		maxWidth: '95%',
 		boxShadow:
 		'hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px',
 		...theme.applyStyles('dark', {
@@ -154,11 +154,7 @@ export const SignUpMobileForm = ({children}: Readonly<{children: React.ReactNode
 	)
 }
 
-export const SignUpForm = ({
-	children
-  }: Readonly<{
-	children: React.ReactNode;
-  }>) => {
+export const SignUpForm = ({ children }: Readonly<{ children: React.ReactNode }>) => {
 	return (
 		<SignUpContainer direction="row" justifyContent="space-between">
 			<CardSignUp variant="elevation">
