@@ -5,29 +5,31 @@ export type User = {
     id?: string;
     name?: string;
     email: string;
+    roleCode?: string;
     password: string;
 };
 
-export type Person = {
-    id: string;      
+export type PersonDTO = {
+    id: number;      
     name: string;  
     lastname: string; 
-    birthdate: string;
+    birthdate: Date | null;
     phone: string;  
-    document: string;
+    document: string | null;
     userId: string;
+    assetUrl: string;
     createdAt: Date;
     updatedAt: Date; 
 }
 
-export type Company = {
-    id?: string;
+export type CompanyDTO = {
+    id?: number;
     name: string;
     socialName: string;
-    cif: string;
     description: string;
-    address: string;
+    email: string | null;
     phone: string;
+    assetUrl: string;
     cifnif: string;
     userId: string;
     activityId?: number;
@@ -60,12 +62,52 @@ export type Location = {
 };
 
 export type Role = {
-    id: number;
-    name: string;
+    id?: number;
+    name?: string;
     code: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
+
+export type EncoderType = {
+    id: number;
+    name: string;
+    code: string;
+    type: string;
+}
+
+export type Plan = {
+    id: number | undefined;
+    title: string
+    description: string;
+    price: number;
+    priceMonthly: number;
+    priceYearly: number | null;
+    priceBianual: number | null;
+    currency: string;
+    maxOffers: number;
+    allowEditOffer: boolean;
+    accessLimited: boolean;
+    planPreferences: EncoderType[];
+}
+
+export type PlanPreference = {
+    id: number;
+    planId: number;
+    preferencePlanId: number;
+}
+
+export type NavbarSessionData = {
+    name: string;
+    email: string;
+    role: string;
+    companyId: number;
+    userId: string | undefined;
+    assetUrl: string;
+}
+
+
+///////
 
 
 export type State = {
@@ -77,12 +119,24 @@ export type SignUpCompanyFormData = {
     company: SignUpCompanyCompanyFormData;
     contactInfo: SignUpCompanyContactFormData;
     contactPerson: SignUpCompanyPersonContactFormData;
+    subscriptionPlan: Subscriptions;
 };
+
+export type Subscriptions = {
+    id: number;
+    userId: string;
+    planId: number;
+    startDate: Date;
+    endDate: Date;
+    stipeSubscriptionId: string;
+    status: string;
+    createdAt: Date;
+}
 
 export type SignUpCompanyContactFormData = {
     streetAddress: string;
     zip: string;
-    country: string;
+    country: number;
     province: string;
     locality: string;
     mobilePhone: string;
@@ -118,12 +172,21 @@ export type SignUpCandidateFormData = {
     name: string;
     lastname: string;
     cifnif: string;
-    phone: string;
-    landlinePhone?: string;
     birthdate: Dayjs | string;
     workRange: string[];
+    employeeType: string[];
+    summaryFile: File | null;
     licence: Licence;
     contactInfo: SignUpCompanyContactFormData;
+    experiences: SignUpExperienceData[];
+}
+
+export type SignUpExperienceData = {
+    jobName?: string;
+    startYear: string;
+    endYear: string;
+    description: string;
+    experienceType: string;
 }
 
 export type SignUpCandidateContactFormData = Partial<SignUpCompanyContactFormData>;
@@ -135,7 +198,7 @@ export type Licence = {
     adrCode: string[];
     digitalTachograph: 'Si' | 'No' ;
     capCertificate: 'Si' | 'No';
-    country: string;
+    country: number;
     expiresAt: Date;
     createdAt?: Date;
     updatedAt?: Date;
@@ -158,9 +221,10 @@ export type CloudinaryUploadResponse = {
 }
 
 
-export type AuthenticateMessageErr ={
+export type AuthenticateMessage ={
     message: string,
     type: string,
+    success: boolean,
 }
 
 export type StepperProps = {
@@ -197,4 +261,5 @@ export type ProvinceCountryType = {
 
 export type SignUpCandidateProps = {
     countries: Country[];
+    encoders: EncoderType[];
 }

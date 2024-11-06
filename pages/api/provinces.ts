@@ -1,18 +1,18 @@
-import { getProvincesByCountryCode } from "@/lib/data/geolocate";
+import { getProvincesByCountryId } from "@/lib/data/geolocate";
 import { NextApiRequest, NextApiResponse } from "next";
 import { NextRequest, NextResponse } from "next/server";
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse){
-    const { countryCode } = req.query;
+    const { countryId } = req.query;
 
-    if (!countryCode) {
+    if (!countryId) {
         return res.status(400).json([]);
     }
 
-    const countryCodeStr = countryCode.toString();
+    const countryIdStr = countryId.toString();
     try {
-        const provinces = await getProvincesByCountryCode(countryCodeStr);
+        const provinces = await getProvincesByCountryId(parseInt(countryIdStr));
         return res.status(200).json(provinces);
     } catch(e){
         console.log(e);

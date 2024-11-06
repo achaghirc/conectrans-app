@@ -9,3 +9,11 @@ export async function getRoleByCode(code: string): Promise<Role | null> {
         },
     });
 }
+
+export async function getRoleById(id: number): Promise<Role | null> {
+    return await prisma.role.findUnique({
+        where: {
+            id: id,
+        },
+    });
+}

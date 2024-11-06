@@ -1,15 +1,15 @@
 'use client';
-import { FormEvent, Fragment, useLayoutEffect, useState } from 'react'
+import { FormEvent, Fragment, useLayoutEffect, useState, useTransition } from 'react'
 import { Box, Button, Card, Checkbox, CssBaseline, Divider, FormControl, FormControlLabel, FormLabel, IconButton, InputAdornment, Link, Stack, TextField, Typography } from '@mui/material';
 import Logo from '../../../public/Conectrans_Logo_White.svg';
 import Image from 'next/image';
 import ForgotPassword from '../icons/forgotPassword';
 import { ArrowBack, BusinessOutlined, LockOutlined, PeopleOutline, Visibility, VisibilityOff } from '@mui/icons-material';
-import { CardLogin, SignInContainer, SignInForm, SignInMobileForm, TextFieldCustom } from '../shared/auth/authComponents';
-import { signIn } from '@/auth';
+import { SignInForm, SignInMobileForm, TextFieldCustom } from '../shared/auth/AuthComponents';
 import { authenticate } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
-import { AuthenticateMessageErr } from '@/lib/definitions';
+import { AuthenticateMessage } from '@/lib/definitions';
+import { start } from 'repl';
 type LoginProps = {
     open: boolean;
     handleClose: (open: boolean) => void;
@@ -48,7 +48,9 @@ const FormLogin = () => {
 	const [showPassword, setShowPassword] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
 	const [open, setOpen] = useState(false);
-	const [isPending, setIsPending] = useState(false);
+
+	const [isPending, startTransition] = useTransition();
+
 	const router = useRouter();
 	const handleClickOpen = () => {
 		setOpen(true);
@@ -61,7 +63,9 @@ const FormLogin = () => {
 // Update the handleSubmit method in your LoginModal component
 const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    
+    setEmailError(false);
+	setPasswordError(false);
+	setErrorMessage(undefined);
     const data = new FormData(event.currentTarget);
     const email = data.get('email') as string;
     const password = data.get('password') as string;
@@ -69,36 +73,34 @@ const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     if (emailError || passwordError) {
         return;
     }
-		setIsPending(true);  // Set pending state to true
-
     try {
-        const errorMsg: AuthenticateMessageErr | undefined = await authenticate(undefined, data);
-        if (errorMsg) {
-						console.log('Error:', errorMsg);
-            switch (errorMsg.type) {
-							case 'NoUserFound':
-								setEmailError(true);
-								setEmailErrorMessage(errorMsg.message);
-								break;
-							case 'PasswordIncorrect':
-								setPasswordError(true);
-								setPasswordErrorMessage(errorMsg.message);
-								break;
-							default:
-								setErrorMessage(errorMsg.message);
-								break;
-						}
-        } else {
-            // Handle successful login
-            setPasswordError(false);
-						setPasswordErrorMessage('');
-						router.push('/');
-        }
+		startTransition(async () => {
+			const response: AuthenticateMessage | undefined = await authenticate(undefined, data);
+			console.log('Response:', response);
+			if (!response) {
+				return;
+			}
+			if (response.success) {
+				router.push('/');
+				return;
+			}
+			switch (response.type) {
+				case 'NoUserFound':
+					setEmailError(true);
+					setEmailErrorMessage(response.message);
+					break;
+				case 'PasswordIncorrect':
+					setPasswordError(true);
+					setPasswordErrorMessage(response.message);
+					break;
+				default:
+					setErrorMessage(response.message);
+					break;
+			}
+		});
     } catch (error: any) {
         console.error('Authentication error:', error.cause);
         setErrorMessage('An unexpected error occurred. Please try again.');
-    } finally {
-        setIsPending(false);  // Reset pending state
     }
 };
 

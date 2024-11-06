@@ -24,7 +24,7 @@ export default function CadidateUserForm({formData, errors, setFormData}: Cadida
   
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     let { name, value } = e.target;
-    setFormData({ company: { ...formData, [name]: value } });
+    setFormData({ ...formData, [name]: value } );
   };
 
   const inputPropShowPassword = (type: PasswordType) => {

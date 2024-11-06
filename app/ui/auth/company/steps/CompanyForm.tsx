@@ -1,4 +1,4 @@
-import { validateCIFNIFFormat, validateCompanyData } from '@/lib/actions';
+import { validateCompanyData } from '@/lib/validations/companySignupValidate';
 import { getActitivies } from '@/lib/data/activity';
 import { Activity, PasswordType, SignUpCompanyFormData, State, ValidationCIFNIFResult } from '@/lib/definitions';
 import { handleZodError, handleZodHelperText } from '@/lib/utils';
@@ -7,6 +7,7 @@ import { TextField, MenuItem, Typography, Box, Avatar, InputAdornment, IconButto
 import Grid from '@mui/material/Grid2';
 import { ChangeEvent, useState } from 'react';
 import { ZodIssue } from 'zod';
+import { validateCIFNIFFormat } from '@/lib/actions';
 
 
 interface CompanyFormProps {

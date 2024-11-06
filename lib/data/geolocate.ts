@@ -1,3 +1,5 @@
+'use server';
+
 import prisma from "@/app/lib/prisma/prisma";
 import { Country, Province, ProvinceCountryType } from "../definitions";
 
@@ -24,9 +26,23 @@ export async function getCountryByCode(code: string): Promise<Country | undefine
     }
 }
 
-export async function getProvincesByCountryCode(code: string): Promise<Province[] | undefined> {
+export async function getCountryById(id: number): Promise<Country | undefined> {
     try {
-        let country: Country | undefined = await getCountryByCode(code);
+        const country = await prisma.country.findFirst({
+            where: {
+                id: id,
+            },
+        });
+        if (!country) return undefined;
+        return country;
+    } catch(e) {
+        console.log(e);
+    }
+}
+
+export async function getProvincesByCountryId(id: number): Promise<Province[] | undefined> {
+    try {
+        let country: Country | undefined = await getCountryById(id);
         if (!country) return undefined;
         let provinces: Province[] = await prisma.province.findMany({
             where: {

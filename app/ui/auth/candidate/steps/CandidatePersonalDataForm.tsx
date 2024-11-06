@@ -1,17 +1,14 @@
 'use client';
-import React, { useLayoutEffect, useState } from 'react'
+import React, { ChangeEvent, useLayoutEffect, useState } from 'react'
 import { Country, Province, SignUpCandidateFormData, State, ValidationCIFNIFResult } from '@/lib/definitions';
 import Grid from '@mui/material/Grid2';
-import { Box, FormControl, FormHelperText, FormLabel, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
-import dayjs, { Dayjs } from 'dayjs';
-import 'dayjs/locale/es';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
+import dayjs from 'dayjs';
 import { handleZodError, handleZodHelperText } from '@/lib/utils';
 import { validateCIFNIFFormat } from '@/lib/actions';
-import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
+import { DateMobilePickerComponent, DatePickerComponent } from '@/app/ui/shared/custom/components/datePickerCustom';
+import { getProvincesByCountryId } from '@/lib/data/geolocate';
+
 type CadidateUserFormProps = {
     formData: SignUpCandidateFormData;
     setFormData: (data: any) => void;
@@ -21,7 +18,6 @@ type CadidateUserFormProps = {
 
 
 export default function CandidatePersonalDataForm({formData, errors, countries, setFormData}: CadidateUserFormProps) {
-	dayjs.locale('es');
 	const [mediaQuery, setMediaQuery] = useState<boolean | null>(null);
 	const [cifError, setCifError] = useState<string | null>(null);
 	const [provinces, setProvinces] = useState<Province[]>([]);
@@ -34,7 +30,7 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
 		});
 	},[]);
 
-	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleInputContactInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		let { name, value } = e.target;
 		if (name === 'cifnif' && value.length == 0) {
       if (value.length == 0) setCifError(null);
@@ -42,14 +38,20 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
     }
 		setFormData({contactInfo: {...formData.contactInfo, [name]: value }});
 	}
+
+	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = e.target;
+		setFormData({ ...formData, [name]: value });
+	}
+
 	const handleSelectChange = async (e: SelectChangeEvent<string>) => {
 		const { name, value } = e.target;
 		let contactInfo = formData.contactInfo;
 		//Get provinces of the selected country
 		if(name === 'country') {
-			const country = countries.find((country) => country.cod_iso2 === value);
+			const country = countries.find((country) => country.id === parseInt(value));
 			if (country && country.cod_iso2) {
-				const provinces: Province[] | undefined = await fetchProvinces(country.cod_iso2);
+				const provinces: Province[] | undefined = await getProvincesByCountryId(country.id);
 				if (provinces == undefined || provinces.length == 0) {
 						contactInfo.province = '';
 						setProvinces([]);		
@@ -59,14 +61,6 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
 			}
 		}
 		setFormData({contactInfo: {...contactInfo, [name]: value }});
-	}
-
-	const fetchProvinces = async (countryCode: string): Promise<Province[] | undefined> => {
-		return await fetch(`/api/provinces?countryCode=${countryCode}`)
-									.then((response) => response.json())
-									.catch((error) => {
-										console.error('Error:', error);
-									});
 	}
 
 	//Validación de CIF/NIF
@@ -106,7 +100,7 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
 					label="Nombre"
 					name="name"
 					value={formData.name}
-					onChange={handleInputChange}
+					onChange={handleChange}
 					error={handleZodError(errors,'name')}
 					helperText={handleZodHelperText(errors,'name')}
 					/>
@@ -117,7 +111,7 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
 					label="Apellidos"
 					name="lastname"
 					value={formData.lastname}
-					onChange={handleInputChange}
+					onChange={handleChange}
 					error={handleZodError(errors,'lastname')}
 					helperText={handleZodHelperText(errors,'lastname')}
 					/>
@@ -129,7 +123,7 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
 				name="cifnif"
 				value={formData.cifnif}
 				onBlur={handleCifNifValidation}
-				onChange={handleInputChange}
+				onChange={handleChange}
 				error={cifnifError()}
 				helperText={cifnifHelperText()}
 				sx={{
@@ -150,9 +144,19 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
 			<Grid size={{xs:12, sm: 6}}>
 				{mediaQuery == null ? null :
 					mediaQuery ? (
-						<DatePickerComponent value={dayjs(formData.birthdate)} setValue={(value) => setFormData({...formData, birthdate: value?.format('YYYY-MM-DD') || ''})} />
+						<DatePickerComponent 
+							label="Fecha de nacimiento" 
+							value={dayjs(formData.birthdate)} 
+							errors={errors}
+							setValue={(value) => setFormData({...formData, birthdate: value?.format('YYYY-MM-DD') || ''})} 
+						/>
 					) : (
-						<DateMobilePickerComponent value={dayjs(formData.birthdate)} setValue={(value) => setFormData({...formData, birthdate: value?.format('YYYY-MM-DD') || ''})} />
+						<DateMobilePickerComponent 
+							label="Fecha de nacimiento"
+							value={dayjs(formData.birthdate)}
+							errors={errors}
+							setValue={(value) => setFormData({...formData, birthdate: value?.format('YYYY-MM-DD') || ''})} 
+						/>
 					)
 				}
 			</Grid>
@@ -163,20 +167,20 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
 					label="Dirección"
 					name="streetAddress"
 					value={formData.contactInfo.streetAddress}
-					onChange={handleInputChange}
+					onChange={handleInputContactInfoChange}
 					error={handleZodError(errors, 'streetAddress')}
 					helperText={handleZodHelperText(errors, 'streetAddress')}
 					required
 				/>
 			</Grid>
 			<Grid size={{ xs: 12, sm: 6 }}> 
-				{ countries == undefined || countries.length == 0  ? (
+				{countries == undefined || countries.length == 0  ? (
 					<TextField
 						fullWidth
 						label="País"
 						name="country"
 						value={formData.contactInfo.country}
-						onChange={handleInputChange}
+						onChange={handleInputContactInfoChange}
 						error={handleZodError(errors, 'country')}
 						helperText={handleZodHelperText(errors, 'country')}
 						required
@@ -188,7 +192,7 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
 							label="País"
 							id='country'
 							name='country'
-							value={formData.contactInfo.country ?? ''}
+							value={formData.contactInfo.country.toString() ?? 64}
 							onChange={(e:SelectChangeEvent<string>) => handleSelectChange(e)}
 							MenuProps={{
 								PaperProps: {
@@ -208,15 +212,14 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
 							}}	
 						>
 							{countries.map((country) => (
-								<MenuItem key={country.id} value={country.cod_iso2 ?? 'ES'}>
+								<MenuItem key={country.id} value={country.id ?? 64}>
 									{country.name_es}
 								</MenuItem>
 							))}
 						</Select>
 						<FormHelperText>{handleZodHelperText(errors, 'country')}</FormHelperText>
 					</FormControl>
-				)	
-				}
+				)}
 			</Grid>
 			<Grid size={{ xs: 12, sm: 6 }}>
 				{provinces.length == 0 ? (
@@ -225,7 +228,7 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
 						label="Provincia"
 						name="province"
 						value={formData.contactInfo.province}
-						onChange={handleInputChange}
+						onChange={handleInputContactInfoChange}
 						error={handleZodError(errors, 'province')}
 						helperText={handleZodHelperText(errors, 'province')}
 						required
@@ -271,7 +274,7 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
 					label="Código Postal"
 					name="zip"
 					value={formData.contactInfo.zip}
-					onChange={handleInputChange}
+					onChange={handleInputContactInfoChange}
 					error={handleZodError(errors, 'zip')}
 					helperText={handleZodHelperText(errors, 'zip')}
 					required
@@ -283,7 +286,7 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
 					label="Localidad"
 					name="locality"
 					value={formData.contactInfo.locality}
-					onChange={handleInputChange}
+					onChange={handleInputContactInfoChange}
 					error={handleZodError(errors, 'locality')}
 					helperText={handleZodHelperText(errors, 'locality')}
 					required
@@ -293,11 +296,11 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
 				<TextField
 					fullWidth
 					label="Teléfono Móvil"
-					name="phone"
-					value={formData.phone}
-					onChange={handleInputChange}
-					error={handleZodError(errors, 'phone')}
-					helperText={handleZodHelperText(errors, 'phone')}
+					name="mobilePhone"
+					value={formData.contactInfo.mobilePhone}
+					onChange={handleInputContactInfoChange}
+					error={handleZodError(errors, 'mobilePhone')}
+					helperText={handleZodHelperText(errors, 'mobilePhone')}
 					required
 				/>
 				</Grid>
@@ -307,47 +310,10 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
 					label="Teléfono Fijo"
 					name="landlinePhone"
 					value={formData.contactInfo.landlinePhone}
-					onChange={handleInputChange}
+					onChange={handleInputContactInfoChange}
 				/>
 			</Grid>
     </Grid>
   )
-}
-
-function DatePickerComponent({value, setValue}: {value: Dayjs, setValue: (value: Dayjs | null) => void}) {
-	return (
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
-      <DemoContainer components={['DatePicker']}>
-        <DatePicker
-					format='DD/MM/YYYY'
-          label="Fecha de nacimiento"
-          value={value}
-          onChange={(newValue) => setValue(newValue)}
-					sx={{
-						width: '100%'
-					}}
-        />
-      </DemoContainer>
-    </LocalizationProvider>
-	)
-}
-
-function DateMobilePickerComponent({value, setValue}: {value: Dayjs, setValue: (value: Dayjs | null) => void}) {
-	
-	return (
-		<LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
-			<DemoContainer components={['MobileDatePicker']}>
-				<MobileDatePicker
-					format='DD/MM/YYYY'
-					label="Fecha de nacimiento"
-					value={value}
-					onChange={(newValue) => setValue(newValue)}
-					sx={{
-						width: '100%'
-					}}
-				/>
-			</DemoContainer>
-		</LocalizationProvider>
-	)
 }
 
