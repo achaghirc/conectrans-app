@@ -3,10 +3,11 @@ import bcrypt from 'bcryptjs';
 import z from 'zod';
 import prisma from '@/app/lib/prisma/prisma';
 import { getRoleByCode } from './role';
-import { NavbarSessionData, PersonDTO, User } from '../definitions';
+import { CompanyUserAccountDTO, PersonDTO, User } from '../definitions';
 import { getCompanyByUserId } from './company';
 import { CompanyDTO } from '../definitions';
 import { getPersonByUserId } from './person';
+import { NavbarSessionData } from '../types/nav-types';
 
 const createUserSchema = z.object({
     email: z.string({
@@ -155,5 +156,35 @@ export async function getUserDataSideNav(id: string): Promise<NavbarSessionData 
         return data;
     } catch (error) {
         throw new Error(`Error getting user ${error}`);
+    }
+}
+
+export async function getCompanyUserAccountData(id: string): Promise<CompanyUserAccountDTO | undefined> {
+    try {
+        const responseUser : User | String = await getUserById(id);
+        if (typeof responseUser === 'string') {
+            return undefined;
+        }
+        const user: User = responseUser as User;
+        if (user.roleCode !== 'COMPANY') {
+            return undefined;
+        }
+        const company: CompanyDTO | undefined = await getCompanyByUserId(user.id!);
+        if (!company) {
+            return undefined;
+        }
+        const response : CompanyUserAccountDTO = {
+            userEmail: user.email,
+            userPassword: user.password,
+            contactPersonName: company.contactPersonName,
+            contactPersonLastname: company.contactPersonLastname,
+            contactPersonPhone: company.contactPersonPhone,
+            contactPersonDocument: company.contactPersonDocument,
+            contactPersonCompanyPosition: company.contactPersonCompanyPosition,
+            contactPersonEmail: company.contactPersonEmail,
+        }
+        return response;
+    } catch (error) {
+        throw `Error getting user ${error}`;
     }
 }

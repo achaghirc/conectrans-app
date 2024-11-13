@@ -32,11 +32,28 @@ export type CompanyDTO = {
     assetUrl: string;
     cifnif: string;
     userId: string;
+    contactPersonName: string;
+    contactPersonLastname: string;
+    contactPersonPhone: string;
+    contactPersonDocument: string | null;
+    contactPersonCompanyPosition: string;
+    contactPersonEmail: string;
     activityId?: number;
     locationId?: number;
     createdAt?: Date;
     updatedAt?: Date;
 };
+
+export type CompanyUserAccountDTO = {
+    userEmail: string;
+    userPassword: string;
+    contactPersonName: string;
+    contactPersonLastname: string;
+    contactPersonPhone: string;
+    contactPersonDocument: string | null;
+    contactPersonCompanyPosition: string;
+    contactPersonEmail: string;
+}
 
 export type Activity = {
     id?: number;
@@ -97,14 +114,7 @@ export type PlanPreference = {
     preferencePlanId: number;
 }
 
-export type NavbarSessionData = {
-    name: string;
-    email: string;
-    role: string;
-    companyId: number;
-    userId: string | undefined;
-    assetUrl: string;
-}
+
 
 
 ///////

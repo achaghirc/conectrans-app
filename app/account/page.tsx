@@ -1,12 +1,14 @@
 import { auth } from '@/auth'
+import { Session } from 'next-auth'
 import React from 'react'
+import Account from '../ui/account/Account'
 
 const Page = async () => {
-  const session = await auth()
+  const session: Session | null = await auth()
   return (
     <div>
-			<pre>{JSON.stringify(session)}</pre>
-		</div>
+      <Account session={session} />
+    </div>
   )
 }
 

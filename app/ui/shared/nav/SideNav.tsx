@@ -1,14 +1,17 @@
 'use client';
 import { auth } from '@/auth';
 import { getUserDataSideNav } from '@/lib/data/user';
-import { NavbarSessionData } from '@/lib/definitions';
-import { AccountCircleOutlined, InboxOutlined, MailOutline, MenuOutlined } from '@mui/icons-material'
-import { AppBar, Avatar, Box, Button, CssBaseline, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography } from '@mui/material'
+import { NavbarSessionData } from '@/lib/types/nav-types';
+import { AccountCircleOutlined} from '@mui/icons-material'
+import { AppBar, Box, CssBaseline, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography } from '@mui/material'
 import { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react'
+import NavLinks from './Navlinks';
+import { NavLinksSkeleton } from '../custom/components/skeleton/NavLinksSkeleton';
+import Navbar from '../navbar';
 
 const drawerWidth = 240;
 
@@ -16,7 +19,7 @@ type SideNavProps = {
 	session: Session | null
 }
 
-const SideNav = ({session} : SideNavProps) => {
+const Sidenav = ({session} : SideNavProps) => {
   const router = useRouter()
 	const [userData, setUserData] = React.useState<NavbarSessionData | null>(null);
 	if (!session) {
@@ -53,7 +56,7 @@ const SideNav = ({session} : SideNavProps) => {
 
   
 	return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', marginTop: 10, }}>
       <CssBaseline />
       <Drawer
         variant="permanent"
@@ -76,7 +79,6 @@ const SideNav = ({session} : SideNavProps) => {
 						border: '1px solid #f0f0f0',
 						borderRadius: 4,
 						backgroundColor: '#f0f0f0',
-						padding: 1,
 					}}
 				>
           <Box>
@@ -88,42 +90,18 @@ const SideNav = ({session} : SideNavProps) => {
 					</Box>
           <Box>
 						{userData && 
-							<Typography variant="subtitle1" component="h2" sx={{ flexGrow: 1 }}>
+							<Typography variant="subtitle1" component="h2" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
 								{userData.name}
 							</Typography>
 						}
 					</Box>
         </Toolbar>
-        <Box sx={{ overflow: 'auto' }}>
-          <List>
-            {['Datos Personales', 'Experiencia', 'Subscripciones', 'Ofertas'].map((text, index) => (
-              <ListItem key={text} disablePadding>
-                <ListItemButton>
-                  <ListItemIcon>
-                    {index % 2 === 0 ? <InboxOutlined /> : <MailOutline />}
-                  </ListItemIcon>
-                  <ListItemText primary={text} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-          <Divider />
-          <List>
-            {['All mail', 'Trash', 'Spam'].map((text, index) => (
-              <ListItem key={text} disablePadding>
-                <ListItemButton>
-                  <ListItemIcon>
-                    {index % 2 === 0 ? <InboxOutlined /> : <MailOutline />}
-                  </ListItemIcon>
-                  <ListItemText primary={text} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
+        <Box sx={{ overflow: 'auto', mt: 2 }}>
+						{userData ? (<NavLinks role={userData.role} /> ) : (<NavLinksSkeleton />)}
         </Box>
       </Drawer>
     </Box>
   )
 }
 
-export default SideNav
+export default Sidenav
