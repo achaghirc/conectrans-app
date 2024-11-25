@@ -45,7 +45,7 @@ const CustomDialog =  styled(Dialog)(({ theme }) => ({
 type ExperienceComponentProps = {
 	experienceTypes: EncoderType[];
 	formData: SignUpCandidateFormData;
-	errors: State;
+	errors?: State;
 	setFormData: (data: any) => void;
 	open: boolean;
 	setOpen: (open: boolean) => void;
@@ -66,7 +66,7 @@ export default function ExperienceComponent({
 		description: '',
 	} as SignUpExperienceData);
 	const [experiencesTypes, setExperiencesTypes] = useState<EncoderType[]>(experienceTypes);
-	const [err, setErr] = useState<State>(errors);
+	const [err, setErr] = useState<State>(errors ?? {message: null, errors: []});
 	const [error, setError] = useState(false);
 
   const maxWords = 250;
@@ -150,7 +150,7 @@ export default function ExperienceComponent({
 			<DialogContent>
 				<Grid container spacing={2} display={'flex'} flexDirection={'row'} justifyContent={'space-between'}>
 					<Grid size={{ xs: 12, sm: 12 }}>
-						<FormControl fullWidth error={handleZodError(errors, 'experienceType')} required>
+						<FormControl fullWidth error={handleZodError(err, 'experienceType')} required>
 						<Autocomplete
 							id="experienceType"
 							options={experiencesTypes.map((type) => type.name)} // List of options from experiencesTypes
@@ -216,8 +216,8 @@ export default function ExperienceComponent({
 							rows={4}
 							value={experiences.description}
 							onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handleDescriptionChange(e)}
-							error={handleZodError(errors, 'description')}
-							helperText={handleZodHelperText(errors, 'description')}
+							error={handleZodError(err, 'description')}
+							helperText={handleZodHelperText(err, 'description')}
 							required
 						/>
 						<Box display="flex" justifyContent="space-between">

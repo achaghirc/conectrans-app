@@ -62,3 +62,5 @@ INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (52, 'Doce Ofertas (
 INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (53, 'Oferta Destacada', 'HIGHLIGHTED_OFFER', 'PLAN_PREFERENES');
 INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (54, 'Oferta Anónima', 'ANONYMOUS_OFFER', 'PLAN_PREFERENES');
 INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (55, 'Ofertas Editables', 'EDITABLE_OFFER', 'PLAN_PREFERENES');
+INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (57, 'Visualización de ofertas', 'OFFER_VISUALIZATION', 'PLAN_PREFERENES');
+

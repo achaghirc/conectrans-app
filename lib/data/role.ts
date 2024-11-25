@@ -1,3 +1,4 @@
+'use server';
 import prisma from "@/app/lib/prisma/prisma";
 import { Role } from "../definitions";
 

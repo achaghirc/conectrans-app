@@ -112,11 +112,11 @@ async function getUserById(id: string): Promise<User | string> {
     }
 }
 
-export async function getUserDataSideNav(id: string): Promise<NavbarSessionData | undefined> {
+export async function getUserDataSideNav(id: string): Promise<NavbarSessionData> {
     try {
         const responseUser : User | String = await getUserById(id);
         if (typeof responseUser === 'string') {
-            return undefined;
+            return {} as NavbarSessionData;
         }
         const user: User = responseUser as User;
         let data : NavbarSessionData= {} as NavbarSessionData;
@@ -124,7 +124,7 @@ export async function getUserDataSideNav(id: string): Promise<NavbarSessionData 
             case 'COMPANY':
                 const company: CompanyDTO | undefined = await getCompanyByUserId(user.id!);
                 if (!company) {
-                    return undefined;
+                    return {} as NavbarSessionData;
                 }
                 data = {...data, 
                     name: company.name,
@@ -140,7 +140,7 @@ export async function getUserDataSideNav(id: string): Promise<NavbarSessionData 
             case 'USER':
                 const personData : PersonDTO | undefined = await getPersonByUserId(user.id!);
                 if (!personData) {
-                    return undefined;
+                    return {} as NavbarSessionData;
                 }
                 data= {...data,
                     name: personData.name,
@@ -176,12 +176,12 @@ export async function getCompanyUserAccountData(id: string): Promise<CompanyUser
         const response : CompanyUserAccountDTO = {
             userEmail: user.email,
             userPassword: user.password,
-            contactPersonName: company.contactPersonName,
-            contactPersonLastname: company.contactPersonLastname,
-            contactPersonPhone: company.contactPersonPhone,
-            contactPersonDocument: company.contactPersonDocument,
-            contactPersonCompanyPosition: company.contactPersonCompanyPosition,
-            contactPersonEmail: company.contactPersonEmail,
+            contactPersonName: company.contactPersonName ?? '',
+            contactPersonLastname: company.contactPersonLastname ?? '',
+            contactPersonPhone: company.contactPersonPhone ?? '',
+            contactPersonDocument: company.contactPersonDocument ?? '',
+            contactPersonCompanyPosition: company.contactPersonCompanyPosition ?? '',
+            contactPersonEmail: company.contactPersonEmail ?? '',
         }
         return response;
     } catch (error) {

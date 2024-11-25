@@ -1,5 +1,4 @@
 'use server';
-
 import prisma from "@/app/lib/prisma/prisma";
 import { Country, Province, ProvinceCountryType } from "../definitions";
 

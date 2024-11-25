@@ -1,12 +1,21 @@
 import React, { ChangeEvent, useLayoutEffect, useState } from 'react'
 import Grid from '@mui/material/Grid2';
-import { Avatar, Box, Button, Checkbox, Divider, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, IconButton, InputLabel, ListItemText, MenuItem, MenuProps, Paper, Select, SelectChangeEvent, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
-import { Country, EncoderType, Licence, SignUpCandidateFormData, SignUpExperienceData, State } from '@/lib/definitions';
+import { Autocomplete, Avatar, Box, Button, Checkbox, Divider, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Icon, IconButton, InputLabel, ListItemText, MenuItem, MenuProps, Paper, Select, SelectChangeEvent, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
+import { Country, EducationDTO, EncoderType, Licence, PersonLanguageDTO, SignUpCandidateFormData, SignUpExperienceData, State } from '@/lib/definitions';
 import { handleZodError, handleZodHelperText } from '@/lib/utils';
 import { DateMobilePickerComponent, DatePickerComponent } from '@/app/ui/shared/custom/components/datePickerCustom';
 import dayjs from 'dayjs';
 import { AddCircleOutline, AddCircleOutlineOutlined, AddCircleSharp, FilePresentOutlined, RemoveCircleOutline } from '@mui/icons-material';
 import ExperienceComponent from '@/app/ui/shared/auth/ExperienceComponent';
+import { MenuProperties } from '@/app/ui/shared/styles/styles';
+import TableExperiencesComponent from '@/app/ui/shared/custom/components/table/TableExperiencesComponent';
+import TableEducationComponent from '@/app/ui/shared/custom/components/table/TableEducationComponent';
+import AddEducationComponent from '@/app/ui/shared/auth/AddEducationComponent';
+import { useQuery } from '@tanstack/react-query';
+import { getLanguages } from '@/lib/data/languaje';
+import { Languages } from '@prisma/client';
+import TableLanguageComponent from '@/app/ui/shared/custom/components/table/TableLanguageComponent';
+import LanguagesComponentSignUp from '@/app/ui/shared/auth/LanguageComponentSignup';
 
 type CadidateUserFormProps = {
     formData: SignUpCandidateFormData;
@@ -16,24 +25,6 @@ type CadidateUserFormProps = {
 	encoders: EncoderType[];
 }
 
-const MenuProperties : Partial<MenuProps>= {
-		PaperProps: {
-			style: {
-				maxHeight: 300,
-				overflow: 'auto',
-			},
-		},
-		anchorOrigin: {
-			vertical: 'bottom',
-			horizontal: 'left',
-		},
-		transformOrigin: {
-			vertical: 'top',
-			horizontal: 'left',
-		},
-}
-
-
 const getEncoderTypeByCode = (encoders: EncoderType[], encoderCode: string) => {
 	return encoders.filter((e) => e.type === encoderCode);
 }
@@ -41,13 +32,17 @@ const getEncoderTypeByCode = (encoders: EncoderType[], encoderCode: string) => {
 
 export default function CandidateProfesionalDataForm({formData, errors, countries,encoders, setFormData}: CadidateUserFormProps) {
 	const [mediaQuery, setMediaQuery] = useState<boolean | null>(null);
+  const [educationToEdit, setEducationToEdit] = useState<EducationDTO>();
 	const [open, setOpen] = useState<boolean>(false);
+	const [openEducationComponent, setOpenEducationComponent] = useState<boolean>(false);
 	const licenceCodes = getEncoderTypeByCode(encoders,'CARNET');
 	const workRanges = getEncoderTypeByCode(encoders,'WORK_SCOPE')
 	const adrLicences = getEncoderTypeByCode(encoders, 'CARNET_ADR');
 	const employeeType = getEncoderTypeByCode(encoders, 'EMPLOYEE_TYPE');
 	const experiences = getEncoderTypeByCode(encoders, 'EXPERIENCE_TYPE');
 	const [fileError, setFileError] = useState<string | null>(null);
+
+  const { data: languages, isLoading: loadingLanguages, isError: isError } = useQuery({queryKey: ['languages'], queryFn: () =>  getLanguages()});
 
 	const handleSelectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		let { value } = e.target;
@@ -86,10 +81,33 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
 			const { name, value } = e.target;
 			if(name === 'workRange' || name === 'employeeType'){
 				setFormData({...formData, [name]: value});
-			}else {
+			} else {
 				setFormData({licence: {...formData.licence, [name]: value}});
 			}
 	}
+
+  const handleAddLanguage = (selectedLanguage: PersonLanguageDTO) => { 
+    setFormData({...formData, languages: [...formData.languages, selectedLanguage]});
+  }
+  const handleDeleteLanguage = (language: PersonLanguageDTO) => {
+    const newLanguages = formData.languages.filter((lang) => lang !== language);
+    setFormData({...formData, languages: newLanguages});
+  }
+
+  const handleAddStudies = (education: EducationDTO) => {
+    const newEducations = [...formData.educations, education];
+    setFormData({...formData, educations: newEducations});
+  }
+
+  const handleDeleteStudies = (education: EducationDTO) => {
+    const newEducations = formData.educations.filter((edu) => edu !== education);
+    setFormData({...formData, educations: newEducations});
+  }
+
+  const handleEditEducation = (education: EducationDTO) => {
+    setEducationToEdit(education);
+    setOpenEducationComponent(true);
+  }
 
 	const handleCheckChange = (e: ChangeEvent<HTMLInputElement>, checked: boolean) => {
 		e.preventDefault();
@@ -283,7 +301,7 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
 					</Box>
 					<Divider sx={{ mb: 2 }}/>
 				</Grid>
-				<TableExperiences experiences={formData.experiences} deleteExperience={(row) => deleteExperience(row)} />
+				<TableExperiencesComponent experiences={formData.experiences} deleteExperience={(row) => deleteExperience(row)} />
 				<Box 
 					sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' }}
 				
@@ -299,6 +317,42 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
 					</Button>
 				</Box>
 			</Grid>
+      <Grid size={{ xs: 12 }}>
+        <Box>
+          <Typography color='primary' component={'h3'} variant='h5' fontWeight={'semibold'}>
+            Educación
+          </Typography>
+        </Box>
+        <Divider sx={{ mb: 3 }}/>
+        <TableEducationComponent 
+          educations={formData.educations} 
+          deleteEducationExperience={handleDeleteStudies}
+          editEducationExperience={handleEditEducation}
+        />
+        <Box 
+          sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' }}
+        >
+          <Button 
+            variant='outlined' 
+            color='primary' 
+            startIcon={<AddCircleOutlineOutlined />}
+            onClick={() => setOpenEducationComponent(true)}
+            sx={{ alignItems: 'center', mt: 2 }}
+            >
+              Añadir estudios
+          </Button>
+        </Box>
+      </Grid>
+      <Grid size={{ xs: 12 }}>
+        <LanguagesComponentSignUp
+          languages={languages ?? []} 
+          selectedLenguages={formData.languages} 
+          loadingLanguages={loadingLanguages} 
+          isError={isError} 
+          handleAddLanguage={handleAddLanguage} 
+          handleDeleteLanguage={handleDeleteLanguage}
+        />
+      </Grid>
 			<Grid size={{ xs: 12 }}>
 				<Box>
 					<Typography color='primary' component={'h3'} variant='h5' fontWeight={'semibold'}>
@@ -359,50 +413,13 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
 				setOpen={(value:boolean) => setOpen(value)}
 				errors={errors}
 			/>
+      <AddEducationComponent
+        open={openEducationComponent}
+        formData={formData}
+        editEducation={educationToEdit}
+        setOpen={setOpenEducationComponent}
+        setFormData={setFormData}
+      />
 		</>
   )
 }
-
-
-type TableExperiencesProps = {
-	experiences: SignUpExperienceData[];
-	deleteExperience: (experience: SignUpExperienceData) => void;
-};
-
-const TableExperiences: React.FC<TableExperiencesProps> = ({ experiences, deleteExperience }) => {
-	return (
-		<TableContainer component={Paper}>
-			<Table sx={{ minWidth: { xs: 350, sm: 650} }} aria-label="simple table">
-				<TableHead>
-					<TableRow>
-						<TableCell align="left">Nombre</TableCell>
-						<TableCell align="left">Inicio</TableCell>
-						<TableCell align="left">Fin</TableCell>
-						<TableCell align="left">Acción</TableCell>
-					</TableRow>
-				</TableHead>
-				<TableBody>
-					{experiences.map((row) => (
-						<TableRow
-							key={row.experienceType}
-							sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-						>
-							<TableCell component="th" scope="row">
-								{row.experienceType}
-							</TableCell>
-							<TableCell align="left">{row.startYear}</TableCell>
-							<TableCell align="left">{row.endYear}</TableCell>
-							<TableCell align="left">
-								<Button onClick={() => deleteExperience(row)}>
-									<IconButton>
-										<RemoveCircleOutline color='error' />
-									</IconButton>
-								</Button>
-							</TableCell>
-						</TableRow>
-					))}
-				</TableBody>
-			</Table>
-		</TableContainer>
-	);
-};

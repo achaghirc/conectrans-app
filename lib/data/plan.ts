@@ -2,7 +2,7 @@
 
 import prisma from "@/app/lib/prisma/prisma";
 import { Plan, PlanPreference } from "../definitions";
-import { EncoderType } from "@prisma/client";
+import { EncoderType, Plan as PlanPrisma } from "@prisma/client";
 import { getEncoderTypeByIdsIn } from "./encoderType";
 
 
@@ -21,10 +21,10 @@ export async function getAllPlans(): Promise<Plan[] | undefined> {
             const planPreferences: EncoderType[] | undefined = await getEncoderTypeByIdsIn(planPreferenceIds); 
             return {...plan,
                     description: plan.description ?? '',
-                    price: plan.price.toNumber() ?? null,
-                    priceMonthly: plan.priceMonthly.toNumber() ?? null,
-                    priceBianual: plan.priceBianual?.toNumber() ?? null,
-                    priceYearly: plan.priceYearly?.toNumber() ?? null,
+                    price: plan.price ?? null,
+                    priceMonthly: plan.priceMonthly ?? null,
+                    priceBianual: plan.priceBianual ?? null,
+                    priceYearly: plan.priceYearly ?? null,
                     planPreferences: planPreferences ?? []
                 };             
         }));
@@ -49,12 +49,26 @@ export async function getPlanById(id: number): Promise<Plan | undefined> {
         const planPreferences: EncoderType[] | undefined = await getEncoderTypeByIdsIn(planPreferenceIds); 
         return {...plan,
                 description: plan.description ?? '',
-                price: plan.price.toNumber() ?? null,
-                priceMonthly: plan.priceMonthly.toNumber() ?? null,
-                priceBianual: plan.priceBianual?.toNumber() ?? null,
-                priceYearly: plan.priceYearly?.toNumber() ?? null,
+                price: plan.price ?? null,
+                priceMonthly: plan.priceMonthly ?? null,
+                priceBianual: plan.priceBianual ?? null,
+                priceYearly: plan.priceYearly ?? null,
                 planPreferences: planPreferences ?? []
             };
+    } catch(e) {
+        console.log(e);
+    }
+}
+
+export async function getPlanByTitle(title: string): Promise<PlanPrisma | undefined> {
+    try {
+        const plan = await prisma.plan.findFirst({
+            where: {
+                title: title
+            },
+        });
+        if (!plan) return undefined;
+        return plan;
     } catch(e) {
         console.log(e);
     }

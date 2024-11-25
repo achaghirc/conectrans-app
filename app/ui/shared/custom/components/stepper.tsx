@@ -1,10 +1,17 @@
-import { StepperProps } from '@/lib/definitions';
-import { Box, Button, Step, StepLabel, Stepper } from '@mui/material';
+import { Box, Button, CircularProgress, Step, StepLabel, Stepper } from '@mui/material';
 import React from 'react'
 
+export type StepperProps = {
+  children: React.JSX.Element | null;
+  activeStep: number;
+  steps: string[];
+  isLoading?: boolean;
+  isLastStep: boolean;
+  handleNext: () => void;
+  handleBack: () => void;
+}
 
-
-export default function StepperComponent({children, activeStep, steps, isLastStep, handleNext, handleBack }: StepperProps) 
+export default function StepperComponent({children, activeStep, steps, isLastStep, isLoading, handleNext, handleBack }: StepperProps) 
 	{
     return (
       <>
@@ -23,8 +30,13 @@ export default function StepperComponent({children, activeStep, steps, isLastSte
 				</Button>
 			)}
 			{isLastStep ? (
-				<Button onClick={handleNext}>
-					Finalizar
+				<Button 
+          variant='outlined'
+          color='inherit'
+          onClick={handleNext}
+          endIcon={isLoading ? <CircularProgress size={20} /> : null}
+        >
+					{isLoading ? 'Finalizando' : 'Finalizar'}
 				</Button>
 			) : (
 				<Button onClick={handleNext}>

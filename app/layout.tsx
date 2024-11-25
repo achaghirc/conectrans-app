@@ -4,6 +4,7 @@ import "./globals.css";
 import { Lato } from 'next/font/google';
 import { ThemeProvider } from '@mui/material';
 import theme from './theme';
+import { ReactQueryClientProvider } from './react-query-provider';
 
 const latoFont = Lato({
   weight: ['300', '400', '700', '900'],
@@ -24,16 +25,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${latoFont.variable} antialiased`}>
-        <AppRouterCacheProvider 
-          options={{ key: 'css' }}
-        >
-          <ThemeProvider theme={theme} defaultMode='system'>
-            {children}
-          </ThemeProvider>
-        </AppRouterCacheProvider>
-      </body>
-    </html>
+    <ReactQueryClientProvider>
+      <html lang="en">
+        <body className={`${latoFont.variable} antialiased`}>
+          <AppRouterCacheProvider 
+            options={{ key: 'css' }}
+            >
+            <ThemeProvider theme={theme} defaultMode='system'>
+              {children}
+            </ThemeProvider>
+          </AppRouterCacheProvider>
+        </body>
+      </html>
+    </ReactQueryClientProvider>
   );
 }

@@ -7,7 +7,7 @@ import { getRoleByCode } from "../data/role";
 import bcrypt from 'bcryptjs';
 import { randomUUID } from "crypto";
 import { getPlanById } from "../data/plan";
-import { Subscription } from "@prisma/client";
+import { EncoderType, Languages, PersonLanguages, Subscription } from "@prisma/client";
 import next from "next";
 
 const takeNumberFromString = (str: string) => {
@@ -156,13 +156,25 @@ export async function candidateSingup(formData: SignUpCandidateFormData, cloudin
     employeeType,
     contactInfo, 
     experiences, 
-    licence
+    licence,
+    educations,
+    languages
   } = formData;
 
   const role: Role | null = await getRoleByCode('USER');
 
   if (!role) {
     throw new Error('Role not found');
+  }
+  let languagesDDBB: Languages[] = [];
+  if(languages.length > 0) {
+    languagesDDBB = await prisma.languages.findMany({
+      where: {
+        name: {
+          in: languages.map((language) => language.languageName ?? '')
+        }
+      }
+    });
   }
   const transaction = await prisma.$transaction(async (prisma) => {
     try {
@@ -321,26 +333,79 @@ export async function candidateSingup(formData: SignUpCandidateFormData, cloudin
         });
       };
 
-      const licenceTypeCode = await prisma.encoderType.findFirst({
+      // Create new educations
+      const educationsToSave = [];
+      for (const education of educations) {
+        const educationData = {
+          title: education.title,
+          center: education.center,
+          speciality: education.speciality,
+          startYear: new Date(education.startYear.toString()),
+          endYear: new Date(education.endYear.toString()),
+          personId: newPerson.id,
+        };
+        educationsToSave.push(educationData);
+      }
+      await prisma.education.createMany({
+        data: educationsToSave
+      });
+
+      // Create new languages
+      const languagesPerson = [];
+      for (const language of languages) {
+        const lang = languagesDDBB.find((lang) => lang.name === language.languageName);
+        if (lang && language.level) {
+          const languageData = {
+            languageId: lang.id,
+            level: language.level,
+            personId: newPerson.id,
+          };
+          languagesPerson.push(languageData);
+        }
+        await prisma.personLanguages.createMany({
+          data: languagesPerson
+        });
+      }
+
+      const licencesTypes = await prisma.encoderType.findMany({
         where: {
-          type: 'CARNET',
-          code: licence.code
+          type: {
+            in: ['CARNET', 'CARNET_ADR']
+          }
         }
       });
       
-      if (!licenceTypeCode) {
+      if (!licencesTypes) {
         throw new Error('Licence type not found');
       }
 
-
-      const driverLicence = {
-        licenceTypeId: licenceTypeCode.id,
-        driverProfileId: newDriverProfile.id,
-        countryId: licence.country
+      const licencesCarnet: EncoderType[] | undefined = licencesTypes.filter((licenceType) => licenceType.code === licence.code);
+      const licencesAdr: EncoderType[] | undefined = licencesTypes.filter((licenceType) => licence.adrCode.includes(licenceType.code));
+      if (!licencesCarnet || !licencesAdr) {
+        throw new Error('Licence type not found');
+      }
+      
+      const licenses = [];
+      for (const carnet of licencesCarnet) {
+        const driverLicence = {
+          licenceTypeId: carnet.id,
+          driverProfileId: newDriverProfile.id,
+          countryId: licence.country
+        }
+        licenses.push(driverLicence);
       }
 
-      await prisma.driverLicence.create({
-        data: driverLicence
+      for (const adr of licencesAdr) {
+        const driverLicence = {
+          licenceTypeId: adr.id,
+          driverProfileId: newDriverProfile.id,
+          countryId: licence.country
+        }
+        licenses.push(driverLicence);
+      }
+
+      await prisma.driverLicence.createMany({
+        data: licenses
       });
 
       return { message: 'User created successfully', errors: [] };

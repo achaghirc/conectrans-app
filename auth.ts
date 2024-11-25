@@ -2,14 +2,12 @@ import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 
 ///Your own logic for dealing with plain text passwords strings; be careful with this
-import bcrypt from 'bcryptjs'
 import { getUserByEmail } from './lib/data/user'
 import { User } from './lib/definitions'
-import { signInSchema } from './lib/validations/loginValidations'
-import { ZodError } from 'zod'
 import {PrismaAdapter} from '@auth/prisma-adapter'
 import prisma from './app/lib/prisma/prisma'
 import authConfig from './auth.config'
+
 async function getUser(email: string): Promise<User | undefined> {
     try {
         const user = await getUserByEmail(email);
@@ -32,6 +30,11 @@ async function getUser(email: string): Promise<User | undefined> {
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     adapter: PrismaAdapter(prisma),
+    pages: {
+        signIn: '/auth/login',
+        signOut: '/auth/login',
+        error: '/auth/error',
+    },
     session: {
         strategy: 'jwt',
         maxAge: 1 * 24 * 60 * 60, //Duration of the session in seconds is 1 day

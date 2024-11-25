@@ -3,7 +3,6 @@
 import { signIn, signOut} from "@/auth";
 import { AuthError } from "next-auth";
 import { AuthenticateMessage, ValidationCIFNIFResult } from "./definitions";
-import { redirect } from "next/dist/server/api-utils";
 
 
 
@@ -93,33 +92,38 @@ export async function authenticate(
             let authErr: AuthenticateMessage = {
               success: false,
             } as AuthenticateMessage;
-            switch (error.type) {
+            switch (error.name) {
+                case 'NoUserFound':
+                    authErr.message= error.message ?? 'No user found with that email';
+                    authErr.type= 'email';
+                    return authErr;
+                case 'PasswordIncorrect':
+                    authErr.message= error.message ?? 'Incorrect password provided. Please try again.';
+                    authErr.type= 'password';
+                    return authErr;
                 case 'CredentialsSignin':
-                    authErr.message= error.cause?.err?.message ?? 'Please provide an email and password';
+                    authErr.message= error.message ?? 'Please provide an email and password';
                     authErr.type= 'email';
                     return authErr;
                 case 'AccessDenied':
-                    authErr.message= error.cause?.err?.message ?? 'Access denied';
+                    authErr.message= error.message ?? 'Access denied';
                     authErr.type= 'general';
                     return authErr;
                 case 'CallbackRouteError':
-                    return {
-                        message: error.cause?.err?.message || 'An error occurred while signing in. Please try again.',
-                        type: error.cause?.err?.name || 'general',
-                        success: false,
-                    }
+                    authErr.message= error.cause?.err?.message ?? 'Error with user login';
+                    authErr.type= 'general';
+                    return authErr;
                 default:
-                    return {
-                        message: 'An error occurred while signing in. Please try again.',
-                        type: 'general',
-                        success: false,                     
-                    }
+                  return {
+                      message: 'An error occurred while signing in. Please try again.',
+                      type: 'general',
+                      success: false,                     
+                  }
             }
         }
-        throw error;
     }
 }
 
 export async function logout(): Promise<void> {
-    await signOut();
+    await signOut({ redirectTo: '/', redirect: true });
 }

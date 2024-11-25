@@ -1,4 +1,4 @@
-import type { NextAuthConfig } from 'next-auth';
+import { AuthError, type NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { getUserByEmail } from './lib/data/user';
 import { signInSchema } from './lib/validations/loginValidations';
@@ -57,15 +57,17 @@ async function getUser(email: string): Promise<User | undefined> {
         return userDef;
     } catch (error) {
         console.error(error);
-        throw new Error('An error occurred while fetching the user');
+        return undefined;
     }
 
 }
 
-class CustomError extends Error {
+class CustomError extends AuthError {
     public name: string;
+    public message: string;
     constructor(message: string, name: string) {
-        super(message);
+        super();
+        this.message = message;
         this.name = name;
     }
 }

@@ -80,7 +80,9 @@ const seedPlanPreferences = async () => {
     // INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (53, 'Oferta Destacada', 'HIGHLIGHTED_OFFER', 'PLAN_PREFERENES');
     // INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (54, 'Oferta Anónima', 'ANONYMOUS_OFFER', 'PLAN_PREFERENES');
     // INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (55, 'Ofertas Editables', 'EDITABLE_OFFER', 'PLAN_PREFERENES');
-    const listFree = ["LIMITED_ACCESS"];
+    // INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (57, 'Visualización de ofertas', 'OFFER_VISUALIZATION', 'PLAN_PREFERENES');
+
+    const listFree = ["LIMITED_ACCESS", "OFFER_VISUALIZATION"];
     const listBasic = ["ONE_OFFER","TOTAL_ACCESS"];
     const listStandard = ["THREE_OFFER","TOTAL_ACCESS"];
     const listPremium = ["TWELVE_OFFER","HIGHLIGHTED_OFFER","ANONYMOUS_OFFER","EDITABLE_OFFER", "TOTAL_ACCESS"];

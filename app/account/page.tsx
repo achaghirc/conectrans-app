@@ -1,13 +1,21 @@
 import { auth } from '@/auth'
 import { Session } from 'next-auth'
 import React from 'react'
-import Account from '../ui/account/Account'
+import AccountPage from '../ui/account/account-data/AccountPage'
+import Navbar from '../ui/shared/navbar'
+import { Box } from '@mui/material'
+import AccountMobileMenu from '../ui/account/account-data/mobile/AccountMobileMenu'
 
 const Page = async () => {
   const session: Session | null = await auth()
   return (
     <div>
-      <Account session={session} />
+      <Box component={'div'} sx={{ display: {xs: 'none', sm: 'flex'}}}>
+        <Navbar session={session} />
+      </Box>
+      <Box sx={{ display: {xs: 'block', sm: 'none'} }}>
+        <AccountMobileMenu session={session} />
+      </Box>
     </div>
   )
 }

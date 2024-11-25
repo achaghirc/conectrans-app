@@ -8,26 +8,27 @@ import { MobileDatePicker } from "@mui/x-date-pickers/MobileDatePicker"
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/es';
 
-export function DatePickerComponent({value, label, errors, setValue}: {value: Dayjs, label:string, errors: State, setValue: (value: Dayjs | null) => void}) {
+export function DatePickerComponent({value, label, errors, width, setValue}: {value: Dayjs, label?:string, errors?: State, width?:any, setValue: (value: Dayjs | null) => void}) {
     dayjs.locale('es');
 
     return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
       <DemoContainer components={['DatePicker']}>
         <DatePicker
-			format='YYYY-MM-DD'
+            
+			      format='YYYY-MM-DD'
             label={label}
             value={value}
             onChange={(newValue) => setValue(newValue)}
-			slotProps={{
-				textField: {
-					error: handleZodError(errors, label),
-					helperText: handleZodHelperText(errors, label)
-				}
-			}}
-			sx={{
-				width: '100%'
-			}}
+            slotProps={{
+              textField: {
+                error: handleZodError(errors ?? {errors: [], message: null}, label ?? ''),
+                helperText: handleZodHelperText(errors ?? {errors: [], message: null}, label ?? '')
+              }
+            }}
+            sx={{
+              width: width ?? '100%'
+            }}
         />
       </DemoContainer>
     </LocalizationProvider>

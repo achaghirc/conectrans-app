@@ -23,7 +23,6 @@ export default function DrawerCustom(
 ) {
 
 	const router = useRouter();
-
 	return (
     <>
 			<Box sx={{ marginTop: 2 }}>
@@ -64,7 +63,7 @@ export default function DrawerCustom(
 					<Divider variant={'middle'} />
 					{session ? (
 						  <>
-							<MenuItem onClick={() => router.push('/account')} sx={{ mt: 1 }}>
+							<MenuItem onClick={() => router.push('/account/account-data')} sx={{ mt: 1 }}>
 								<AccountCircleOutlined  sx={{ mr: 1}} />
 								<Typography variant='body1' sx={{ color: 'black'}}>
 										Cuenta
@@ -73,7 +72,6 @@ export default function DrawerCustom(
 							<MenuItem 
 								onClick={async () => {
 									await logout();
-									router.push('/');
 								}} 
 								sx={{ mt: 1 }}>
 									<LogoutIcon color='error' sx={{ mr: 1}}/>                    

@@ -1,19 +1,15 @@
 'use client';
 import { FormEvent, Fragment, useLayoutEffect, useState, useTransition } from 'react'
-import { Box, Button, Card, Checkbox, CssBaseline, Divider, FormControl, FormControlLabel, FormLabel, IconButton, InputAdornment, Link, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Divider, FormControl, IconButton, InputAdornment, Link, TextField, Typography } from '@mui/material';
 import Logo from '../../../public/Conectrans_Logo_White.svg';
 import Image from 'next/image';
 import ForgotPassword from '../icons/forgotPassword';
 import { ArrowBack, BusinessOutlined, LockOutlined, PeopleOutline, Visibility, VisibilityOff } from '@mui/icons-material';
-import { SignInForm, SignInMobileForm, TextFieldCustom } from '../shared/auth/AuthComponents';
 import { authenticate } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
 import { AuthenticateMessage } from '@/lib/definitions';
-import { start } from 'repl';
-type LoginProps = {
-    open: boolean;
-    handleClose: (open: boolean) => void;
-}
+import { SignInForm, SignInMobileForm, TextFieldCustom } from '../shared/auth/LoginComponents';
+
 
 export default function LoginModal() {
 	const [mediaQuery, setMediaQuery] = useState<boolean | null>(null);
@@ -60,21 +56,20 @@ const FormLogin = () => {
 		setOpen(false);
 	};
 
-// Update the handleSubmit method in your LoginModal component
-const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setEmailError(false);
-	setPasswordError(false);
-	setErrorMessage(undefined);
-    const data = new FormData(event.currentTarget);
-    const email = data.get('email') as string;
-    const password = data.get('password') as string;
+	// Update the handleSubmit method in your LoginModal component
+	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		setEmailError(false);
+		setPasswordError(false);
+		setErrorMessage(undefined);
+		const data = new FormData(event.currentTarget);
+		const email = data.get('email') as string;
+		const password = data.get('password') as string;
 
-    if (emailError || passwordError) {
-        return;
-    }
-    try {
-		startTransition(async () => {
+		if (emailError || passwordError) {
+			return;
+		}
+		try {
 			const response: AuthenticateMessage | undefined = await authenticate(undefined, data);
 			console.log('Response:', response);
 			if (!response) {
@@ -85,11 +80,11 @@ const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 				return;
 			}
 			switch (response.type) {
-				case 'NoUserFound':
+				case 'email':
 					setEmailError(true);
 					setEmailErrorMessage(response.message);
 					break;
-				case 'PasswordIncorrect':
+				case 'password':
 					setPasswordError(true);
 					setPasswordErrorMessage(response.message);
 					break;
@@ -97,12 +92,11 @@ const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 					setErrorMessage(response.message);
 					break;
 			}
-		});
-    } catch (error: any) {
-        console.error('Authentication error:', error.cause);
-        setErrorMessage('An unexpected error occurred. Please try again.');
-    }
-};
+		} catch (error: any) {
+			console.error('Authentication error:', error.cause);
+			setErrorMessage('An unexpected error occurred. Please try again.');
+		}
+	};
 
 	const validateInputs = () => {
 		const email = document.getElementById('email') as HTMLInputElement;

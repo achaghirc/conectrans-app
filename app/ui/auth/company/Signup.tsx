@@ -1,6 +1,6 @@
 'use client';
 import React, { useLayoutEffect, useState } from 'react'
-import { SignUpForm, SignUpMobileForm } from '../../shared/auth/AuthComponents'
+import { SignUpForm, SignUpMobileForm } from '../../shared/auth/SignupComponents'
 import ContactForm from './steps/ContactForm';
 import PersonContactForm from './steps/PersonContactForm';
 import ResumenForm from './steps/ResumeForm';

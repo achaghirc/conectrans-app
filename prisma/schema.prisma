@@ -228,7 +228,8 @@ model Education {
   id Int @id @default(autoincrement())
   personId Int?
   title String @db.VarChar
-  specialty String @db.VarChar
+  center String? @db.VarChar 
+  speciality String? @db.VarChar
   startYear DateTime
   endYear DateTime
   Person Person? @relation(fields: [personId], references: [id])
@@ -265,10 +266,10 @@ model Plan {
   id Int @id @default(autoincrement())
   title String @db.VarChar
   description String? @db.VarChar
-  price Float  @default(0)
-  priceMonthly Float @default(0)
-  priceYearly Float? @default(0)
-  priceBianual Float?
+  price Decimal  @default(0)
+  priceMonthly Decimal @default(0)
+  priceYearly Decimal? @default(0)
+  priceBianual Decimal?
   currency String @db.VarChar
   maxOffers Int
   allowEditOffer Boolean @default(false)

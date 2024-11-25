@@ -28,7 +28,6 @@ export default function Navbar({session}: NavbarProps) {
   const [state, setState] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -46,7 +45,7 @@ export default function Navbar({session}: NavbarProps) {
   }
 
   return (
-    <SessionProvider>.
+    <SessionProvider>
       <Box sx={{ flexGrow: 1 }}>
       <AppBar 
           sx={{
@@ -64,7 +63,7 @@ export default function Navbar({session}: NavbarProps) {
             aria-label="menu"
             sx={{ mr: 2, display: { xs: 'none', md: 'flex' } }}
           >
-              <ConectransLogo width={'130px'} height={'auto'} fill='white' />
+              <ConectransLogo width={'100px'} height={'auto'} fill='white' />
               {/* <Image priority src={Logo} alt='Logo conectrans' width={130}/> */}
           </IconButton>
           <IconButton

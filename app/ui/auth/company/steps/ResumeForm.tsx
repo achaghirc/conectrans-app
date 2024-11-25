@@ -2,7 +2,7 @@
 import { Plan, SignUpCompanyFormData } from '@/lib/definitions';
 import { Box, Typography, Divider, Avatar, CardContent, Card, CardHeader } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import SubscriptionCard from '@/app/ui/shared/custom/components/SubscriptionCard';
+import SubscriptionCard from '@/app/ui/shared/custom/components/subscription/SubscriptionCard';
 import { useEffect, useState, useTransition } from 'react';
 import { getAllPlans } from '@/lib/data/plan';
 import SubscriptionCardSkeleton from '@/app/ui/shared/custom/components/skeleton/SubscriptionCardSkeleton';

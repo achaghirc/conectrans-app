@@ -1,7 +1,7 @@
 'use client';
-import { CloudinaryUploadResponse, Licence, SignUpCandidateContactFormData, SignUpCandidateFormData, SignUpCandidateProps, SignUpExperienceData, State } from '@/lib/definitions'
+import { CloudinaryUploadResponse, EducationDTO, Licence, PersonLanguageDTO, SignUpCandidateContactFormData, SignUpCandidateFormData, SignUpCandidateProps, SignUpExperienceData, State } from '@/lib/definitions'
 import React, { useLayoutEffect, useState } from 'react'
-import { SignUpForm, SignUpMobileForm } from '../../shared/auth/AuthComponents';
+import { SignUpForm, SignUpMobileForm } from '../../shared/auth/SignupComponents';
 import StepperComponent from '../../shared/custom/components/stepper';
 import CandidatePersonalDataForm from './steps/CandidatePersonalDataForm';
 import CandidateProfesionalDataForm from './steps/CandidateProfesionalDataForm';
@@ -44,11 +44,13 @@ export default function SignupCandidate({ countries, encoders}: SignUpCandidateP
 			country: 64,
 			code: 'B',
 			adrCode: ['ADR Básico'],
-		} as Licence
+		} as Licence,
+    educations: [] as EducationDTO[],
+    languages: [] as PersonLanguageDTO[],
 	} as SignUpCandidateFormData)
 	const [errors, setErrors] = useState<State>({message: null, errors:[]});
 	const [activeStep, setActiveStep] = useState(0);
-
+  const [loading, setLoading] = useState(false);
 	useLayoutEffect(() => {
 		const mediaQuery = window.matchMedia('(min-width: 600px)');
 		setMediaQuery(mediaQuery.matches);
@@ -63,6 +65,7 @@ export default function SignupCandidate({ countries, encoders}: SignUpCandidateP
 
 	const handleSubmit = async () => {
 		console.log('Enviando formulario...');
+    setLoading(true);
 		const formDataCopy = {...formData, summaryFile: null, birthdate: formData.birthdate ? formData.birthdate.toString() : ''};
 		const cloudinaryResponse: CloudinaryUploadResponse = 
 			formData.summaryFile ? 
@@ -95,7 +98,9 @@ export default function SignupCandidate({ countries, encoders}: SignUpCandidateP
 			if (cloudinaryResponse.public_id) {
 			  removeFileFromCloud(cloudinaryResponse.public_id, cloudinaryResponse.format);
 			}
-		}
+		} finally {
+      setLoading(false);
+    }
 
 	}
 
@@ -167,9 +172,10 @@ export default function SignupCandidate({ countries, encoders}: SignUpCandidateP
 						children={getStepContent(activeStep)}
 						activeStep={activeStep} 
 						steps={steps}
+            isLoading={loading}
+						isLastStep={isLastStep}
 						handleNext={handleNext}
 						handleBack={handleBack}
-						isLastStep={isLastStep}
 					/>
 				</SignUpForm>
 			) : (
@@ -178,9 +184,10 @@ export default function SignupCandidate({ countries, encoders}: SignUpCandidateP
 							children={getStepContent(activeStep)}
 							activeStep={activeStep} 
 							steps={steps}
+              isLoading={loading}
+							isLastStep={isLastStep}
 							handleNext={handleNext}
 							handleBack={handleBack}
-							isLastStep={isLastStep}
 						/>
 				</SignUpMobileForm>
 			)

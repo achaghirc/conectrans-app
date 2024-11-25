@@ -14,10 +14,15 @@ export type PersonDTO = {
     name: string;  
     lastname: string; 
     birthdate: Date | null;
-    phone: string;  
+    phone: string;
+    landlinePhone: string | null;
+    relocateOption: boolean | null;
+    hasCar: boolean |null 
     document: string | null;
+    location: LocationDTO | undefined;
     userId: string;
-    assetUrl: string;
+    assetUrl: string | null;
+    resumeUrl: string | null;
     createdAt: Date;
     updatedAt: Date; 
 }
@@ -32,14 +37,25 @@ export type CompanyDTO = {
     assetUrl: string;
     cifnif: string;
     userId: string;
-    contactPersonName: string;
-    contactPersonLastname: string;
-    contactPersonPhone: string;
-    contactPersonDocument: string | null;
-    contactPersonCompanyPosition: string;
-    contactPersonEmail: string;
-    activityId?: number;
+    contactPersonName?: string;
+    contactPersonLastname?: string;
+    contactPersonPhone?: string;
+    contactPersonDocument?: string | null;
+    contactPersonCompanyPosition?: string;
+    contactPersonEmail?: string;
     locationId?: number;
+    locationStreet?: string;
+    locationNumber?: string;
+    locationCity?: string;
+    locationState?: string;
+    locationCountryId?: number;
+    locationCountryName?: string;
+    locationCountryCode?: string;
+    locationZip?: string;
+    activityId?: number;
+    activityName?: string;
+    activityCode?: string;
+    activityDescription?: string;
     createdAt?: Date;
     updatedAt?: Date;
 };
@@ -64,13 +80,15 @@ export type Activity = {
     updatedAt?: Date;
 };
 
-export type Location = {
+export type LocationDTO = {
     id?: number;
     street: string;
     number: string;
     city: string;
     state: string;
-    country: string;
+    countryId: number;
+    countryName: string;
+    countryCode: string;
     zip: string;
     latitude: number;
     longitude: number;
@@ -189,7 +207,26 @@ export type SignUpCandidateFormData = {
     licence: Licence;
     contactInfo: SignUpCompanyContactFormData;
     experiences: SignUpExperienceData[];
+    educations: EducationDTO[];
+    languages: PersonLanguageDTO[];
 }
+
+export type EducationDTO = {
+    title: string;
+    center: string;
+    speciality?: string;
+    startYear: string;
+    endYear: string;
+}
+export type PersonLanguageDTO = {
+    id?: number;
+    personId?: number;
+    languageId?: number;
+    languageName?: string;
+    languageCode?: string;
+    level?: string;
+}
+
 
 export type SignUpExperienceData = {
     jobName?: string;
@@ -237,14 +274,7 @@ export type AuthenticateMessage ={
     success: boolean,
 }
 
-export type StepperProps = {
-    children: React.JSX.Element | null;
-    activeStep: number;
-    steps: string[];
-    handleNext: () => void;
-    handleBack: () => void;
-    isLastStep: boolean;
-}
+
 export type PasswordType = 'password' | 'confirmPassword';
 
 
