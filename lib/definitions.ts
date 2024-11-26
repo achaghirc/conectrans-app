@@ -1,3 +1,4 @@
+import { DriverEmploymentPreferences, DriverEmploymentPreferencesDTO, DriverLicenceDTO, DriverWorkRangePreferences, DriverWorkRangePreferencesDTO } from "@prisma/client";
 import { Dayjs } from "dayjs";
 import { ZodIssue } from "zod";
 
@@ -132,6 +133,21 @@ export type PlanPreference = {
     preferencePlanId: number;
 }
 
+export type DriverLicenceProfileDTO = {
+  driverProfileId: number;
+  personId: number;
+  licences: DriverLicenceDTO[];
+  hasCapCertificate: boolean;
+  hasDigitalTachograph: boolean;
+}
+
+export type DriverPreferencesDTO = {
+    driverProfileId: number;
+    userId: string;
+    personId: number;
+    workRanges: DriverWorkRangePreferencesDTO[];
+    employeeTypes: DriverEmploymentPreferencesDTO[];
+}
 
 
 
@@ -206,7 +222,7 @@ export type SignUpCandidateFormData = {
     summaryFile: File | null;
     licence: Licence;
     contactInfo: SignUpCompanyContactFormData;
-    experiences: SignUpExperienceData[];
+    experiences: ExperienceDTO[];
     educations: EducationDTO[];
     languages: PersonLanguageDTO[];
 }
@@ -215,8 +231,8 @@ export type EducationDTO = {
     title: string;
     center: string;
     speciality?: string;
-    startYear: string;
-    endYear: string;
+    startYear: string | Date;
+    endYear: string | Date;
 }
 export type PersonLanguageDTO = {
     id?: number;
@@ -228,12 +244,14 @@ export type PersonLanguageDTO = {
 }
 
 
-export type SignUpExperienceData = {
+export type ExperienceDTO = {
     jobName?: string;
-    startYear: string;
-    endYear: string;
+    startYear: string | Date;
+    endYear: string | Date;
     description: string;
     experienceType: string;
+    experienceTypeId?: number;
+    experienceTypeCode?: string;
 }
 
 export type SignUpCandidateContactFormData = Partial<SignUpCompanyContactFormData>;

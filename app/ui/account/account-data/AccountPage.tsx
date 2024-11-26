@@ -133,5 +133,4 @@ export async function getServerSideProps(context: any) {
 			dehydratedState: dehydrate(queryClient),
 		},
 	};
-
 }

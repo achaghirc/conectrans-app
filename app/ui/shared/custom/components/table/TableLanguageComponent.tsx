@@ -1,4 +1,4 @@
-import { EducationDTO, PersonLanguageDTO, SignUpExperienceData } from '@/lib/definitions';
+import { EducationDTO, PersonLanguageDTO, ExperienceDTO } from '@/lib/definitions';
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import { IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
 import React from 'react'

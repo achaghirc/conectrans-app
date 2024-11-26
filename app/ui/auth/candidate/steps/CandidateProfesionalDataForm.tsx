@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useLayoutEffect, useState } from 'react'
 import Grid from '@mui/material/Grid2';
 import { Autocomplete, Avatar, Box, Button, Checkbox, Divider, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Icon, IconButton, InputLabel, ListItemText, MenuItem, MenuProps, Paper, Select, SelectChangeEvent, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
-import { Country, EducationDTO, EncoderType, Licence, PersonLanguageDTO, SignUpCandidateFormData, SignUpExperienceData, State } from '@/lib/definitions';
+import { Country, EducationDTO, EncoderType, Licence, PersonLanguageDTO, SignUpCandidateFormData, ExperienceDTO, State } from '@/lib/definitions';
 import { handleZodError, handleZodHelperText } from '@/lib/utils';
 import { DateMobilePickerComponent, DatePickerComponent } from '@/app/ui/shared/custom/components/datePickerCustom';
 import dayjs from 'dayjs';
@@ -94,9 +94,9 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
     setFormData({...formData, languages: newLanguages});
   }
 
-  const handleAddStudies = (education: EducationDTO) => {
-    const newEducations = [...formData.educations, education];
-    setFormData({...formData, educations: newEducations});
+  const handleAddExperienceData = (experience: ExperienceDTO) => {
+    const newExperiences = [...formData.experiences, experience];
+    setFormData({...formData, experiences: newExperiences});
   }
 
   const handleDeleteStudies = (education: EducationDTO) => {
@@ -119,7 +119,7 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
 		setFormData({licence: {...formData.licence, [id]: value}})
 	}
 
-	const deleteExperience = (row: SignUpExperienceData) => {
+	const deleteExperience = (row: ExperienceDTO) => {
 		const newExperiences = formData.experiences.filter((exp) => exp !== row);
 		setFormData({...formData, experiences: newExperiences});
 	}
@@ -407,9 +407,8 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
 			</Grid>	
 			<ExperienceComponent 
 				open={open}
-				formData={formData}
 				experienceTypes={experiences}
-				setFormData={setFormData}
+				setValue={setFormData}
 				setOpen={(value:boolean) => setOpen(value)}
 				errors={errors}
 			/>
@@ -418,7 +417,7 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
         formData={formData}
         editEducation={educationToEdit}
         setOpen={setOpenEducationComponent}
-        setFormData={setFormData}
+        setFormData={handleAddExperienceData}
       />
 		</>
   )

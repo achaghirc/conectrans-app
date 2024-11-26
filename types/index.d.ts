@@ -1,4 +1,13 @@
-import { Company as PrismaCompany, Location, Subscription as PrismaSubscription, Plan } from "@prisma/client";
+import { Company as PrismaCompany, 
+  Location, 
+  Subscription as PrismaSubscription, 
+  Plan,
+  DriverLicence as PrismaDriverLicence,
+  EncoderType,
+  DriverEmploymentPreferences,
+  DriverWorkRangePreferences,
+  country,
+   } from "@prisma/client";
 
 declare module '@prisma/client' {
     interface CompanyDTO extends PrismaCompany {
@@ -14,5 +23,20 @@ declare module '@prisma/client' {
 
     interface SubscriptionDTO extends PrismaSubscription {
         Plan: Plan;
+    }
+
+    interface DriverLicenceDTO extends PrismaDriverLicence {
+        id?: number;
+        LicenceType: EncoderType;
+        Country: country;
+    }
+
+    interface DriverEmploymentPreferencesDTO extends DriverEmploymentPreferences {
+      id?: number;
+      EncoderType: EncoderType;
+    }
+    interface DriverWorkRangePreferencesDTO extends DriverWorkRangePreferences {
+      id?: number;
+      workScope: EncoderType;
     }
 }

@@ -1,5 +1,5 @@
 'use client';
-import { CloudinaryUploadResponse, EducationDTO, Licence, PersonLanguageDTO, SignUpCandidateContactFormData, SignUpCandidateFormData, SignUpCandidateProps, SignUpExperienceData, State } from '@/lib/definitions'
+import { CloudinaryUploadResponse, EducationDTO, Licence, PersonLanguageDTO, SignUpCandidateContactFormData, SignUpCandidateFormData, SignUpCandidateProps, ExperienceDTO, State } from '@/lib/definitions'
 import React, { useLayoutEffect, useState } from 'react'
 import { SignUpForm, SignUpMobileForm } from '../../shared/auth/SignupComponents';
 import StepperComponent from '../../shared/custom/components/stepper';
@@ -39,7 +39,7 @@ export default function SignupCandidate({ countries, encoders}: SignUpCandidateP
 			mobilePhone: '640493049',
 			landlinePhone: '924334003'
 		} as SignUpCandidateContactFormData,
-		experiences: [] as SignUpExperienceData[],
+		experiences: [] as ExperienceDTO[],
 		licence: {
 			country: 64,
 			code: 'B',

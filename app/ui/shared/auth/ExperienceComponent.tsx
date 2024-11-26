@@ -1,5 +1,5 @@
-import React, { ChangeEvent, useLayoutEffect, useState } from 'react'
-import { EncoderType, SignUpCandidateFormData, SignUpExperienceData, State } from '@/lib/definitions'
+import React, { ChangeEvent, useEffect, useLayoutEffect, useState } from 'react'
+import { EncoderType, SignUpCandidateFormData, ExperienceDTO, State } from '@/lib/definitions'
 import Grid from '@mui/material/Grid2';
 import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, IconButton, InputLabel, MenuItem, MenuProps, Select, SelectChangeEvent, styled, TextField, Typography } from '@mui/material';
 import { handleZodError, handleZodHelperText } from '@/lib/utils';
@@ -44,27 +44,25 @@ const CustomDialog =  styled(Dialog)(({ theme }) => ({
 
 type ExperienceComponentProps = {
 	experienceTypes: EncoderType[];
-	formData: SignUpCandidateFormData;
 	errors?: State;
-	setFormData: (data: any) => void;
+	setValue: (data: ExperienceDTO) => void;
 	open: boolean;
 	setOpen: (open: boolean) => void;
 }
 
 export default function ExperienceComponent({
 	experienceTypes,
-	formData,
 	open,
 	errors, 
-	setFormData,
+	setValue,
 	setOpen}: ExperienceComponentProps) {
   const [mediaQuery, setMediaQuery] = useState<boolean | null>(null); 
-  const [experiences, setExperiences] = useState<SignUpExperienceData>({
+  const [experiences, setExperiences] = useState<ExperienceDTO>({
 		experienceType: '',
-		startYear: dayjs(new Date()).format('YYYY-MM-DD'),
-		endYear: dayjs(new Date()).format('YYYY-MM-DD'),
+		startYear: new Date(),
+		endYear: new Date(),
 		description: '',
-	} as SignUpExperienceData);
+	} as ExperienceDTO);
 	const [experiencesTypes, setExperiencesTypes] = useState<EncoderType[]>(experienceTypes);
 	const [err, setErr] = useState<State>(errors ?? {message: null, errors: []});
 	const [error, setError] = useState(false);
@@ -85,25 +83,26 @@ export default function ExperienceComponent({
 			setExperiences({...experiences, [name]: value});
 	}
 
+  //TODO: HANDLE DATES AND ERRORS CORRECTLY
 	const handleClose = () => {
 		
 		if(experiences.experienceType !== '') {	
-			const start = dayjs(experiences.startYear)
-			const end = dayjs(experiences.endYear)
+			const start: Date = new Date(experiences.startYear)
+			const end: Date = new Date(experiences.endYear)
 			let errors: State= {message: null, errors: []};
 			if (start == null ) {
 				const state: ZodIssue = {code: 'invalid_literal', expected: '', received: '', path: ['Fecha Inicio'], message: 'Fecha inicio no puede estar vacía'};
 				errors = {...err, message: state.message, errors: [state]};
 			}	else {
-				setExperiences({...experiences, startYear: start.format('YYYY-MM-DD')});
+				setExperiences({...experiences, startYear: start});
 			}
 			if(end == null) {
 				const state: ZodIssue = {code: 'invalid_literal', expected: '', received: '', path: ['Fecha Fin'], message: 'Fecha fin no puede estar vacía'};
 				errors = {...err, message: state.message, errors: [state]};
 			} else {
-				setExperiences({...experiences, endYear: end.format('YYYY-MM-DD')});
+				setExperiences({...experiences, endYear: end});
 			}
-			if (start.isAfter(end)) {
+			if (dayjs(start).isAfter(dayjs(end))) {
 				const state: ZodIssue = {code: 'invalid_literal', expected: '', received: '', path: ['Fecha Inicio'], message: 'Fecha inicio anterior a la fecha fin'};
 				errors = {...err, message: state.message, errors: [state]};
 			} else {
@@ -114,9 +113,9 @@ export default function ExperienceComponent({
 				setErr(errors);
 				return;
 			}
-			setFormData({...formData, experiences: [...formData.experiences, experiences]});
 			setOpen(false);
-			setExperiences({} as SignUpExperienceData);
+      setValue(experiences);
+			setExperiences({} as ExperienceDTO);
 			setErr({message: null, errors: []});
 		}	
 	}
@@ -235,7 +234,7 @@ export default function ExperienceComponent({
 					color='error' 
 					onClick={() => {
 						setOpen(false);
-						setExperiences({} as SignUpExperienceData);
+						setExperiences({} as ExperienceDTO);
 					}} 
 					sx={{ mr: 2 }}
 					>

@@ -2,6 +2,9 @@ import { EducationDTO } from '@/lib/definitions';
 import { Edit, EditOutlined, RemoveCircleOutline } from '@mui/icons-material';
 import { IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
 import React from 'react'
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
+dayjs.locale('es');
 
 type TableExperiencesProps = {
 	educations: EducationDTO[];
@@ -34,8 +37,8 @@ const TableEducationComponent: React.FC<TableExperiencesProps> = ({ educations, 
 							<TableCell component="th" scope="row">
 								{row.center}
 							</TableCell>
-							<TableCell align="left">{row.startYear}</TableCell>
-							<TableCell align="left">{row.endYear}</TableCell>
+							<TableCell align="left">{typeof row.startYear === 'string' ? row.startYear : dayjs(row.startYear).format('LL')}</TableCell>
+							<TableCell align="left">{typeof row.endYear === 'string' ? row.endYear : dayjs(row.endYear).format('LL')}</TableCell>
 							<TableCell align="left">
                 <IconButton onClick={() => deleteEducationExperience(row)}>
                   <RemoveCircleOutline color='error' />

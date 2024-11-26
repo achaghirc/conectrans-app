@@ -1,11 +1,13 @@
-import { SignUpExperienceData } from '@/lib/definitions';
+import React from 'react'
+import { ExperienceDTO } from '@/lib/definitions';
 import { RemoveCircleOutline } from '@mui/icons-material';
 import { IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import React from 'react'
-
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
+dayjs.locale('es');
 type TableExperiencesProps = {
-	experiences: SignUpExperienceData[];
-	deleteExperience: (experience: SignUpExperienceData) => void;
+	experiences: ExperienceDTO[];
+	deleteExperience: (experience: ExperienceDTO) => void;
 };
 
 const TableExperiencesComponent: React.FC<TableExperiencesProps> = ({ experiences, deleteExperience }) => {
@@ -29,8 +31,8 @@ const TableExperiencesComponent: React.FC<TableExperiencesProps> = ({ experience
 							<TableCell component="th" scope="row">
 								{row.experienceType}
 							</TableCell>
-							<TableCell align="left">{row.startYear}</TableCell>
-							<TableCell align="left">{row.endYear}</TableCell>
+							<TableCell align="left">{typeof row.startYear === 'string' ? row.startYear : dayjs(row.startYear).format('LL')}</TableCell>
+							<TableCell align="left">{typeof row.endYear === 'string' ? row.endYear : dayjs(row.endYear).format('LL')}</TableCell>
 							<TableCell align="left">
                 <IconButton onClick={() => deleteExperience(row)}>
                   <RemoveCircleOutline color='error' />
