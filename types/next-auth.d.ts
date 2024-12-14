@@ -1,12 +1,10 @@
 import { DefaultSession } from "next-auth";
-
+import { User as BaseUser } from "@prisma/client";
 declare module "next-auth" {
     interface Session {
-        user: {
-            roleCode?: string;
-        } & DefaultSession["user"];
+        user: User
     }
-    interface User {
+    interface User extends BaseUser {
         roleCode?: string;
     }
 }

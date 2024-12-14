@@ -92,6 +92,11 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
     }
   }
 
+  const handleDateChange = (e: any) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: new Date(value) as Date });
+  }
+
 	return (
     <Grid container spacing={2}>
 			<Grid size={{xs:12, sm: 6}}>
@@ -145,17 +150,19 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
 				{mediaQuery == null ? null :
 					mediaQuery ? (
 						<DatePickerComponent 
-							label="Fecha de nacimiento" 
+							label="Fecha de nacimiento"
+              name='birthdate'
 							value={dayjs(formData.birthdate)} 
 							errors={errors}
-							setValue={(value) => setFormData({...formData, birthdate: value?.format('YYYY-MM-DD') || ''})} 
+							setValue={(value) => handleDateChange({target: {name: 'birthdate', value: new Date(value?.format('YYYY-MM-DD') || '')}})} 
 						/>
 					) : (
 						<DateMobilePickerComponent 
 							label="Fecha de nacimiento"
+              name='birthdate'
 							value={dayjs(formData.birthdate)}
 							errors={errors}
-							setValue={(value) => setFormData({...formData, birthdate: value?.format('YYYY-MM-DD') || ''})} 
+							setValue={(value) => handleDateChange({target: {name: 'birthdate', value: new Date(value?.format('YYYY-MM-DD') || '')}})} 
 						/>
 					)
 				}

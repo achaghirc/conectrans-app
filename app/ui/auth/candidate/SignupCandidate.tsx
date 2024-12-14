@@ -28,7 +28,7 @@ export default function SignupCandidate({ countries, encoders}: SignUpCandidateP
 		cifnif: '09092286H',
 		name: 'Amine',
 		lastname: 'Chaghir',
-		birthdate: dayjs(new Date()),
+		birthdate: new Date('1999x-10-10'),
 		workRange: ['Internacional'],
 		employeeType: ['Autónomo'],
 		contactInfo: {
@@ -48,10 +48,12 @@ export default function SignupCandidate({ countries, encoders}: SignUpCandidateP
     educations: [] as EducationDTO[],
     languages: [] as PersonLanguageDTO[],
 	} as SignUpCandidateFormData)
-	const [errors, setErrors] = useState<State>({message: null, errors:[]});
+	
+  const [errors, setErrors] = useState<State>({message: null, errors:[]});
 	const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
-	useLayoutEffect(() => {
+	
+  useLayoutEffect(() => {
 		const mediaQuery = window.matchMedia('(min-width: 600px)');
 		setMediaQuery(mediaQuery.matches);
 		mediaQuery.addEventListener('change', (e) => {
@@ -60,20 +62,20 @@ export default function SignupCandidate({ countries, encoders}: SignUpCandidateP
 	},[]);
 	
 	const handleFormDataChange = (newData: Partial<SignUpCandidateFormData>) => {
-    	setFormData((prev) => ({ ...prev, ...newData }));
-  	};
+    setFormData((prev) => ({ ...prev, ...newData }));
+  };
 
 	const handleSubmit = async () => {
 		console.log('Enviando formulario...');
     setLoading(true);
 		const formDataCopy = {...formData, summaryFile: null, birthdate: formData.birthdate ? formData.birthdate.toString() : ''};
-		const cloudinaryResponse: CloudinaryUploadResponse = 
+		const cloudinaryResponse: CloudinaryUploadResponse | null = 
 			formData.summaryFile ? 
-			await uploadFileToCloud(formData.summaryFile) 
+			await uploadFileToCloud(formData.summaryFile, formData.email) 
 			: 
 			null;
 		try{
-			const response = await candidateSingup(formDataCopy, null);
+			const response = await candidateSingup(formDataCopy, cloudinaryResponse);
 			if (!response) {
 				setSnackbarProps({...snackbarProps, open: true, message: 'Error al crear la empresa', severity: 'error'});
 				return;
@@ -95,7 +97,7 @@ export default function SignupCandidate({ countries, encoders}: SignUpCandidateP
 			}
 		} catch(e:any) {
 			console.error('Error en el proceso de registro:', e.message);
-			if (cloudinaryResponse.public_id) {
+			if (cloudinaryResponse && cloudinaryResponse.public_id) {
 			  removeFileFromCloud(cloudinaryResponse.public_id, cloudinaryResponse.format);
 			}
 		} finally {
@@ -106,7 +108,7 @@ export default function SignupCandidate({ countries, encoders}: SignUpCandidateP
 
 	const handleNext = async () => {
 		let initialState: State = {message: null, errors: []};
-		const formDataCopy = {...formData, summaryFile: null, birthdate: formData.birthdate ? formData.birthdate.toString() : ''};
+		const formDataCopy = {...formData, summaryFile: null};
 		
 		switch (activeStep) {
 			case 0:

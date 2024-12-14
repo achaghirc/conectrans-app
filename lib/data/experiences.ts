@@ -1,18 +1,18 @@
 'use server';
 import { Experience } from "@prisma/client";
-import { getPersonByUserId } from "./person";
+import { getPersonByUserId, getPersonIdByUserId } from "./person";
 import prisma from "@/app/lib/prisma/prisma";
 import { ExperienceDTO } from "../definitions";
 
 export async function getExperiencesByUserId(userId:string): Promise<ExperienceDTO[] | undefined> {
   try { 
-    const person = await getPersonByUserId(userId);
-    if (!person) {
+    const personId = await getPersonIdByUserId(userId);
+    if (!personId) {
       return undefined;
     }
     const experiences = await prisma.experience.findMany({
       where: {
-        personId: person.id
+        personId: personId
       },
       include: {
         ExperienceType: true
@@ -34,6 +34,46 @@ export async function getExperiencesByUserId(userId:string): Promise<ExperienceD
       }
     });
     return experiencesDTO;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function saveExperiences(experiences: ExperienceDTO[], userId: string): Promise<void> {
+  try {
+    const personId = await getPersonIdByUserId(userId);
+    if (!personId) {
+      throw new Error('Person not found');
+    }
+    const data = experiences.map((experience) => {
+      return {
+        personId: personId,
+        experienceTypeId: experience.experienceTypeId ?? 0,
+        jobName: experience.experienceType ?? '',
+        description: experience.description,
+        startYear: experience.startYear,
+        endYear: experience.endYear,
+      }
+    });
+    
+    await prisma.experience.createMany({
+      data: data
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function deleteExperiences(experiences: ExperienceDTO[]): Promise<void> {
+  try {
+    const deleteExperiences = experiences.map((experience) => {
+      return prisma.experience.delete({
+        where: {
+          id: experience.id
+        }
+      });
+    });
+    await Promise.all(deleteExperiences);
   } catch (error) {
     throw error;
   }

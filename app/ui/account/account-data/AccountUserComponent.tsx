@@ -5,11 +5,9 @@ import { AccountProps } from './AccountPage';
 import { getUserByEmail } from '@/lib/data/user';
 import { PersonDTO, User } from '@/lib/definitions';
 import { getPersonByUserId } from '@/lib/data/person';
-import { useQuery, useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, FormControl, FormControlLabel, IconButton, InputLabel, SelectChangeEvent, Switch, TextField, Typography } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
+import { Box, SelectChangeEvent, Switch, TextField, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import Image from 'next/image';
-import { AddPhotoAlternateOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import ProfileComponent from '../../shared/account/ProfileComponent';
 import { DatePickerComponent } from '../../shared/custom/components/datePickerCustom';
 
@@ -86,170 +84,178 @@ const AccountUserComponent: React.FC<AccountProps> = ({session}) => {
         <ProfileComponent assetUrl={personData?.assetUrl} title={personData?.name ?? ''} subtitle={data?.email ?? ''} />
       </Box>
       <Grid container spacing={3} sx={{ display: 'flex', flexDirection: 'column'}}>
-        <AccordionComponent title={'Datos de la cuenta'} expandedDefault={true}>
-          <Grid container spacing={2} mt={3}>
-            <Grid size={{ xs: 12, sm: 6}}>
-              <TextField
-                sx={{width: {xs: '95%', sm: '80%'}}}
-                label="Email"
-                name="email"
-                value={data?.email}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6}}>
-              <TextField
-                sx={{width: {xs: '95%', sm: '80%'}}}
-                label="Contraseña"
-                name="password"
-                type='password'
-                value={data?.password.substring(0, 6)}
-              />
-            </Grid>
-          </Grid>
-        </AccordionComponent>
-        <AccordionComponent title='Datos personales' expandedDefault={false}>
-          <Grid container spacing={2} mt={3}>
-            <Grid size={{ xs: 12, sm: 6}}>
-              <TextField
-                fullWidth
-                sx={{width: { sm: '80%'}}}
-                label="Email"
-                name="email"
-                value={personData?.name}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6}}>
-              <TextField
-                fullWidth
-                sx={{width: { sm: '80%'}}}
-                label="Apellidos"
-                name="lastname"      
-                value={personData?.lastname}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6}}>
-              <TextField
-                fullWidth
-                label="DNI/NIE"
-                name="cifnif"      
-                value={personData?.document}
-                sx={{
-                  width: { sm: '80%'},
-                  paddingTop: 'calc(1 * var(--mui-spacing))',
-                  '.MuiInputLabel-root.MuiFormLabel-filled':{
-                    transform: 'translate(15px, -0px) scale(0.75) !important',
-                  },
-                  '.MuiInputLabel-root': {
-                    transform: 'translate(14px, 25px) scale(1) !important',
-                  },
-                  '.MuiInputLabel-root.Mui-focused':{
-                    transform: 'translate(15px, -0px) scale(0.75) !important',
-                  }
-                }}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6}}>
-              <DatePickerComponent
-                label="Fecha de nacimiento"
-                value={dayjs(personData?.birthdate)}
-                errors={{}}
-                width={{ sm: '80%'}}
-                setValue={() => {}}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6}}>
-              <TextField
-                fullWidth
-                sx={{width: { sm: '80%'}}}
-                label="Teléfono fijo"
-                name="landlinePhone"      
-                value={personData?.landlinePhone}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6}}>
-              <TextField
-                fullWidth
-                sx={{width: { sm: '80%'}}}
-                label="Dirección"
-                name="address"      
-                value={personData?.location?.street}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6}}>
-              <TextField
-                fullWidth
-                sx={{width: { sm: '80%'}}}
-                label="Localidad"
-                name="city"      
-                value={personData?.location?.city}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6}}>
-              <Box
-                sx={{width: { sm: '80%'}}}
-              >
-                <CountryInputComponent
-                  countries={countries}
-                  inputName='country'
-                  selectedCountry={selectedCountry}
-                  handleInputChange={handleInputChange}
+        <Grid size={{ xs: 12 }}>
+          <AccordionComponent title={'Datos de la cuenta'} expandedDefault={true}>
+            <Grid container spacing={2} mt={3}>
+              <Grid size={{ xs: 12, sm: 6}}>
+                <TextField
+                  sx={{width: {xs: '95%', sm: '80%'}}}
+                  label="Email"
+                  name="email"
+                  value={data?.email}
                 />
-              </Box>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6}}>
+                <TextField
+                  sx={{width: {xs: '95%', sm: '80%'}}}
+                  label="Contraseña"
+                  name="password"
+                  type='password'
+                  value={data?.password.substring(0, 6)}
+                />
+              </Grid>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6}}>
-              <Box sx={{width: { sm: '80%'}}}>
-                <ProvincesInputComponent 
-                  provincesData={provincesData}
-                  isProvincesLoading={isProvincesLoading}
-                  selectedProvince={selectedProvince}
-                  inputName='state'
-                  handleInputChange={handleInputChange}              
+          </AccordionComponent>
+        </Grid>
+        <Grid size={{ xs: 12 }}>
+
+          <AccordionComponent title='Datos personales' expandedDefault={false}>
+            <Grid container spacing={2} mt={3}>
+              <Grid size={{ xs: 12, sm: 6}}>
+                <TextField
+                  fullWidth
+                  sx={{width: { sm: '80%'}}}
+                  label="Email"
+                  name="email"
+                  value={personData?.name}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6}}>
+                <TextField
+                  fullWidth
+                  sx={{width: { sm: '80%'}}}
+                  label="Apellidos"
+                  name="lastname"      
+                  value={personData?.lastname}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6}}>
+                <TextField
+                  fullWidth
+                  label="DNI/NIE"
+                  name="cifnif"      
+                  value={personData?.document}
+                  sx={{
+                    width: { sm: '80%'},
+                    paddingTop: 'calc(1 * var(--mui-spacing))',
+                    '.MuiInputLabel-root.MuiFormLabel-filled':{
+                      transform: 'translate(15px, -0px) scale(0.75) !important',
+                    },
+                    '.MuiInputLabel-root': {
+                      transform: 'translate(14px, 25px) scale(1) !important',
+                    },
+                    '.MuiInputLabel-root.Mui-focused':{
+                      transform: 'translate(15px, -0px) scale(0.75) !important',
+                    }
+                  }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6}}>
+                <DatePickerComponent
+                  label="Fecha de nacimiento"
+                  value={dayjs(personData?.birthdate)}
+                  errors={{}}
+                  width={{ sm: '80%'}}
+                  setValue={() => {}}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6}}>
+                <TextField
+                  fullWidth
+                  sx={{width: { sm: '80%'}}}
+                  label="Teléfono fijo"
+                  name="landlinePhone"      
+                  value={personData?.landlinePhone}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6}}>
+                <TextField
+                  fullWidth
+                  sx={{width: { sm: '80%'}}}
+                  label="Dirección"
+                  name="address"      
+                  value={personData?.location?.street}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6}}>
+                <TextField
+                  fullWidth
+                  sx={{width: { sm: '80%'}}}
+                  label="Localidad"
+                  name="city"      
+                  value={personData?.location?.city}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6}}>
+                <Box
+                  sx={{width: { sm: '80%'}}}
+                >
+                  <CountryInputComponent
+                    countries={countries}
+                    inputName='country'
+                    selectedCountry={selectedCountry}
+                    handleInputChange={handleInputChange}
                   />
-              </Box>
+                </Box>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6}}>
+                <Box sx={{width: { sm: '80%'}}}>
+                  <ProvincesInputComponent 
+                    provincesData={provincesData}
+                    isProvincesLoading={isProvincesLoading}
+                    selectedProvince={selectedProvince}
+                    inputName='state'
+                    handleInputChange={handleInputChange}              
+                    />
+                </Box>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6}}>
+                <TextField
+                  fullWidth
+                  sx={{width: { sm: '80%'}}}
+                  label="Código Postal"
+                  name="state"      
+                  value={personData?.location?.zip}
+                />
+              </Grid>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6}}>
-              <TextField
-                fullWidth
-                sx={{width: { sm: '80%'}}}
-                label="Código Postal"
-                name="state"      
-                value={personData?.location?.zip}
-              />
+          </AccordionComponent>
+        </Grid>
+        <Grid size={{ xs: 12 }}>
+
+          <AccordionComponent title='Preferencias de empleo' expandedDefault={false}>
+            <Grid container spacing={2} mt={3}>
+              <Grid size={{ xs: 12, sm: 6}}
+                sx={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: {xs: 'space-between', sm: 'flex-start'}}}
+              >
+                <Typography variant='h6' component={'h1'} fontWeight={'bold'} color='textPrimary'>
+                  Vehículo propio
+                </Typography>
+                <Switch
+                  id='hasCar'
+                  name='hasCar'
+                  checked={hasCar ?? false}
+                  onChange={() => setHasCar(!hasCar)}
+                  inputProps={{ 'aria-label': 'controlled' }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6}}
+                sx={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: {xs: 'space-between', sm: 'flex-start'}}}
+              >
+                <Typography variant='h6' component={'h1'} fontWeight={'bold'} color='textPrimary'>
+                  Disponible para reubicación
+                </Typography>
+                <Switch
+                  id='relocateOption'
+                  name='relocateOption'
+                  checked={relocateOption ?? false}
+                  onChange={() => setRelocateOption(!relocateOption)}
+                  inputProps={{ 'aria-label': 'controlled' }}
+                />
+              </Grid>
             </Grid>
-          </Grid>
-        </AccordionComponent>
-        <AccordionComponent title='Preferencias de empleo' expandedDefault={false}>
-          <Grid container spacing={2} mt={3}>
-            <Grid size={{ xs: 12, sm: 6}}
-              sx={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: {xs: 'space-between', sm: 'flex-start'}}}
-            >
-              <Typography variant='h6' component={'h1'} fontWeight={'bold'} color='textPrimary'>
-                Vehículo propio
-              </Typography>
-              <Switch
-                id='hasCar'
-                name='hasCar'
-                checked={hasCar ?? false}
-                onChange={() => setHasCar(!hasCar)}
-                inputProps={{ 'aria-label': 'controlled' }}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6}}
-              sx={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: {xs: 'space-between', sm: 'flex-start'}}}
-            >
-              <Typography variant='h6' component={'h1'} fontWeight={'bold'} color='textPrimary'>
-                Disponible para reubicación
-              </Typography>
-              <Switch
-                id='relocateOption'
-                name='relocateOption'
-                checked={relocateOption ?? false}
-                onChange={() => setRelocateOption(!relocateOption)}
-                inputProps={{ 'aria-label': 'controlled' }}
-              />
-            </Grid>
-          </Grid>
-        </AccordionComponent>
+          </AccordionComponent>
+        </Grid>
       </Grid>
     </Box>
   )

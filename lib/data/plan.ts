@@ -21,10 +21,10 @@ export async function getAllPlans(): Promise<Plan[] | undefined> {
             const planPreferences: EncoderType[] | undefined = await getEncoderTypeByIdsIn(planPreferenceIds); 
             return {...plan,
                     description: plan.description ?? '',
-                    price: plan.price ?? null,
-                    priceMonthly: plan.priceMonthly ?? null,
-                    priceBianual: plan.priceBianual ?? null,
-                    priceYearly: plan.priceYearly ?? null,
+                    price: plan.price?.toNumber() ?? null,
+                    priceMonthly: plan.priceMonthly?.toNumber() ?? null,
+                    priceBianual: plan.priceBianual?.toNumber() ?? null,
+                    priceYearly: plan.priceYearly?.toNumber() ?? null,
                     planPreferences: planPreferences ?? []
                 };             
         }));
@@ -49,10 +49,10 @@ export async function getPlanById(id: number): Promise<Plan | undefined> {
         const planPreferences: EncoderType[] | undefined = await getEncoderTypeByIdsIn(planPreferenceIds); 
         return {...plan,
                 description: plan.description ?? '',
-                price: plan.price ?? null,
-                priceMonthly: plan.priceMonthly ?? null,
-                priceBianual: plan.priceBianual ?? null,
-                priceYearly: plan.priceYearly ?? null,
+                price: plan.price.toNumber() ?? null,
+                priceMonthly: plan.priceMonthly.toNumber() ?? null,
+                priceBianual: plan.priceBianual?.toNumber() ?? null,
+                priceYearly: plan.priceYearly?.toNumber() ?? null,
                 planPreferences: planPreferences ?? []
             };
     } catch(e) {

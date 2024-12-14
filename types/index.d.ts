@@ -6,6 +6,7 @@ import { Company as PrismaCompany,
   EncoderType,
   DriverEmploymentPreferences,
   DriverWorkRangePreferences,
+  User as BaseUser,
   country,
    } from "@prisma/client";
 
@@ -38,5 +39,13 @@ declare module '@prisma/client' {
     interface DriverWorkRangePreferencesDTO extends DriverWorkRangePreferences {
       id?: number;
       workScope: EncoderType;
+    }
+
+    interface User extends BaseUser {
+        roleCode?: string;
+        companyId?: number;
+        personId?: number;
+        assetUrl?: string;
+        name?: string;
     }
 }

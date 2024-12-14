@@ -157,7 +157,13 @@ const CompanyData: React.FC<CompanyDataProps> = ({session}) => {
   
   return (
     <form action={onAction}>
-      <Box textAlign={'center'} gap={2} >
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: 'column'
+          }}
+        gap={2} 
+      >
         <ProfileComponent assetUrl={companyDataSubmit?.assetUrl} title={companyDataSubmit?.name ?? ''} subtitle={companyDataSubmit?.description ?? ''} />
         <Box margin={3}>
           <Typography variant='body1' component={'h2'} color='textPrimary' fontWeight={'bold'} textAlign={'start'}>

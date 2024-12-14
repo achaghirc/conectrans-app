@@ -5,8 +5,6 @@ import { signInSchema } from './lib/validations/loginValidations';
 import bcrypt from 'bcryptjs';
 import { User } from './lib/definitions';
 
-const allowedUrls = ['/home', '/auth/login', '/auth/signup/company', '/auth/signup/candidate'];   
-
 export default {
     providers: [
         Credentials({

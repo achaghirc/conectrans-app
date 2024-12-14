@@ -1,6 +1,6 @@
 import { EducationDTO } from '@/lib/definitions';
-import { Edit, EditOutlined, RemoveCircleOutline } from '@mui/icons-material';
-import { IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
+import { EditOutlined, RemoveCircleOutline } from '@mui/icons-material';
+import { Box, IconButton, Paper, SxProps, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
 import React from 'react'
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
@@ -15,8 +15,8 @@ type TableExperiencesProps = {
 const TableEducationComponent: React.FC<TableExperiencesProps> = ({ educations, deleteEducationExperience, editEducationExperience }) => {
   return (
 		<TableContainer component={Paper}>
-			<Table sx={{ minWidth: { xs: 350, sm: 650} }} aria-label="simple table">
-				<TableHead>
+			<Table sx={{ minWidth: '100%' }} aria-label="simple table education">
+				<TableHead sx={{ display: {xs: 'none', sm: 'table-header-group'}}}>
 					<TableRow>
 						<TableCell align="left">Título</TableCell>
 						<TableCell align="left">Centro</TableCell>
@@ -25,21 +25,44 @@ const TableEducationComponent: React.FC<TableExperiencesProps> = ({ educations, 
 						<TableCell align="left">Acción</TableCell>
 					</TableRow>
 				</TableHead>
-				<TableBody>
-          {educations.map((row: EducationDTO, index: number) => (
+				<TableHead sx={{ display: {xs: 'flex', sm: 'none'}, flexDirection: {xs: 'column'}}}>
+					<TableRow>
+						<TableCell sx={{ display: {xs: 'none', sm: 'block'}}} align="left">Título</TableCell>
+						<TableCell sx={{ display: {xs: 'none', sm: 'block'}}} align="left">Centro</TableCell>
+						<TableCell sx={{ display: {xs: 'none', sm: 'block'}}} align="left">Inicio</TableCell>
+						<TableCell sx={{ display: {xs: 'none', sm: 'block'}}} align="left">Fin</TableCell>
+						<TableCell sx={{ display: {xs: 'none', sm: 'block'}}} align="left">Acción</TableCell>
+					</TableRow>
+				</TableHead>
+				<TableBody 
+          sx={{ 
+            display: {xs: 'flex', sm: 'table-row-group'},
+            flexDirection: {xs: 'column', sm: 'row'},
+          }}
+        >
+          {educations != undefined && educations.map((row: EducationDTO, index: number) => (
 						<TableRow
 							key={index}
-							sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+							sx={{
+                borderBottom: index % 2 != 0 ? '1px solid #ffffff' : '1px solid #cccccc',
+                backgroundColor: {xs: index % 2 != 0 ? '#cccccc' : 'f2f2f2', sm: 'inherit'},
+                '&:last-child td, &:last-child th': { border: 0 } 
+              }}
 						>
-							<TableCell component="th" scope="row">
-								{row.title}
+							<TableCell sx={tableCellStyles} component="th" scope="row">
+                <Box component={'span'} sx={cellHeaderMobile} >Título </Box>{row.title || ''}
 							</TableCell>
-							<TableCell component="th" scope="row">
-								{row.center}
+							<TableCell sx={tableCellStyles} component="th" scope="row">
+                <Box component={'span'} sx={cellHeaderMobile} >Centro </Box>{row.center || ''}
 							</TableCell>
-							<TableCell align="left">{typeof row.startYear === 'string' ? row.startYear : dayjs(row.startYear).format('LL')}</TableCell>
-							<TableCell align="left">{typeof row.endYear === 'string' ? row.endYear : dayjs(row.endYear).format('LL')}</TableCell>
-							<TableCell align="left">
+							<TableCell sx={tableCellStyles} align="left">
+                <Box component={'span'} sx={cellHeaderMobile} >Inicio </Box>{typeof row.startYear === 'string' ? row.startYear ?? '-': dayjs(row.startYear).format('LL')}
+              </TableCell>
+							<TableCell sx={tableCellStyles} align="left">
+                <Box component={'span'} sx={cellHeaderMobile} >Fin </Box>{typeof row.endYear === 'string' ? row.endYear ?? '-' : dayjs(row.endYear).format('LL')}
+              </TableCell>
+							<TableCell sx={tableCellStyles} align="left">
+                <Box component={'span'} sx={cellHeaderMobile} >Acción </Box>
                 <IconButton onClick={() => deleteEducationExperience(row)}>
                   <RemoveCircleOutline color='error' />
                 </IconButton>
@@ -55,5 +78,16 @@ const TableEducationComponent: React.FC<TableExperiencesProps> = ({ educations, 
 	);
 };
 
+
+const cellHeaderMobile: SxProps = {
+  display: {xs: 'block', sm: 'none'},
+  fontWeight: 'bold',
+}
+
+const tableCellStyles: SxProps = {
+  display: {xs: 'flex', sm: 'table-cell'},
+  flexDirection: {xs: 'row', sm: 'column'},
+  justifyContent: 'space-between',
+}
 
 export default TableEducationComponent

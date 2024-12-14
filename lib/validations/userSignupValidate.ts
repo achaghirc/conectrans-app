@@ -16,32 +16,35 @@ const FormUserAuthSchema = z.object({
     password: z.string().min(8, 'Contraseña no válida, debe tener al menos 8 caracteres'),
     confirmPassword: z.string().min(8, 'Contraseña no válida, debe tener al menos 8 caracteres')
 });
-
+let date18YearsAgo = new Date();
+date18YearsAgo.setFullYear(date18YearsAgo.getFullYear() - 18);
 const FormUserSchema = z.object({
-    name: z.string().min(1, 'El nombre es obligatorio'),
-    lastname: z.string().min(1, 'Los apellidos son obligatorios'),
-    cifnif: z.string().min(1, 'El CIF/NIF es obligatorio'),
-    phone: z.string().min(1, 'El teléfono es obligatorio'),
-    birthdate: z.string().min(1, 'La fecha de nacimiento es obligatoria'),
-    streetAddress: z.string({
-        required_error: 'Campo obligatorio',
-    }).min(1, 'La dirección es obligatoria'),
-    zip: z.string({
-        required_error: 'Campo obligatorio',
-    }).min(1, 'El código postal es obligatorio'),
-    country: z.number({
-        required_error: 'Campo obligatorio',
-    }).min(1, 'El país es obligatorio'),
-    province: z.string({
-        required_error: 'Campo obligatorio',
-    }).min(1, 'La provincia es obligatoria'),
-    locality: z.string({
-        required_error: 'Campo obligatorio',
-    }).min(1, 'La localidad es obligatoria'),
-    mobilePhone: z.string({
-        required_error: 'Campo obligatorio',
-    }).min(1, 'Campo obligatorio'),
-    landlinePhone: z.string(),
+  name: z.string().min(1, 'El nombre es obligatorio'),
+  lastname: z.string().min(1, 'Los apellidos son obligatorios'),
+  cifnif: z.string().min(1, 'El CIF/NIF es obligatorio'),
+  phone: z.string().min(1, 'El teléfono es obligatorio'),
+  birthdate: z.date({
+    required_error: 'Campo obligatorio',
+  }).max(date18YearsAgo, 'Recuerda que debes ser mayor de edad +18.'),
+  streetAddress: z.string({
+    required_error: 'Campo obligatorio',
+  }).min(1, 'La dirección es obligatoria'),
+  zip: z.string({
+    required_error: 'Campo obligatorio',
+  }).min(1, 'El código postal es obligatorio'),
+  country: z.number({
+    required_error: 'Campo obligatorio',
+  }).min(1, 'El país es obligatorio'),
+  province: z.string({
+    required_error: 'Campo obligatorio',
+  }).min(1, 'La provincia es obligatoria'),
+  locality: z.string({
+    required_error: 'Campo obligatorio',
+  }).min(1, 'La localidad es obligatoria'),
+  mobilePhone: z.string({
+    required_error: 'Campo obligatorio',
+  }).min(1, 'Campo obligatorio'),
+  landlinePhone: z.string(),
 });
 
 const FormUserProfesionalSchema = z.object({

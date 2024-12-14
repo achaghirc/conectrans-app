@@ -74,21 +74,8 @@ const SubscriptionCard = ({ plan,selected, onSelectPlan } : SubscriptionCardProp
               onClick={() => onSelectPlan(plan)}
               startIcon={selected ? <CheckCircleOutline /> : null}
             >
-              {selected ? 'Plan actual' : 'Cambiar a '+plan.title}
+              {selected ? 'Plan actual' : 'Seleccionar '+plan.title}
             </Button>
-            {/* Feature List */}
-            
-            {/* <Box>
-                {plan.planPreferences.map((preference, index) => (
-                  <Box key={index} sx={{ display: 'flex', alignContent: 'center', alignItems: 'center', justifyContent: 'flex-start', mt: 0}}>
-                    <CheckCircleOutline sx={{ mr:1}} color="primary" />
-                    <Typography sx={{ mb: 0 }} variant="body2" color="text" gutterBottom>
-                        {preference.name}
-                    </Typography>
-                  </Box>
-                ))}
-                <Divider sx={{ my: 2 }} />
-            </Box> */}
           </CardContent>
         <CardActions>
           <Box 

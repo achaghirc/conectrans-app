@@ -21,7 +21,7 @@ const links: NavLinksType[] = [
   { name: 'Subscripciones', href: '/account/subscriptions', icon: PaymentOutlined, roles: ['ADMIN', 'COMPANY'] },
 ];
 
-export default function NavLinks({ role }: NavlinksProps) {
+export default function NavLinks({ role, onClick }: NavlinksProps) {
   const [authorizedLinks, setAuthorizedLinks] = useState<NavLinksType[]>([]);
   const pathname = usePathname();
   const router = useRouter();
@@ -32,6 +32,11 @@ export default function NavLinks({ role }: NavlinksProps) {
 			setAuthorizedLinks(authorizedLinks);
 	},[role]);
 
+  const handleOnClick = (route: string) => {
+    onClick && onClick();
+    router.push(route);
+  }
+
   return (
     <List style={{ width: '100%', margin: '0 auto'}}>
       {authorizedLinks.map((link: NavLinksType, index: number) => {
@@ -40,7 +45,7 @@ export default function NavLinks({ role }: NavlinksProps) {
         return (
           <Fragment key={index}>
             <ListItem disablePadding sx={{ mt: 2 }}>
-                <ListItemButton selected={selected} onClick={() => router.push(link.href)}>
+                <ListItemButton selected={selected} onClick={() => handleOnClick(link.href)}>
                 <ListItemIcon>
                    <LinkIcon />
                 </ListItemIcon>

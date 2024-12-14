@@ -8,30 +8,30 @@ datasource db {
 }
 
 model Person {
-  id         Int       @id @default(autoincrement())
-  name       String
-  lastname   String
-  birthdate  DateTime?
-  phone      String
-  landlinePhone String
-  document   String?
-  hasCar    Boolean  @default(false)
-  relocateOption Boolean @default(false)
-  locationId Int      
-  profileImageId Int?   @unique
-  resumeId   Int?       @unique
-  userId     String    @unique
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime
-  Location   Location  @relation(fields: [locationId], references: [id])
-  User       User      @relation(fields: [userId], references: [id])
-  Asset      Asset?     @relation(fields: [resumeId], references: [id])
-  PersonProfileImage Asset? @relation("AssetImageProfileId", fields: [profileImageId], references: [id])
-  Experience Experience[]
-  PersonLanguages PersonLanguages[]
-  DriverProfile DriverProfile[]
-  Education Education[]
-  ApplicationOffer ApplicationOffer[]
+  id                 Int                @id @default(autoincrement())
+  name               String
+  lastname           String
+  birthdate          DateTime?
+  phone              String
+  document           String?
+  userId             String             @unique
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime
+  locationId         Int
+  relocateOption     Boolean            @default(false)
+  landlinePhone      String
+  hasCar             Boolean            @default(false)
+  resumeId           Int?               @unique
+  profileImageId     Int?               @unique
+  ApplicationOffer   ApplicationOffer[]
+  DriverProfile      DriverProfile[]
+  Education          Education[]
+  Experience         Experience[]
+  Location           Location           @relation(fields: [locationId], references: [id])
+  PersonProfileImage Asset?             @relation("AssetImageProfileId", fields: [profileImageId], references: [id])
+  Asset              Asset?             @relation(fields: [resumeId], references: [id])
+  User               User               @relation(fields: [userId], references: [id])
+  PersonLanguages    PersonLanguages[]
 }
 
 model ContactPerson {
@@ -48,18 +48,18 @@ model ContactPerson {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String   @default("")
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-  roleId    Int
-  Company   Company?
-  Person    Person?
-  Role      Role     @relation(fields: [roleId], references: [id])
-  Offer     Offer[]
+  id           String         @id @default(cuid())
+  email        String         @unique
+  password     String
+  name         String         @default("")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  roleId       Int
+  Company      Company?
+  Offer        Offer[]
+  Person       Person?
   Subscription Subscription[]
+  Role         Role           @relation(fields: [roleId], references: [id])
 }
 
 model Role {
@@ -87,16 +87,16 @@ model Location {
   number    String
   city      String
   state     String
-  countryId Int
   zip       String
   latitude  Float
   longitude Float
   createdAt DateTime @default(now())
   updatedAt DateTime
+  countryId Int
   Company   Company?
-  Person    Person[]
-  Country   country @relation(fields: [countryId], references: [id])
+  Country   country  @relation(fields: [countryId], references: [id])
   Offer     Offer[]
+  Person    Person[]
 }
 
 model Company {
@@ -123,30 +123,31 @@ model Company {
 }
 
 model Asset {
-  id        Int      @id @default(autoincrement())
-  publicId  String
-  secureUrl String
-  url       String
-  width     Int
-  height    Int
-  format    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-  Company   Company?
-  Person    Person?
-  PersonProfileImage Person? @relation("AssetImageProfileId")
+  id                 Int      @id @default(autoincrement())
+  publicId           String
+  secureUrl          String
+  url                String
+  width              Int
+  height             Int
+  format             String
+  originalFilename   String @default("")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime
+  Company            Company?
+  PersonProfileImage Person?  @relation("AssetImageProfileId")
+  Person             Person?
 }
 
 model country {
-  id         Int            @id
-  name_es    String         @db.VarChar
-  name_en    String         @db.VarChar
-  cod_iso2   String?        @db.VarChar(10)
-  cod_iso3   String?        @db.VarChar(10)
-  phone_code String?        @db.VarChar(10)
-  Province   province[]
+  id            Int             @id
+  name_es       String          @db.VarChar
+  name_en       String          @db.VarChar
+  cod_iso2      String?         @db.VarChar(10)
+  cod_iso3      String?         @db.VarChar(10)
+  phone_code    String?         @db.VarChar(10)
   DriverLicence DriverLicence[]
-  Location   Location[]
+  Location      Location[]
+  Province      province[]
 }
 
 model province {
@@ -158,164 +159,169 @@ model province {
 }
 
 model Languages {
-  id Int @id @default(autoincrement())
-  name String @db.VarChar(50)
-  code String @db.VarChar
+  id              Int               @id @default(autoincrement())
+  name            String            @db.VarChar(50)
+  code            String            @db.VarChar
   PersonLanguages PersonLanguages[]
 }
 
 model PersonLanguages {
-  id Int @id @default(autoincrement())
-  personId Int
+  id         Int       @id @default(autoincrement())
+  personId   Int
   languageId Int
-  level String @db.VarChar
-  Person Person @relation(fields: [personId], references: [id])
-  Languages Languages @relation(fields: [languageId], references: [id])
+  level      String    @db.VarChar
+  Languages  Languages @relation(fields: [languageId], references: [id])
+  Person     Person    @relation(fields: [personId], references: [id])
+
+  @@index([personId], map: "person_language_personid_idx")
 }
 
 model DriverProfile {
-  id Int @id @default(autoincrement())
-  personId Int
-  hasCapCertification Boolean @default(false)
-  hasDigitalTachograph Boolean @default(false)
-  Person Person @relation(fields: [personId], references: [id])
-  DriverLicence DriverLicence[]
-  DriverWorkRangePreferences DriverWorkRangePreferences[]
+  id                          Int                           @id @default(autoincrement())
+  personId                    Int
+  hasCapCertification         Boolean                       @default(false)
+  hasDigitalTachograph        Boolean                       @default(false)
   DriverEmploymentPreferences DriverEmploymentPreferences[]
+  DriverLicence               DriverLicence[]
+  Person                      Person                        @relation(fields: [personId], references: [id])
+  DriverWorkRangePreferences  DriverWorkRangePreferences[]
 }
 
 model DriverWorkRangePreferences {
-  id Int @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
   driverProfileId Int
-  workScopeId Int
-  DriverProfile DriverProfile @relation(fields: [driverProfileId], references: [id])
-  workScope EncoderType @relation("WorkScopeRelation", fields: [workScopeId], references: [id])
+  workScopeId     Int
+  DriverProfile   DriverProfile @relation(fields: [driverProfileId], references: [id])
+  workScope       EncoderType   @relation("WorkScopeRelation", fields: [workScopeId], references: [id])
 }
 
 model DriverEmploymentPreferences {
-  id Int @id @default(autoincrement())
-  driverProfileId Int
+  id               Int           @id @default(autoincrement())
+  driverProfileId  Int
   employmentTypeId Int
-  DriverProfile DriverProfile @relation(fields: [driverProfileId], references: [id])
-  EncoderType EncoderType @relation("EmploymentTypeRelation", fields: [employmentTypeId], references: [id])
+  DriverProfile    DriverProfile @relation(fields: [driverProfileId], references: [id])
+  EncoderType      EncoderType   @relation("EmploymentTypeRelation", fields: [employmentTypeId], references: [id])
 }
 
-
 model DriverLicence {
-  id               Int      @id @default(autoincrement())
-  driverProfileId  Int
-  licenceTypeId    Int
-  countryId        Int
-  DriverProfile    DriverProfile? @relation(fields: [driverProfileId], references: [id])
-  Country          country? @relation(fields: [countryId], references: [id])
-  LicenceType      EncoderType? @relation(fields: [licenceTypeId], references: [id])
-  Offer            Offer[]
+  id              Int           @id @default(autoincrement())
+  driverProfileId Int
+  licenceTypeId   Int
+  countryId       Int
+  Country         country       @relation(fields: [countryId], references: [id])
+  DriverProfile   DriverProfile @relation(fields: [driverProfileId], references: [id])
+  LicenceType     EncoderType   @relation(fields: [licenceTypeId], references: [id])
+  Offer           Offer[]
 }
 
 model Experience {
-  id             Int            @id @default(autoincrement())
-  jobName        String         @db.VarChar
-  startYear      DateTime
-  endYear        DateTime
-  description    String         @db.VarChar
-  personId       Int
+  id               Int         @id @default(autoincrement())
+  jobName          String      @db.VarChar
+  startYear        DateTime
+  endYear          DateTime
+  description      String      @db.VarChar
+  personId         Int
   experienceTypeId Int
-  ExperienceType EncoderType    @relation(fields: [experienceTypeId], references: [id])
-  Person         Person         @relation(fields: [personId], references: [id])
+  ExperienceType   EncoderType @relation(fields: [experienceTypeId], references: [id])
+  Person           Person      @relation(fields: [personId], references: [id])
+
+  @@index([personId], map: "experience_personid_idx")
 }
 
 model Education {
-  id Int @id @default(autoincrement())
-  personId Int?
-  title String @db.VarChar
-  center String? @db.VarChar 
-  speciality String? @db.VarChar
-  startYear DateTime
-  endYear DateTime
-  Person Person? @relation(fields: [personId], references: [id])
+  id         Int      @id @default(autoincrement())
+  personId   Int?
+  title      String   @db.VarChar
+  startYear  DateTime
+  endYear    DateTime
+  center     String?  @db.VarChar
+  speciality String?  @db.VarChar
+  Person     Person?  @relation(fields: [personId], references: [id])
+
+  @@index([personId], map: "education_personid_idx")
 }
 
 model EncoderType {
-  id Int @id @default(autoincrement())
-  name String @db.VarChar
-  code String @db.VarChar
-  type String @db.VarChar
-  Experience Experience[]
-  DriverLicence DriverLicence[]
-  DriverWorkRangePreferences DriverWorkRangePreferences[] @relation("WorkScopeRelation")
+  id                          Int                           @id @default(autoincrement())
+  name                        String                        @db.VarChar
+  code                        String                        @db.VarChar
+  type                        String                        @db.VarChar
   DriverEmploymentPreferences DriverEmploymentPreferences[] @relation("EmploymentTypeRelation")
-  PlanPreferences PlanPreferences[] @relation("preferencePlanEncType")
+  DriverLicence               DriverLicence[]
+  DriverWorkRangePreferences  DriverWorkRangePreferences[]  @relation("WorkScopeRelation")
+  Experience                  Experience[]
+  PlanPreferences             PlanPreferences[]             @relation("preferencePlanEncType")
 }
 
 model Subscription {
-  id Int @id @default(autoincrement())
-  userId String
-  planId Int
+  id                   Int      @id @default(autoincrement())
+  userId               String
+  planId               Int
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime
+  endDate              DateTime
+  startDate            DateTime
+  status               String   @default("pending") @db.VarChar
   stripeSubscriptionId String?
-  status String @db.VarChar @default("pending") // active, canceled, paused, pending
-  startDate DateTime
-  endDate DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-  Offer Offer[]
-  User User @relation(fields: [userId], references: [id])
-  Plan Plan @relation(fields: [planId], references: [id])
+  Offer                Offer[]
+  Plan                 Plan     @relation(fields: [planId], references: [id])
+  User                 User     @relation(fields: [userId], references: [id])
 }
 
 model Plan {
-  id Int @id @default(autoincrement())
-  title String @db.VarChar
-  description String? @db.VarChar
-  price Decimal  @default(0)
-  priceMonthly Decimal @default(0)
-  priceYearly Decimal? @default(0)
-  priceBianual Decimal?
-  currency String @db.VarChar
-  maxOffers Int
-  allowEditOffer Boolean @default(false)
-  accessLimited Boolean @default(true)
-  subscription Subscription[]
+  id              Int               @id @default(autoincrement())
+  title           String            @db.VarChar
+  description     String?           @db.VarChar
+  priceMonthly    Decimal           @default(0)
+  priceYearly     Decimal?          @default(0)
+  priceBianual    Decimal?
+  currency        String            @db.VarChar
+  maxOffers       Int
+  allowEditOffer  Boolean           @default(false)
+  accessLimited   Boolean           @default(true)
+  price           Decimal           @default(0)
   PlanPreferences PlanPreferences[]
+  subscription    Subscription[]
 }
 
 model PlanPreferences {
-  id Int @id @default(autoincrement())
-  planId Int
-  preferencePlanId Int
-  Plan Plan @relation(fields: [planId], references: [id])
-  preferencePlanEncType EncoderType @relation("preferencePlanEncType",fields: [preferencePlanId], references: [id])
+  id                    Int         @id @default(autoincrement())
+  planId                Int
+  preferencePlanId      Int
+  Plan                  Plan        @relation(fields: [planId], references: [id])
+  preferencePlanEncType EncoderType @relation("preferencePlanEncType", fields: [preferencePlanId], references: [id])
 }
 
 model Offer {
-  id Int @id @default(autoincrement())
-  title String @db.VarChar
-  subtitle String @db.VarChar
-  description String? @db.VarChar
-  startDate DateTime
-  endDate DateTime
-  salary String @db.VarChar
-  isAnonimous Boolean @default(false)
-  contractType String @db.VarChar
-  driverLicenceId Int
-  locationId Int 
-  subscriptionId Int
-  userId String
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-  Subscription Subscription @relation(fields: [subscriptionId], references: [id])
-  DriverLicence DriverLicence @relation(fields: [driverLicenceId], references: [id])
-  Location Location @relation(fields: [locationId], references: [id])
-  User User @relation(fields: [userId], references: [id])
+  id               Int                @id @default(autoincrement())
+  title            String             @db.VarChar
+  subtitle         String             @db.VarChar
+  description      String?            @db.VarChar
+  startDate        DateTime
+  endDate          DateTime
+  salary           String             @db.VarChar
+  isAnonimous      Boolean            @default(false)
+  contractType     String             @db.VarChar
+  driverLicenceId  Int
+  locationId       Int
+  subscriptionId   Int
+  userId           String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
   ApplicationOffer ApplicationOffer[]
+  DriverLicence    DriverLicence      @relation(fields: [driverLicenceId], references: [id])
+  Location         Location           @relation(fields: [locationId], references: [id])
+  Subscription     Subscription       @relation(fields: [subscriptionId], references: [id])
+  User             User               @relation(fields: [userId], references: [id])
 }
 
 model ApplicationOffer {
-  id Int @id @default(autoincrement())
-  personId Int
-  offerId Int
-  status String @db.VarChar
+  id        Int      @id @default(autoincrement())
+  personId  Int
+  offerId   Int
+  status    String   @db.VarChar
   createdAt DateTime @default(now())
   updatedAt DateTime
-  Person Person @relation(fields: [personId], references: [id])
-  Offer Offer @relation(fields: [offerId], references: [id])
+  Offer     Offer    @relation(fields: [offerId], references: [id])
+  Person    Person   @relation(fields: [personId], references: [id])
 }

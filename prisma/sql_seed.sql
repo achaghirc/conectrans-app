@@ -54,13 +54,23 @@ INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (47, 'ADR Explosivos
 INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (48, 'ADR Radiactivos', 'RADIOACTIVE_ADR', 'CARNET_ADR');
 
 
-INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (48, 'Acceso Limitado', 'LIMITED_ACCESS', 'PLAN_PREFERENES');
-INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (49, 'Acceso Ilimitado', 'TOTAL_ACCESS', 'PLAN_PREFERENES');
-INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (50, 'Una Oferta', 'ONE_OFFER', 'PLAN_PREFERENES');
-INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (51, 'Tres Ofertas', 'THREE_OFFER', 'PLAN_PREFERENES');
-INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (52, 'Doce Ofertas (1/mes)', 'TWELVE_OFFER', 'PLAN_PREFERENES');
-INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (53, 'Oferta Destacada', 'HIGHLIGHTED_OFFER', 'PLAN_PREFERENES');
-INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (54, 'Oferta Anónima', 'ANONYMOUS_OFFER', 'PLAN_PREFERENES');
-INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (55, 'Ofertas Editables', 'EDITABLE_OFFER', 'PLAN_PREFERENES');
-INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (57, 'Visualización de ofertas', 'OFFER_VISUALIZATION', 'PLAN_PREFERENES');
+INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (48, 'Acceso Limitado', 'LIMITED_ACCESS', 'PLAN_PREFERENCES');
+INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (49, 'Acceso Ilimitado', 'TOTAL_ACCESS', 'PLAN_PREFERENCES');
+INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (50, 'Una Oferta', 'ONE_OFFER', 'PLAN_PREFERENCES');
+INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (51, 'Tres Ofertas', 'THREE_OFFER', 'PLAN_PREFERENCES');
+INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (52, 'Doce Ofertas (1/mes)', 'TWELVE_OFFER', 'PLAN_PREFERENCES');
+INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (53, 'Oferta Destacada', 'HIGHLIGHTED_OFFER', 'PLAN_PREFERENCES');
+INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (54, 'Oferta Anónima', 'ANONYMOUS_OFFER', 'PLAN_PREFERENCES');
+INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (55, 'Ofertas Editables', 'EDITABLE_OFFER', 'PLAN_PREFERENCES');
+INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (57, 'Visualización de ofertas', 'OFFER_VISUALIZATION', 'PLAN_PREFERENCES');
 
+INSERT INTO "Languages" (id, "name" , code) VALUES (1, 'Inglés', 'en') ;
+INSERT INTO "Languages" (id, "name" , code) VALUES (2, 'Español', 'es') ;
+INSERT INTO "Languages" (id, "name" , code) VALUES (3, 'Francés', 'fr') ;
+INSERT INTO "Languages" (id, "name" , code) VALUES (4, 'Alemán', 'de') ;
+INSERT INTO "Languages" (id, "name" , code) VALUES (5, 'Chino', 'zh') ;
+INSERT INTO "Languages" (id, "name" , code) VALUES (6, 'Japonés', 'ja') ;
+INSERT INTO "Languages" (id, "name" , code) VALUES (7, 'Ruso', 'ru') ;
+INSERT INTO "Languages" (id, "name" , code) VALUES (8, 'Árabe', 'ar') ;
+INSERT INTO "Languages" (id, "name" , code) VALUES (9, 'Portugués', 'pt') ;
+INSERT INTO "Languages" (id, "name" , code) VALUES (10, 'Hindio', 'hi') ;

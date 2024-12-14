@@ -36,7 +36,7 @@ const LanguagesComponentSignUp: React.FC<LanguagesComponentProps> = (
       <Divider sx={{ mb: 1 }}/>
       <TableLanguageComponent languages={selectedLenguages} onAction={handleDeleteLanguage} />
       {loadingLanguages ? 'Cargando...' : isError ? 'Error al cargar los idiomas' : null}
-      <Box sx={{ gap: 3, display: 'flex'}}>
+      <Box sx={{ gap: 3, display: 'flex', flexDirection: { xs: 'column', sm: 'row'}}}>
         <FormControl fullWidth>
           <Autocomplete
             id="tags-outlined"

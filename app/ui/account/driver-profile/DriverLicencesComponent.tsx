@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import Grid from '@mui/material/Grid2';
-import { Autocomplete, Button, CircularProgress, FormControl, Switch, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, CircularProgress, FormControl, Skeleton, SnackbarCloseReason, Switch, TextField, Typography } from '@mui/material';
 import { DriverLicenceDTO, DriverProfile, EncoderType } from '@prisma/client';
 import { Country, DriverLicenceProfileDTO } from '@/lib/definitions';
 import { updateDriverLicences } from '@/lib/data/driver-licence';
 import { updateDriverProfile } from '@/lib/data/driver-profile';
+import { DriverLicencesComponentSkeleton } from '../../shared/custom/components/skeleton/DriverLicencesSkeleton';
+import SnackbarCustom, { SnakbarCustomProps } from '../../shared/custom/components/snackbarCustom';
 
 type DriverLicencesComponentProps = {
   countries: Country[] | undefined;
@@ -12,15 +14,23 @@ type DriverLicencesComponentProps = {
   encoders: EncoderType[] | undefined;
   saveAction?: () => void;
 }
-const licenceEncoderTypes = ['CARNET', 'CARNET_ADR'];
 const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
   {data, encoders, countries ,saveAction}
 ) => {
+  if (!data) {
+    return <DriverLicencesComponentSkeleton />;
+  }
+  const [snackbarProps, setSnackbarProps] = React.useState<SnakbarCustomProps>({
+    open: false,
+    handleClose: (event: React.SyntheticEvent | Event, reason?: SnackbarCloseReason,) => handleCloseSnackbar(event, reason),
+  } as SnakbarCustomProps);
+
+  const handleCloseSnackbar = (event: React.SyntheticEvent | Event, reason?: SnackbarCloseReason) => {
+    setSnackbarProps({...snackbarProps, open: false});
+  }
+
   const [hasCapCertificate, setHasCapCertificate] = React.useState<boolean>(data?.hasCapCertificate ?? false);
   const [hasDigitalTachograph, setHasDigitalTachograph] = React.useState<boolean>(data?.hasDigitalTachograph ?? false);
-  if (!data) {
-    return null;
-  }
   const [loading, setLoading] = useState<boolean>(false);
   const [changedData, setChangedData] = useState<boolean>(false);
   const licenceEncoders: EncoderType[] = encoders?.filter((encoder) =>  encoder.type === 'CARNET') ?? [];
@@ -30,16 +40,32 @@ const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
   
   const update = async () => {
     setLoading(true);
+    let message = 'Datos actualizados correctamente';
+    let severity: SnakbarCustomProps['severity'] = 'success';
+    
     const newData: DriverProfile = {
       id: data.driverProfileId,
       personId: data.personId,
       hasCapCertification: hasCapCertificate,
       hasDigitalTachograph: hasDigitalTachograph,
     }
-    await updateDriverProfile(newData);
-    await updateLicenceData();
+
+    const [driverProfileResult, licenceDataResult] = await Promise.allSettled(
+      [updateDriverProfile(newData), updateLicenceData])
+    if (driverProfileResult.status === 'rejected' || licenceDataResult.status === 'rejected'){
+      message = 'Error actualizando los datos';
+      severity = 'error';
+    }
+
     saveAction && saveAction(); 
     setLoading(false);
+    setChangedData(false);
+    setSnackbarProps({
+      ...snackbarProps, 
+      open: true,
+      message: message,
+      severity: severity
+    })
   }
 
   const updateLicenceData = async () => {
@@ -75,7 +101,7 @@ const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
 
 
   return (
-    <Grid container spacing={4} p={1}>
+    <Grid container spacing={4} p={0}>
       <Grid size={{ xs: 12, sm: 6}}>
         <FormControl fullWidth>
           <Autocomplete
@@ -99,7 +125,7 @@ const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
               setDriverLicence({...driverLicence, LicenceType: newValue, licenceTypeId: newValue.id});
               setChangedData(true);
             }}
-          />
+            />
         </FormControl>
       </Grid>
       <Grid size={{ xs: 12, sm: 6}}>
@@ -138,7 +164,7 @@ const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
               });
               setChangedData(true);
             }}
-          />
+            />
         </FormControl>
       </Grid>
       <Grid size={{ xs: 12, sm: 12}}>
@@ -166,12 +192,12 @@ const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
                 setChangedData(true);
                 setDriverAdrLicenceTypes(newValue);
               }}
-            />
+              />
           </FormControl>
       </Grid>
       <Grid size={{ xs: 12, sm: 6}}
         sx={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: {xs: 'space-between', sm: 'flex-start'}}}
-      >
+        >
         <Typography variant='h6' component={'h1'} sx={{ fontWeight: 700, fontSize: 16 }} color='textPrimary'>
           Certificado CAP
         </Typography>
@@ -184,11 +210,11 @@ const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
             setChangedData(true);
           }}
           inputProps={{ 'aria-label': 'controlled' }}
-        />
+          />
       </Grid>
       <Grid size={{ xs: 12, sm: 6}}
         sx={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: {xs: 'space-between', sm: 'flex-start'}}}
-      >
+        >
         <Typography variant='h6' component={'h1'} sx={{ fontWeight: 700, fontSize: 16 }} color='textPrimary'>
           Tacógrafo digital
         </Typography>
@@ -201,7 +227,7 @@ const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
             setChangedData(true);
           }}
           inputProps={{ 'aria-label': 'controlled' }}
-        />
+          />
       </Grid>
       <Grid size={{ xs: 12 }} display={'flex'} justifyContent={'flex-end'}>
         <Button 
@@ -210,10 +236,11 @@ const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
           color='secondary' 
           onClick={update} 
           disabled={!changedData}
-        >
+          >
           Guardar
         </Button>
       </Grid>
+      <SnackbarCustom {...snackbarProps} />
     </Grid>
   )
 }

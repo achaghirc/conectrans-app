@@ -112,6 +112,7 @@ async function getUserById(id: string): Promise<User | string> {
     }
 }
 
+//Unused
 export async function getUserDataSideNav(id: string): Promise<NavbarSessionData> {
     try {
         const responseUser : User | String = await getUserById(id);

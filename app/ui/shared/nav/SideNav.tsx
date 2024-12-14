@@ -1,16 +1,12 @@
 'use client';
-import { auth } from '@/auth';
-import { getUserDataSideNav } from '@/lib/data/user';
 import { NavbarSessionData } from '@/lib/types/nav-types';
-import { AccountCircleOutlined, DoorBackOutlined } from '@mui/icons-material'
+import { DoorBackOutlined } from '@mui/icons-material'
 import { AppBar, Box, Drawer, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography } from '@mui/material'
 import { Session } from 'next-auth';
-import Image from 'next/image';
-import React from 'react'
+import React, { useEffect, useMemo } from 'react'
 import NavLinks from './Navlinks';
 import { NavLinksSkeleton } from '../custom/components/skeleton/NavLinksSkeleton';
 import { logout } from '@/lib/actions';
-import { useQuery } from '@tanstack/react-query';
 import MobileNavScreen from './MobileNavScreen';
 import { useRouter } from 'next/navigation';
 import ConectransLogo from '../logo/conectransLogo';
@@ -23,9 +19,14 @@ type SideNavProps = {
 }
 
 const Sidenav: React.FC<SideNavProps> = ({session, children}) => {
+  const router = useRouter();
+  if(!session) {
+    router.push('/auth/login');
+    return;
+  }
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
-    
+  const [data, setData] = React.useState<NavbarSessionData | null>(null);
 
   const handleDrawerClose = () => {
     setIsClosing(true);
@@ -42,20 +43,40 @@ const Sidenav: React.FC<SideNavProps> = ({session, children}) => {
     }
   };
 
-	const {data, isLoading, isError} = useQuery({queryKey: ['getUserData', session!.user.id], queryFn: () => getUserDataSideNav(session!.user.id ?? '')});
-	if(isError) {
-		throw Error('Error al cargar los datos del usuario');
-	}
+  const getDataUser = useMemo(() => {
+    if (!session) return null;
+
+    const { user } = session;
+    if (!user) return null;
+
+    return {
+      name: user.name || '',
+      role: user.roleCode || '',
+      email: user.email || '',
+      assetUrl: user.assetUrl || '',
+      userId: user.id || '',
+      personId: user.personId || 0,
+      companyId: user.companyId || 0,
+    };
+  }, [session]);
+
+  useEffect(() => {
+    if (!session?.user) {
+      router.push('/auth/login');
+    } else {
+      setData(getDataUser);
+    }
+  }, [session, getDataUser, router]);
 
   const drawer = (
     <div>
-      {!isLoading && data ? 
+      {data ? 
         <ToolbarComponent data={data} /> 
       : 
         <NavbarToolbarSkeleton />
 			}
       <Box sx={{ overflow: 'auto', mt: 2 }}>
-						{!isLoading && data ? <NavLinks role={data.role} /> : <NavLinksSkeleton />}
+				{data ? <NavLinks role={data.role} onClick={handleDrawerClose}/> : <NavLinksSkeleton />}
       </Box>
       <Box sx={{ flexGrow: 1, position: 'absolute', bottom: 20, width: drawerWidth}} >
         <ListItem disablePadding sx={{ width: '100%' }}>

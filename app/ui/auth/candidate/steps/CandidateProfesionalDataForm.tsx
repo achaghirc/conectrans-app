@@ -1,11 +1,9 @@
 import React, { ChangeEvent, useLayoutEffect, useState } from 'react'
 import Grid from '@mui/material/Grid2';
-import { Autocomplete, Avatar, Box, Button, Checkbox, Divider, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Icon, IconButton, InputLabel, ListItemText, MenuItem, MenuProps, Paper, Select, SelectChangeEvent, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
-import { Country, EducationDTO, EncoderType, Licence, PersonLanguageDTO, SignUpCandidateFormData, ExperienceDTO, State } from '@/lib/definitions';
+import { Box, Button, Checkbox, Divider, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Icon, IconButton, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import { Country, EducationDTO, EncoderType, PersonLanguageDTO, SignUpCandidateFormData, ExperienceDTO, State } from '@/lib/definitions';
 import { handleZodError, handleZodHelperText } from '@/lib/utils';
-import { DateMobilePickerComponent, DatePickerComponent } from '@/app/ui/shared/custom/components/datePickerCustom';
-import dayjs from 'dayjs';
-import { AddCircleOutline, AddCircleOutlineOutlined, AddCircleSharp, FilePresentOutlined, RemoveCircleOutline } from '@mui/icons-material';
+import { AddCircleOutlineOutlined, FilePresentOutlined, RemoveCircleOutline } from '@mui/icons-material';
 import ExperienceComponent from '@/app/ui/shared/auth/ExperienceComponent';
 import { MenuProperties } from '@/app/ui/shared/styles/styles';
 import TableExperiencesComponent from '@/app/ui/shared/custom/components/table/TableExperiencesComponent';
@@ -13,8 +11,6 @@ import TableEducationComponent from '@/app/ui/shared/custom/components/table/Tab
 import AddEducationComponent from '@/app/ui/shared/auth/AddEducationComponent';
 import { useQuery } from '@tanstack/react-query';
 import { getLanguages } from '@/lib/data/languaje';
-import { Languages } from '@prisma/client';
-import TableLanguageComponent from '@/app/ui/shared/custom/components/table/TableLanguageComponent';
 import LanguagesComponentSignUp from '@/app/ui/shared/auth/LanguageComponentSignup';
 
 type CadidateUserFormProps = {
@@ -31,7 +27,6 @@ const getEncoderTypeByCode = (encoders: EncoderType[], encoderCode: string) => {
 
 
 export default function CandidateProfesionalDataForm({formData, errors, countries,encoders, setFormData}: CadidateUserFormProps) {
-	const [mediaQuery, setMediaQuery] = useState<boolean | null>(null);
   const [educationToEdit, setEducationToEdit] = useState<EducationDTO>();
 	const [open, setOpen] = useState<boolean>(false);
 	const [openEducationComponent, setOpenEducationComponent] = useState<boolean>(false);
@@ -49,16 +44,6 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
 		const licenceType = licenceCodes.find((type) => type.code === value);
 		setFormData({licence: {...formData.licence, code: licenceType?.code, name: licenceType?.name}})
 	}
-    	
-	useLayoutEffect(() => {
-		const mediaQuery = window.matchMedia('(min-width: 600px)');
-		setMediaQuery(mediaQuery.matches);
-		mediaQuery.addEventListener('change', (e) => {
-			setMediaQuery(e.matches);
-		});
-	},[]);
-
-    
 	const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files && e.target.files[0]) {
 			if(e.target.files[0].size > 25000000){
@@ -99,7 +84,13 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
     setFormData({...formData, experiences: newExperiences});
   }
 
-  const handleDeleteStudies = (education: EducationDTO) => {
+  const handleAddEducationData = (educations: EducationDTO[]) => {
+    const newEducations = [...formData.educations, ...educations];
+    setFormData({...formData, educations: newEducations});
+    console.log(formData.educations);
+  }
+
+  const handleDeleteEducation = (education: EducationDTO) => {
     const newEducations = formData.educations.filter((edu) => edu !== education);
     setFormData({...formData, educations: newEducations});
   }
@@ -304,7 +295,6 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
 				<TableExperiencesComponent experiences={formData.experiences} deleteExperience={(row) => deleteExperience(row)} />
 				<Box 
 					sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' }}
-				
 				>
 					<Button 
 						variant='outlined' 
@@ -324,11 +314,7 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
           </Typography>
         </Box>
         <Divider sx={{ mb: 3 }}/>
-        <TableEducationComponent 
-          educations={formData.educations} 
-          deleteEducationExperience={handleDeleteStudies}
-          editEducationExperience={handleEditEducation}
-        />
+        <TableEducationComponent educations={formData.educations} deleteEducationExperience={handleDeleteEducation} editEducationExperience={handleEditEducation} />
         <Box 
           sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' }}
         >
@@ -408,16 +394,19 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
 			<ExperienceComponent 
 				open={open}
 				experienceTypes={experiences}
-				setValue={setFormData}
+				setValue={handleAddExperienceData}
 				setOpen={(value:boolean) => setOpen(value)}
 				errors={errors}
 			/>
       <AddEducationComponent
         open={openEducationComponent}
-        formData={formData}
+        educations={formData.educations}
         editEducation={educationToEdit}
-        setOpen={setOpenEducationComponent}
-        setFormData={handleAddExperienceData}
+        onClose={() => {
+          setOpenEducationComponent(false);
+          setEducationToEdit(undefined);
+        }}
+        setEducations={handleAddEducationData}
       />
 		</>
   )

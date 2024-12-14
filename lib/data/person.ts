@@ -13,12 +13,14 @@ export async function getPersonByUserId(userId: string): Promise<PersonDTO | und
             include: {
                 Asset: {
                     select: {
-                        url: true,
+                        id: true,
+                        secureUrl: true,
                     },
                 },
                 PersonProfileImage: {
                     select: {
-                        url: true,
+                        secureUrl: true,
+                        id: true,
                     },
                 }, 
             }
@@ -28,12 +30,40 @@ export async function getPersonByUserId(userId: string): Promise<PersonDTO | und
         }
         const location: LocationDTO | undefined= await getLocationById(person.locationId);
         const personDTO: PersonDTO = {...person, 
-          assetUrl: person.PersonProfileImage ? person.PersonProfileImage.url : null,
-          resumeUrl: person.Asset ? person.Asset.url : null,
+          assetUrl: person.PersonProfileImage ? person.PersonProfileImage.secureUrl : null,
+          resumeUrl: person.Asset ? person.Asset.secureUrl : null,
           location: location,
         };
         return personDTO;
     } catch (error) {
         throw new Error(`Error getting person ${error}`);
+    }
+}
+const personIdCache = new Map<string, number>(); 
+export async function getPersonIdByUserId(userId: string): Promise<number | undefined> {
+    try {
+      if (personIdCache.has(userId)) {
+          return personIdCache.get(userId); // Return cached value
+      }
+      const person = await prisma.person.findUnique({
+          
+          where: {
+              userId: userId,
+          },
+          select: {
+              id: true,
+          },
+      });
+      if (person?.id !== undefined) {
+        personIdCache.set(userId, person.id); // Store result in cache
+      }
+      return person?.id;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Error retrieving person ID for userId "${userId}": ${error.message}`);
+      } else {
+          // Handle unexpected error formats
+          throw new Error(`Unknown error retrieving person ID for userId "${userId}": ${String(error)}`);
+      }
     }
 }

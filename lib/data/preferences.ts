@@ -1,19 +1,21 @@
 'use server';
 import prisma from "@/app/lib/prisma/prisma";
-import { getDriverProfileByUserId } from "./driver-profile";
+import { getDriverProfileByUserId, getDriverProfileIdByUserId } from "./driver-profile";
 import { DriverPreferencesDTO } from "../definitions";
 import { DriverEmploymentPreferences, DriverEmploymentPreferencesDTO, DriverWorkRangePreferences, DriverWorkRangePreferencesDTO } from "@prisma/client";
+import { getPersonIdByUserId } from "./person";
 
 export async function getDriverPreferencesByUserId(userId:string) : Promise<DriverPreferencesDTO | undefined> {
   try {
-    const driverProfile = await getDriverProfileByUserId(userId);
-    if (!driverProfile) {
+    const personId = await getPersonIdByUserId(userId);
+    const driverProfileId = await getDriverProfileIdByUserId(userId);
+    if (!driverProfileId) {
       throw new Error('Driver profile not found');
     }
 
     const employmentPreferences = await prisma.driverEmploymentPreferences.findMany({
       where: {
-        driverProfileId: driverProfile.id
+        driverProfileId: driverProfileId
       },
       include: {
         EncoderType: true
@@ -21,7 +23,7 @@ export async function getDriverPreferencesByUserId(userId:string) : Promise<Driv
     });
     const workRangePreferences = await prisma.driverWorkRangePreferences.findMany({
       where: {
-        driverProfileId: driverProfile.id
+        driverProfileId: driverProfileId
       },
       include: {
         workScope: true
@@ -45,9 +47,9 @@ export async function getDriverPreferencesByUserId(userId:string) : Promise<Driv
     });
 
     const driverPreferences: DriverPreferencesDTO = {
-      driverProfileId: driverProfile.id,
+      driverProfileId: driverProfileId,
       userId: userId,
-      personId: driverProfile.personId,
+      personId: personId,
       workRanges: workRangePreferencesDTO,
       employeeTypes: employmentPreferencesDTO
     }

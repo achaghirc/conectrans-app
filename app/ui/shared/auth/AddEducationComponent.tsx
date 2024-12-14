@@ -1,12 +1,13 @@
 import React, { ChangeEvent, useEffect, useLayoutEffect, useState } from 'react'
-import { EducationDTO, SignUpCandidateFormData, State } from '@/lib/definitions'
+import { EducationDTO, State } from '@/lib/definitions'
 import Grid from '@mui/material/Grid2';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, styled, TextField } from '@mui/material';
 import { handleZodError, handleZodHelperText } from '@/lib/utils';
 import { DateMobilePickerComponent, DatePickerComponent } from '../custom/components/datePickerCustom';
 import dayjs from 'dayjs';
 import { AddCircleOutline } from '@mui/icons-material';
-import { set, ZodIssue } from 'zod';
+import { ZodIssue } from 'zod';
+import { validateEducation } from '@/lib/validations/educationValidate';
 
 
 const CustomDialog =  styled(Dialog)(({ theme }) => ({
@@ -25,37 +26,42 @@ const CustomDialog =  styled(Dialog)(({ theme }) => ({
 
 
 type AddEducationComponentProps = {
-	formData: SignUpCandidateFormData;
-	errors?: State;
-  editEducation: EducationDTO |undefined;
-	setFormData: (data: any) => void;
+	educations: EducationDTO[];
 	open: boolean;
-	setOpen: (open: boolean) => void;
+  editEducation: EducationDTO |undefined;
+	errors?: State;
+	setEducations: (data: EducationDTO[]) => void;
+	onClose: () => void;
 }
 
 export default function AddEducationComponent({
-	formData,
+	educations,
 	open,
   editEducation,
 	errors, 
-	setFormData,
-	setOpen}: AddEducationComponentProps) {
+	setEducations,
+	onClose}: AddEducationComponentProps) {
   const [mediaQuery, setMediaQuery] = useState<boolean | null>(null); 
   const [education, setEducation] = useState<EducationDTO>({
 		title: '',
 		center: '',
     specialty: '',
-		startYear: dayjs(new Date()).format('YYYY-MM-DD'),
-		endYear: dayjs(new Date()).format('YYYY-MM-DD'),
+		startYear: new Date(new Date().setHours(23,0,0,0)),
+		endYear: new Date(new Date().setHours(23,0,0,0)),
 	} as EducationDTO);
 	const [err, setErr] = useState<State>(errors ?? {message: null, errors: []});
-	const [error, setError] = useState(false);
 
-  const maxWords = 250;
-  
   useEffect(() => {
-    if (editEducation) {
+    if (editEducation && editEducation != undefined) {
       setEducation(editEducation);
+    } else {
+      setEducation({
+        title: '',
+        center: '',
+        specialty: '',
+        startYear: new Date(new Date().setHours(23,0,0,0)),
+        endYear: new Date(new Date().setHours(23,0,0,0)),
+      } as EducationDTO);
     }
   }, [editEducation]);
 
@@ -69,57 +75,42 @@ export default function AddEducationComponent({
 
     
 	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-			const {name, value} = e.target;
-			setEducation({...education, [name]: value});
+    const {name, value} = e.target;
+    setEducation({...education, [name]: value});
 	}
+  const handleDateChange = (e: any) => {
+    const {name, value} = e.target;
+    setEducation({...education, [name]: new Date(value)});
+  }
 
-	const handleClose = () => {
-			const start = dayjs(education.startYear)
-			const end = dayjs(education.endYear)
-			let errors: State= {message: null, errors: []};
-			if (start == null ) {
-				const state: ZodIssue = {code: 'invalid_literal', expected: '', received: '', path: ['Fecha Inicio'], message: 'Fecha inicio no puede estar vacía'};
-				errors = {...err, message: state.message, errors: [state]};
-			}	else {
-				setEducation({...education, startYear: start.format('YYYY-MM-DD')});
-			}
-			if(end == null) {
-				const state: ZodIssue = {code: 'invalid_literal', expected: '', received: '', path: ['Fecha Fin'], message: 'Fecha fin no puede estar vacía'};
-				errors = {...err, message: state.message, errors: [state]};
-			} else {
-				setEducation({...education, endYear: end.format('YYYY-MM-DD')});
-			}
-			if (start.isAfter(end)) {
-				const state: ZodIssue = {code: 'invalid_literal', expected: '', received: '', path: ['Fecha Inicio'], message: 'Fecha inicio anterior a la fecha fin'};
-				errors = {...err, message: state.message, errors: [state]};
-			} else {
-				setErr({...err, message: null, errors: []});
-			}
-			
-			if (errors.errors!.length > 0) {
-				setErr(errors);
-				return;
-			}
-      if(editEducation) {
-        const index = formData.educations.findIndex((exp) => exp === editEducation);
-        formData.educations[index] = education;
-        setFormData({...formData, educations: formData.educations});
-      } else {
-        setFormData({...formData, educations: [...formData.educations, education]});
-      }
-			setOpen(false);
-			setEducation({} as EducationDTO);
-			setErr({message: null, errors: []});
+	const handleClose = async () => {
+
+    const validate = await validateEducation(err, education);
+    if (validate.errors!.length > 0) {
+      setErr(validate);
+      return;
+    }
+    if(editEducation) {
+      const index = educations.findIndex((exp) => exp === editEducation);
+      educations[index] = education;
+      setEducations(educations);
+    } else {
+      // Add new education
+      setEducations([...educations, education]);
+    }
+    setEducation({} as EducationDTO);
+    setErr({message: null, errors: []});
+    onClose();
 	}
   
   return (
 		<CustomDialog
-			onClose={() => setOpen(false)}
+			onClose={onClose}
 			open={open}
 			aria-label='add-education-dialog'
 			fullWidth={mediaQuery ? true : false}
 		>
-			<DialogTitle sx={{ m: 0, p: 2 }} id="experience-dialog-title">Experiencia</DialogTitle>
+			<DialogTitle sx={{ m: 0, p: 2 }} id="experience-dialog-title">Estudio</DialogTitle>
 			<Divider variant='middle' />
 			<DialogContent>
 				<Grid container spacing={2} display={'flex'} flexDirection={'row'} justifyContent={'space-between'}>
@@ -152,16 +143,18 @@ export default function AddEducationComponent({
 							mediaQuery ? (
 								<DatePickerComponent 
 									label='Fecha Inicio' 
+                  name='startYear'
 									value={dayjs(education.startYear)} 
 									errors={err}
-									setValue={(value) => setEducation({...education, startYear: value?.format('YYYY-MM-DD') || ''})} 
+									setValue={(value) => handleDateChange({target: {name: 'startYear', value: new Date(value?.format('YYYY-MM-DD') || '')}})} 
 								/>
 							) : (
 								<DateMobilePickerComponent 
-									label='Fecha Inicio'  
+									label='Fecha Inicio' 
+                  name='startYear'
 									value={dayjs(education.startYear)} 
 									errors={err}
-									setValue={(value) =>setEducation({...education, startYear: value?.format('YYYY-MM-DD') || ''})} 
+									setValue={(value) => handleDateChange({target: {name: 'startYear', value: new Date(value?.format('YYYY-MM-DD') || '')}})} 
 								/>
 							)
 						}
@@ -171,16 +164,18 @@ export default function AddEducationComponent({
 							mediaQuery ? (
 								<DatePickerComponent 
 									label='Fecha fin'
+                  name='endYear'
 									value={dayjs(education.endYear)} 
 									errors={err}
-									setValue={(value) => setEducation({...education, endYear: value?.format('YYYY-MM-DD') || ''})} 
+									setValue={(value) => handleDateChange({target: {name: 'endYear', value: new Date(value?.format('YYYY-MM-DD') || '')}})} 
 								/>
 							) : (
 								<DateMobilePickerComponent 
 									label='Fecha fin'
+                  name='endYear'
 									value={dayjs(education.endYear)} 
 									errors={err}
-									setValue={(value) => setEducation({...education, endYear: value?.format('YYYY-MM-DD') || ''})} 
+									setValue={(value) => handleDateChange({target: {name: 'endYear', value: new Date(value?.format('YYYY-MM-DD') || '')}})} 
 								/>
 							)
 						}
@@ -193,7 +188,7 @@ export default function AddEducationComponent({
 					variant='contained' 
 					color='error' 
 					onClick={() => {
-						setOpen(false);
+						onClose();
 					}} 
 					sx={{ mr: 2 }}
 					>

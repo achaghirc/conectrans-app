@@ -8,22 +8,23 @@ import { MobileDatePicker } from "@mui/x-date-pickers/MobileDatePicker"
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/es';
 
-export function DatePickerComponent({value, label, errors, width, setValue}: {value: Dayjs, label?:string, errors?: State, width?:any, setValue: (value: Dayjs | null) => void}) {
+export function DatePickerComponent({value, label, name, errors, width, setValue}: {value: Dayjs, label?:string, name?: string, errors?: State, width?:any, setValue: (value: Dayjs | null) => void}) {
     dayjs.locale('es');
 
     return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
       <DemoContainer components={['DatePicker']}>
         <DatePicker
-            
 			      format='YYYY-MM-DD'
             label={label}
+            name={name ?? ''}
             value={value}
             onChange={(newValue) => setValue(newValue)}
             slotProps={{
               textField: {
-                error: handleZodError(errors ?? {errors: [], message: null}, label ?? ''),
-                helperText: handleZodHelperText(errors ?? {errors: [], message: null}, label ?? '')
+                error: handleZodError(errors ?? {errors: [], message: null}, name ?? ''),
+                helperText: handleZodHelperText(errors ?? {errors: [], message: null}, name ?? ''),
+                required: true
               }
             }}
             sx={{
@@ -35,21 +36,23 @@ export function DatePickerComponent({value, label, errors, width, setValue}: {va
 	)
 }
 
-export function DateMobilePickerComponent({value,label, errors, setValue}: {value: Dayjs, label:string, errors:State, setValue: (value: Dayjs | null) => void}) {
+export function DateMobilePickerComponent({value,label, name, errors, setValue}: {value: Dayjs, label:string, name?: string, errors:State, setValue: (value: Dayjs | null) => void}) {
     dayjs.locale('es');
 
 	return (
 		<LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
 			<DemoContainer components={['MobileDatePicker']}>
 				<MobileDatePicker
-                    label={label}
+          label={label}
+          name={name ?? ''}
 					format='YYYY-MM-DD'
 					value={value}
 					onChange={(newValue) => setValue(newValue)}
 					slotProps={{
 						textField: {
-							error: handleZodError(errors, label),
-							helperText: handleZodHelperText(errors, label)
+							error: handleZodError(errors, name ?? ''),
+							helperText: handleZodHelperText(errors, name ?? ''),
+              required: true
 						}
 					}}
 					sx={{

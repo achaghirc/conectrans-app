@@ -12,8 +12,10 @@ export type NavbarSessionData = {
     companyId: number;
     userId: string | undefined;
     assetUrl: string;
+    personId: number | undefined;
 }
 
 export type NavlinksProps = {
     role: string;
+    onClick?: () => void;
 }

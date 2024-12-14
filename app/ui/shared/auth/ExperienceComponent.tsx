@@ -1,31 +1,14 @@
-import React, { ChangeEvent, useEffect, useLayoutEffect, useState } from 'react'
-import { EncoderType, SignUpCandidateFormData, ExperienceDTO, State } from '@/lib/definitions'
+import React, { ChangeEvent, useLayoutEffect, useState } from 'react'
+import { EncoderType, ExperienceDTO, State } from '@/lib/definitions'
 import Grid from '@mui/material/Grid2';
-import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, IconButton, InputLabel, MenuItem, MenuProps, Select, SelectChangeEvent, styled, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, FormHelperText, SelectChangeEvent, styled, TextField, Typography } from '@mui/material';
 import { handleZodError, handleZodHelperText } from '@/lib/utils';
-import { encode } from 'punycode';
 import { DateMobilePickerComponent, DatePickerComponent } from '../custom/components/datePickerCustom';
 import dayjs from 'dayjs';
-import { AddCircleOutline, AddCircleSharp, SaveAltOutlined } from '@mui/icons-material';
-import { set, ZodIssue } from 'zod';
+import { AddCircleOutline } from '@mui/icons-material';
+import { ZodIssue } from 'zod';
+import { validateExperience } from '@/lib/validations/experienceValidate';
 
-
-const MenuProperties : Partial<MenuProps>= {
-    PaperProps: {
-        style: {
-            maxHeight: 300,
-            overflow: 'auto',
-        },
-    },
-    anchorOrigin: {
-        vertical: 'bottom',
-        horizontal: 'left',
-    },
-    transformOrigin: {
-        vertical: 'top',
-        horizontal: 'left',
-    },
-}
 
 const CustomDialog =  styled(Dialog)(({ theme }) => ({
 	'& .MuiDialog-paper': {
@@ -57,13 +40,11 @@ export default function ExperienceComponent({
 	setValue,
 	setOpen}: ExperienceComponentProps) {
   const [mediaQuery, setMediaQuery] = useState<boolean | null>(null); 
-  const [experiences, setExperiences] = useState<ExperienceDTO>({
-		experienceType: '',
-		startYear: new Date(),
-		endYear: new Date(),
+  const [experience, setExperience] = useState<ExperienceDTO>({
+		startYear: new Date(new Date().setHours(23,0,0,0)),
+		endYear: new Date(new Date().setHours(23,0,0,0)),
 		description: '',
 	} as ExperienceDTO);
-	const [experiencesTypes, setExperiencesTypes] = useState<EncoderType[]>(experienceTypes);
 	const [err, setErr] = useState<State>(errors ?? {message: null, errors: []});
 	const [error, setError] = useState(false);
 
@@ -77,47 +58,27 @@ export default function ExperienceComponent({
 		});
 	},[]);
 
+  const handleDateChange = (e: any) => {
+    const {name, value} = e.target;
+    setExperience({...experience, [name]: new Date(value)});
+  }
     
 	const handleChange = (e: SelectChangeEvent<string>) => {
 			const {name, value} = e.target;
-			setExperiences({...experiences, [name]: value});
+			setExperience({...experience, [name]: value});
 	}
 
   //TODO: HANDLE DATES AND ERRORS CORRECTLY
-	const handleClose = () => {
-		
-		if(experiences.experienceType !== '') {	
-			const start: Date = new Date(experiences.startYear)
-			const end: Date = new Date(experiences.endYear)
-			let errors: State= {message: null, errors: []};
-			if (start == null ) {
-				const state: ZodIssue = {code: 'invalid_literal', expected: '', received: '', path: ['Fecha Inicio'], message: 'Fecha inicio no puede estar vacía'};
-				errors = {...err, message: state.message, errors: [state]};
-			}	else {
-				setExperiences({...experiences, startYear: start});
-			}
-			if(end == null) {
-				const state: ZodIssue = {code: 'invalid_literal', expected: '', received: '', path: ['Fecha Fin'], message: 'Fecha fin no puede estar vacía'};
-				errors = {...err, message: state.message, errors: [state]};
-			} else {
-				setExperiences({...experiences, endYear: end});
-			}
-			if (dayjs(start).isAfter(dayjs(end))) {
-				const state: ZodIssue = {code: 'invalid_literal', expected: '', received: '', path: ['Fecha Inicio'], message: 'Fecha inicio anterior a la fecha fin'};
-				errors = {...err, message: state.message, errors: [state]};
-			} else {
-				setErr({...err, message: null, errors: []});
-			}
-			
-			if (errors.errors!.length > 0) {
-				setErr(errors);
-				return;
-			}
-			setOpen(false);
-      setValue(experiences);
-			setExperiences({} as ExperienceDTO);
-			setErr({message: null, errors: []});
-		}	
+	const handleClose = async () => {
+    const validate = await validateExperience(err, experience);
+    if (validate.errors!.length > 0) {
+      setErr(validate);
+      return;
+    }
+    setOpen(false);
+    setValue(experience);
+    setExperience({} as ExperienceDTO);
+    setErr({message: null, errors: []});	
 	}
 	const countWords = (text: string) => {
     return text ? text.length : 0;
@@ -126,15 +87,13 @@ export default function ExperienceComponent({
   const handleDescriptionChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     const inputText = event.target.value;
     const wordCount = countWords(inputText);
-
     if (wordCount > maxWords) {
       setError(true);
 			return;
     } else {
       setError(false);
     }
-
-    setExperiences({...experiences, description: inputText});
+    setExperience({...experience, description: inputText});
   };
   
   return (
@@ -152,9 +111,9 @@ export default function ExperienceComponent({
 						<FormControl fullWidth error={handleZodError(err, 'experienceType')} required>
 						<Autocomplete
 							id="experienceType"
-							options={experiencesTypes.map((type) => type.name)} // List of options from experiencesTypes
+							options={experienceTypes.map((type) => type.name)} // List of options from experiencesTypes
 							freeSolo // Allows custom input
-							value={experiences.experienceType ?? ''}
+							value={experience.experienceType ?? ''}
 							onChange={(event, newValue) => handleChange({ target: { name: 'experienceType', value: newValue! } } as unknown as SelectChangeEvent<string>)}
 							renderInput={(params) => (
 								<TextField
@@ -162,26 +121,31 @@ export default function ExperienceComponent({
 									label="Experiencia"
 									variant="outlined"
 									name="experienceType"
+                  value={''}
+                  required={true}
 								/>
 							)}
 						/>
 						</FormControl>
+            <FormHelperText error={handleZodError(err, 'experienceType')}>{handleZodHelperText(err, 'experienceType')}</FormHelperText>
 					</Grid>
 					<Grid size={{ xs:12, sm: 6}}>
 						{mediaQuery == null ? null :
 							mediaQuery ? (
 								<DatePickerComponent 
-									label='Fecha Inicio' 
-									value={dayjs(experiences.startYear)} 
+									label='Fecha Inicio'
+                  name='startYear'
+									value={dayjs(experience.startYear)} 
 									errors={err}
-									setValue={(value) => setExperiences({...experiences, startYear: value?.format('YYYY-MM-DD') || ''})} 
+									setValue={(value) => handleDateChange({target: {name: 'startYear', value: new Date(value?.format('YYYY-MM-DD') || '')}})} 
 								/>
 							) : (
 								<DateMobilePickerComponent 
 									label='Fecha Inicio'  
-									value={dayjs(experiences.startYear)} 
+                  name='startYear'
+									value={dayjs(experience.startYear)} 
 									errors={err}
-									setValue={(value) =>setExperiences({...experiences, startYear: value?.format('YYYY-MM-DD') || ''})} 
+									setValue={(value) => handleDateChange({target: {name: 'startYear', value: new Date(value?.format('YYYY-MM-DD') || '')}})} 
 								/>
 							)
 						}
@@ -191,16 +155,18 @@ export default function ExperienceComponent({
 							mediaQuery ? (
 								<DatePickerComponent 
 									label='Fecha fin'
-									value={dayjs(experiences.endYear)} 
+                  name='endYear'
+									value={dayjs(experience.endYear)} 
 									errors={err}
-									setValue={(value) => setExperiences({...experiences, endYear: value?.format('YYYY-MM-DD') || ''})} 
+									setValue={(value) => handleDateChange({target: {name: 'endYear', value: new Date(value?.format('YYYY-MM-DD') || '')}})} 
 								/>
 							) : (
 								<DateMobilePickerComponent 
 									label='Fecha fin'
-									value={dayjs(experiences.endYear)} 
+                  name='endYear'
+									value={dayjs(experience.endYear)} 
 									errors={err}
-									setValue={(value) => setExperiences({...experiences, endYear: value?.format('YYYY-MM-DD') || ''})} 
+									setValue={(value) => handleDateChange({target: {name: 'endYear', value: new Date(value?.format('YYYY-MM-DD') || '')}})} 
 								/>
 							)
 						}
@@ -213,7 +179,7 @@ export default function ExperienceComponent({
 							placeholder='Descripción de la experiencia, Nombre de la empresa, cargo, funciones, etc.'
 							multiline
 							rows={4}
-							value={experiences.description}
+							value={experience.description}
 							onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handleDescriptionChange(e)}
 							error={handleZodError(err, 'description')}
 							helperText={handleZodHelperText(err, 'description')}
@@ -221,8 +187,8 @@ export default function ExperienceComponent({
 						/>
 						<Box display="flex" justifyContent="space-between">
 							<Typography variant="body1"></Typography>
-							<Typography variant="body2" color={countWords(experiences.description) > maxWords ? 'error' : 'textSecondary'}>
-								{`${countWords(experiences.description)} / ${maxWords} words`}
+							<Typography variant="body2" color={countWords(experience.description) > maxWords ? 'error' : 'textSecondary'}>
+								{`${countWords(experience.description)} / ${maxWords} words`}
 							</Typography>
 						</Box>
 					</Grid>
@@ -234,7 +200,7 @@ export default function ExperienceComponent({
 					color='error' 
 					onClick={() => {
 						setOpen(false);
-						setExperiences({} as ExperienceDTO);
+						setExperience({} as ExperienceDTO);
 					}} 
 					sx={{ mr: 2 }}
 					>

@@ -23,9 +23,24 @@ export type PersonDTO = {
     location: LocationDTO | undefined;
     userId: string;
     assetUrl: string | null;
+    resumeId: number | null;
     resumeUrl: string | null;
     createdAt: Date;
     updatedAt: Date; 
+}
+
+export type AssetSlimDTO = {
+    id: number;
+    publicId: string;
+    url: string;
+    secureUrl: string;
+    height: number | null;
+    width: number | null;
+    format: string | null; 
+    originalFilename: string | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+
 }
 
 export type CompanyDTO = {
@@ -144,7 +159,7 @@ export type DriverLicenceProfileDTO = {
 export type DriverPreferencesDTO = {
     driverProfileId: number;
     userId: string;
-    personId: number;
+    personId?: number;
     workRanges: DriverWorkRangePreferencesDTO[];
     employeeTypes: DriverEmploymentPreferencesDTO[];
 }
@@ -216,7 +231,7 @@ export type SignUpCandidateFormData = {
     name: string;
     lastname: string;
     cifnif: string;
-    birthdate: Dayjs | string;
+    birthdate: Date | string;
     workRange: string[];
     employeeType: string[];
     summaryFile: File | null;
@@ -228,6 +243,7 @@ export type SignUpCandidateFormData = {
 }
 
 export type EducationDTO = {
+    id?: number;
     title: string;
     center: string;
     speciality?: string;
@@ -245,6 +261,7 @@ export type PersonLanguageDTO = {
 
 
 export type ExperienceDTO = {
+    id?: number;
     jobName?: string;
     startYear: string | Date;
     endYear: string | Date;
@@ -252,6 +269,7 @@ export type ExperienceDTO = {
     experienceType: string;
     experienceTypeId?: number;
     experienceTypeCode?: string;
+    personId?: number;
 }
 
 export type SignUpCandidateContactFormData = Partial<SignUpCompanyContactFormData>;
@@ -283,6 +301,10 @@ export type CloudinaryUploadResponse = {
     width: number;
     height: number;
     format: string;
+}
+
+export type CloudinaryRemoveResponse = {
+    result: string;
 }
 
 

@@ -25,6 +25,7 @@ type SignUpProps = {
 
 export default function Signup({ activities, countries}: SignUpProps) {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [mediaQuery, setMediaQuery] = useState<boolean | null>(null);
   const [snackbarProps, setSnackbarProps] = useState<SnakbarCustomProps>({} as SnakbarCustomProps);
   const [activeStep, setActiveStep] = useState(0);
@@ -132,11 +133,10 @@ export default function Signup({ activities, countries}: SignUpProps) {
   const isLastStep = activeStep === steps.length - 1;
 
   const handleSubmit = async () => {
-    // Aquí puedes realizar alguna acción con los datos finales, como enviar una solicitud al backend.
-    
+    setLoading(true);
     const formDataCopy = {...formData, company: {...formData.company, logo: null}};
     try {
-      const cloudinaryResponse: CloudinaryUploadResponse = formData.company.logo !== null ? await uploadFileToCloud(formData.company.logo) : null;
+      const cloudinaryResponse: CloudinaryUploadResponse | null = formData.company.logo !== null ? await uploadFileToCloud(formData.company.logo, formData.company.email) : null;
       const user = await companySignUp(formDataCopy, cloudinaryResponse);
       if(!user || user.id == undefined) {
         setSnackbarProps({...snackbarProps, open: true, message: 'Error al crear la empresa', severity: 'error'});
@@ -150,17 +150,19 @@ export default function Signup({ activities, countries}: SignUpProps) {
       formDataLogin.append('password', formDataCopy.company.password);
       const errorMsg = await authenticate(undefined, formDataLogin);
       if(errorMsg?.success) {
-				console.log('Usuario autenticado correctamente');
+        console.log('Usuario autenticado correctamente');
 				router.push('/');
 				return;
 			}
 			if(errorMsg) {
-				setSnackbarProps({...snackbarProps, open: true, message: errorMsg.message, severity: 'error'});
+        setSnackbarProps({...snackbarProps, open: true, message: errorMsg.message, severity: 'error'});
 				return;
 			}
-    }catch(err) {
+      setLoading(false);
+    } catch(err) {
       console.error(err);
       setSnackbarProps({...snackbarProps, open: true, message: 'Error al crear la empresa', severity: 'error'});
+      setLoading(false);
     }
     
   };
@@ -196,6 +198,7 @@ export default function Signup({ activities, countries}: SignUpProps) {
             handleNext={handleNext}
             handleBack={handleBack}
             isLastStep={isLastStep}
+            isLoading={loading}
           />
       </SignUpForm>
     ) : (
@@ -208,6 +211,7 @@ export default function Signup({ activities, countries}: SignUpProps) {
           handleNext={handleNext}
           handleBack={handleBack}
           isLastStep={isLastStep}
+          isLoading={loading}
         />
       </SignUpMobileForm>
     

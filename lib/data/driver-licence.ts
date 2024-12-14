@@ -4,7 +4,7 @@ import { DriverLicence, DriverLicenceDTO, EncoderType } from "@prisma/client";
 import { getDriverProfileByUserId } from "./driver-profile";
 import { DriverLicenceProfileDTO } from "../definitions";
 
-export async function getDriverLicenceByDriverProfileId(userId: string): Promise<DriverLicenceProfileDTO | undefined> {
+export async function getDriverLicenceByUserId(userId: string): Promise<DriverLicenceProfileDTO | undefined> {
 
   try {
     const driverProfile = await getDriverProfileByUserId(userId);
