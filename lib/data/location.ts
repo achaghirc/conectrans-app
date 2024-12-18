@@ -2,6 +2,7 @@
 import prisma from "@/app/lib/prisma/prisma";
 import { Company, Location, LocationDTO } from "@prisma/client";
 import { CompanyDTO } from "../definitions";
+import { takeNumberFromString } from "../utils";
 
 export type LocationFilter = {
   street: string;
@@ -108,6 +109,40 @@ export async function updateLocationByCompany(location: Location, company: Compa
         state: company.locationState!,
         countryId: company.locationCountryId!,
         zip: company.locationZip!,
+        updatedAt: new Date(),
+      },
+      include: {
+        Country: {
+          select: {
+            name_es: true,
+            cod_iso2: true,
+          },
+        },
+      },
+    });
+    return {...updatedLocation, 
+        countryName: updatedLocation.Country!.name_es,
+        countryCode: updatedLocation.Country!.cod_iso2 ?? '',
+    };
+  } catch (error) {
+    throw new Error(`Error updating location: ${error}`);
+  }
+}
+
+export async function updateLocation(location: LocationDTO): Promise<LocationDTO> {
+  try {
+    const number = takeNumberFromString(location.street).toString() ?? 'S/N';
+    const updatedLocation = await prisma.location.update({
+      where: {
+        id: location.id,
+      },
+      data: {
+        street: location.street,
+        number: number,
+        city: location.city,
+        state: location.state,
+        countryId: location.countryId,
+        zip: location.zip,
         updatedAt: new Date(),
       },
       include: {

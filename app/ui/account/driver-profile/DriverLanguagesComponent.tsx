@@ -6,7 +6,8 @@ import LanguagesComponentSignUp from '../../shared/auth/LanguageComponentSignup'
 import { useQuery } from '@tanstack/react-query'
 import { deletePersonLanguages, getLanguages, savePersonLanguages } from '@/lib/data/languaje'
 import { Session } from 'next-auth'
-import SnackbarCustom, { SnakbarCustomProps } from '../../shared/custom/components/snackbarCustom'
+import SnackbarCustom, { SnackbarCustomProps } from '../../shared/custom/components/snackbarCustom'
+import { SUCCESS_MESSAGE_SNACKBAR } from '@/lib/utils'
 
 type DriverLanguagesComponentProps = {
   session: Session | null;
@@ -17,10 +18,10 @@ type DriverLanguagesComponentProps = {
 const DriverLanguagesComponent: React.FC<DriverLanguagesComponentProps> = (
   { session, data, saveAction }
 ) => {
-  const [snackbarProps, setSnackbarProps] = React.useState<SnakbarCustomProps>({
+  const [snackbarProps, setSnackbarProps] = React.useState<SnackbarCustomProps>({
     open: false,
     handleClose: (event: React.SyntheticEvent | Event, reason?: SnackbarCloseReason,) => handleCloseSnackbar(event, reason),
-  } as SnakbarCustomProps);
+  } as SnackbarCustomProps);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [changedData, setChangedData] = React.useState<boolean>(false);
   const {data: languages, isLoading: isLoadingLanguages, isError: isErrorLanguages} = useQuery({ queryKey: ['languages'], queryFn: () => getLanguages()});
@@ -57,7 +58,7 @@ const DriverLanguagesComponent: React.FC<DriverLanguagesComponentProps> = (
 
   const update = async () => {
     setLoading(true);
-    let message = 'Datos actualizados correctamente';
+    let message = SUCCESS_MESSAGE_SNACKBAR;
     let severity = snackbarProps.severity;
     let saveFunction: Promise<void> | undefined;
     let deleteFunction: Promise<void> | undefined;

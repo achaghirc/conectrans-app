@@ -32,6 +32,12 @@ const nextConfig = {
           {
               protocol: 'http',
               hostname: 'res.cloudinary.com',
+              pathname: '/dgmgqhoui/**', // Your Cloudinary folder path
+          },
+          {
+              protocol: 'https',
+              hostname: 'res.cloudinary.com',
+              pathname: '/dgmgqhoui/**', // Your Cloudinary folder path
           }
 
       ],

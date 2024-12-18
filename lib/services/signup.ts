@@ -9,10 +9,9 @@ import { randomUUID } from "crypto";
 import { getPlanById } from "../data/plan";
 import { Asset, EncoderType, Languages, PersonLanguages, PrismaClient, Subscription } from "@prisma/client";
 import next from "next";
+import { takeNumberFromString } from "../utils";
 
-const takeNumberFromString = (str: string) => {
-	return str.match(/\d+/g)!.map(Number);
-}
+
 
 //This method creates in database a new company, new user and new contact person
 export async function companySignUp(formData: SignUpCompanyFormData, cloudinaryResponse: CloudinaryUploadResponse | null): Promise<User | undefined> {

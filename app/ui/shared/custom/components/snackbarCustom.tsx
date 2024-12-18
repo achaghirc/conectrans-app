@@ -1,7 +1,7 @@
 import { Alert, Button, Snackbar } from '@mui/material';
 import React from 'react'
 
-export type SnakbarCustomProps = {
+export type SnackbarCustomProps = {
     open: boolean;
     message: string;
     severity: 'success' | 'error' | 'warning' | 'info';
@@ -9,7 +9,7 @@ export type SnakbarCustomProps = {
   }
   
   
-  export default function SnackbarCustom({open, message, severity, handleClose}: SnakbarCustomProps) {
+  export default function SnackbarCustom({open, message, severity, handleClose}: SnackbarCustomProps) {
 
     return (
     <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>

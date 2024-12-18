@@ -3,13 +3,14 @@ import bcrypt from 'bcryptjs';
 import z from 'zod';
 import prisma from '@/app/lib/prisma/prisma';
 import { getRoleByCode } from './role';
-import { CompanyUserAccountDTO, PersonDTO, User } from '../definitions';
+import { AccountForm, CompanyUserAccountDTO, PersonDTO } from '../definitions';
 import { getCompanyByUserId } from './company';
 import { CompanyDTO } from '../definitions';
 import { getPersonByUserId } from './person';
 import { NavbarSessionData } from '../types/nav-types';
+import { User, UserDTO } from '@prisma/client';
 
-const createUserSchema = z.object({
+const updateUserSchema = z.object({
     email: z.string({
         invalid_type_error: 'Please provide a valid email',
     }).email(),
@@ -18,11 +19,25 @@ const createUserSchema = z.object({
     }).min(6),
 });
 
+const createUserSchema = z.object({
+  email: z.string({
+      invalid_type_error: 'Please provide a valid email',
+  }).email('Correo electrónico no válido').refine(async (email) => {
+    const user = await getUserByEmail(email);
+    return !user;
+  }, {
+    message: 'El correo electrónico ya está en uso',
+  }),
+  password: z.string({
+      invalid_type_error: 'Please provide a valid password',
+  }).min(6),
+});
+
 
 export async function createUserHandler(
     formData: FormData,
     roleCode?: string,
-) :Promise<User | string> {
+) :Promise<UserDTO | string> {
     try {
         const validatedData = createUserSchema.safeParse({
             email: formData.get('email'),
@@ -56,7 +71,42 @@ export async function createUserHandler(
     } 
 }
 
-export async function getUserByEmail(email: string): Promise<User | undefined> {  
+export async function updateUserHandler(userData:UserDTO, changedForm: AccountForm, actualEmail: string): Promise<UserDTO | string> {
+  let validatedData;
+  validatedData = await createUserSchema.safeParseAsync({
+    email: changedForm.email ? userData.email: actualEmail,
+    password: userData.password
+  });
+  
+  if (!validatedData.success) {
+      return validatedData.error.message;
+  }
+  const hashPassword = await bcrypt.hash(validatedData.data?.password, 10);
+  
+  const data: Partial<UserDTO> = {
+    email: validatedData.data?.email,
+    updatedAt: new Date()
+  }
+  if (userData.password && changedForm.password) {
+    data.password = hashPassword;
+  }
+  
+  const user: UserDTO = await prisma.user.update({
+    where: {
+      email: actualEmail
+    },
+    data: {
+      email: userData.email,
+      password: hashPassword,
+      updatedAt: new Date()
+    }
+  })
+
+  const updatedUser = await getUserByEmail(userData.email);
+  return updatedUser as UserDTO;  
+}
+
+export async function getUserByEmail(email: string): Promise<UserDTO | undefined> {  
     try {
         const user = await prisma.user.findUnique({
             where: {
@@ -73,14 +123,14 @@ export async function getUserByEmail(email: string): Promise<User | undefined> {
         if (!user) {
             return undefined;
         }
-        return {...user, roleCode: user.Role.code};
+        return {...user, roleCode: user.Role.code} as UserDTO;
 
     } catch (error) {
         throw new Error(`Error getting users ${error}`);
     }
 }
 
-async function getAllUsers(): Promise<User[] | string> {
+async function getAllUsers(): Promise<UserDTO[] | string> {
     try {
         const users = await prisma.user.findMany();
         return users;
@@ -89,7 +139,7 @@ async function getAllUsers(): Promise<User[] | string> {
     }
 }
 
-async function getUserById(id: string): Promise<User | string> {
+async function getUserById(id: string): Promise<UserDTO | string> {
     try {
         const user = await prisma.user.findUnique({
             where: {
@@ -115,11 +165,11 @@ async function getUserById(id: string): Promise<User | string> {
 //Unused
 export async function getUserDataSideNav(id: string): Promise<NavbarSessionData> {
     try {
-        const responseUser : User | String = await getUserById(id);
+        const responseUser : UserDTO | String = await getUserById(id);
         if (typeof responseUser === 'string') {
             return {} as NavbarSessionData;
         }
-        const user: User = responseUser as User;
+        const user: UserDTO = responseUser as UserDTO;
         let data : NavbarSessionData= {} as NavbarSessionData;
         switch (user.roleCode) {
             case 'COMPANY':
@@ -162,11 +212,11 @@ export async function getUserDataSideNav(id: string): Promise<NavbarSessionData>
 
 export async function getCompanyUserAccountData(id: string): Promise<CompanyUserAccountDTO | undefined> {
     try {
-        const responseUser : User | String = await getUserById(id);
+        const responseUser : UserDTO | String = await getUserById(id);
         if (typeof responseUser === 'string') {
             return undefined;
         }
-        const user: User = responseUser as User;
+        const user: UserDTO = responseUser as UserDTO;
         if (user.roleCode !== 'COMPANY') {
             return undefined;
         }
@@ -188,4 +238,19 @@ export async function getCompanyUserAccountData(id: string): Promise<CompanyUser
     } catch (error) {
         throw `Error getting user ${error}`;
     }
+}
+
+export async function checkPasswordUser(email: string, password: string | undefined): Promise<boolean> {
+  let res: boolean = false;
+  if (!password) return res;
+  const user: UserDTO | undefined = await getUserByEmail(email);
+  if(!user) {
+    return res;
+  }
+  const passwordHash = await bcrypt.compare(password.toString(), user.password)
+  if (passwordHash) {
+      res = true;
+  }
+  return res;
+
 }

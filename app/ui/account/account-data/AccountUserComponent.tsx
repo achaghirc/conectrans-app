@@ -1,76 +1,191 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import React, { ChangeEvent, useEffect } from 'react'
+import React, { ChangeEvent, Suspense, useEffect, useMemo } from 'react'
 import { AccountProps } from './AccountPage';
-import { getUserByEmail } from '@/lib/data/user';
-import { PersonDTO, User } from '@/lib/definitions';
-import { getPersonByUserId } from '@/lib/data/person';
+import { AccountForm, PersonDTO, Province } from '@/lib/definitions';
+import { getPersonById, getPersonByUserId, updatePersonPreferences } from '@/lib/data/person';
 import { useQuery } from '@tanstack/react-query';
-import { Box, SelectChangeEvent, Switch, TextField, Typography } from '@mui/material';
+import { Box, Button, IconButton, InputAdornment, SelectChangeEvent, Switch, TextField, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import ProfileComponent from '../../shared/account/ProfileComponent';
-import { DatePickerComponent } from '../../shared/custom/components/datePickerCustom';
-
-import dayjs from 'dayjs';
-import { getCountries, getProvincesByCountryId } from '@/lib/data/geolocate';
-import ProvincesInputComponent from '../../shared/custom/components/provincesInputComponent';
-import CountryInputComponent from '../../shared/custom/components/countryInputComponent';
+import { getGeolocationData, getProvincesByCountryId } from '@/lib/data/geolocate';
 import AccordionComponent from '../../shared/custom/components/accordion/AccordionComponent';
+import { UserDTO } from '@prisma/client';
+import PersonEmploymentPreferencesComponent from './PersonEmploymentPreferencesComponent';
+import ButtonCustom from '../../shared/custom/components/button/ButtonCustom';
+import { CloseOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
+import ModalCheckPassComponent from '../../shared/account/ModalCheckPassComponent';
+import { checkPasswordUser, updateUserHandler } from '@/lib/data/user';
+import SnackbarCustom, { SnackbarCustomProps } from '../../shared/custom/components/snackbarCustom';
+import { SUCCESS_MESSAGE_SNACKBAR } from '@/lib/utils';
 
+const PASSWORD_DEFAULT = '***********';
+
+const UserPersonDataComponent = React.lazy(() => import('./UserPersonDataComponent'));
 
 const AccountUserComponent: React.FC<AccountProps> = ({session}) => {
   const router = useRouter();
   if (!session) {return;}
-  const [selectedCountry, setSelectedCountry] = React.useState<number>(0);
-  const [selectedProvince, setSelectedProvince] = React.useState<string>('');
+  
+  const [openModal, setOpenModal] = React.useState<boolean>(false);
+  const [loading, setLoading] = React.useState<boolean>(false);
   const [hasCar, setHasCar] = React.useState<boolean>(false);
   const [relocateOption, setRelocateOption] = React.useState<boolean>(false);
-  const fetchUserData = () : Promise<User | undefined> => getUserByEmail(session.user.email ?? '');
-  const fetchPersonData = () : Promise<PersonDTO | undefined> => getPersonByUserId(session.user.id ?? '');
+  
+  const handleCloseSnackbar = () => {
+    setSnackbarProps({...snackbarProps, open: false})
+  }
+  const [snackbarProps, setSnackbarProps] = React.useState<SnackbarCustomProps>({
+    open: false, 
+    handleClose: handleCloseSnackbar,
+    message: '',
+    severity: 'success'
+  })
+  const handleSnackbarSons = (snackbarProps: Partial<SnackbarCustomProps>) => {
+    const {open, message, severity} = snackbarProps;
+    setSnackbarProps({
+      ...snackbarProps,
+      open: open ?? false,
+      message: message ?? '',
+      severity: severity ?? 'success',
+      handleClose: handleCloseSnackbar
+    })
+  }
+  const [changedForm, setChangedForm] = React.useState<AccountForm>({
+    email: false,
+    password: false,
+  }
+  )
+  const [showPassword, setShowPassword] = React.useState<boolean>(false);
 
-  const { data, isLoading, isError, error} = useQuery({queryKey: ['userData'], queryFn: fetchUserData})
+  const [userData, setUserData] = React.useState<UserDTO>({
+    email: '',
+    password: '',
+    id: '',
+    name: '',
+    roleCode: '',
+    assetUrl: 'https://res.cloudinary.com/dgmgqhoui/image/upload/w_1000,c_fill,ar_1:1,g_auto,r_max,bo_5px_solid_grey,b_rgb:262c35/v1734182403/default-logo-user_fj0tu3.png',
+  } as UserDTO);
+  
+  const fetchPersonData = () : Promise<PersonDTO | undefined> => getPersonById(session.user.personId ?? 0);
   const { data: personData, isLoading: personIsLoading, isError: personIsError, error: personError} = useQuery({queryKey: ['personData'], queryFn: fetchPersonData})
 
-  const {data: countries, isLoading: isCountriesLoading, isError: isCountriesError, error: countriesError} = useQuery({
-    queryKey: ['countries'], 
-    queryFn: getCountries
-  });
+  const getUserData = useMemo(() => {
+    if (!session) return null;
+    const {user} = session;
 
-  const { data: provincesData, isLoading: isProvincesLoading } = useQuery({
-    queryKey: ['provinces', selectedCountry],
-    queryFn: () => getProvincesByCountryId(selectedCountry),
-    enabled: !!selectedCountry, // Fetch provinces only when a country is selected
-  });
+    if (!user) return null;
+    
+    return {
+      ...userData,
+      email: user.email || '',
+      password: PASSWORD_DEFAULT,
+      id: user.id || '',
+      name: user.name || '',
+      roleCode: user.roleCode || '',
+      assetUrl: user.assetUrl ?? userData.assetUrl,
+      personId: session.user.personId
+    } as UserDTO;
+  }, [session]);
 
   useEffect(() => {
-    if (personData?.location?.countryId) {
-      setSelectedCountry(personData.location.countryId);
+    if (!session.user){
+      router.push('/auth/login');
+    } else {
+      const user = getUserData;
+      if (user)
+        setUserData(user);
     }
-    if (personData?.location?.state) {
-      setSelectedProvince(personData.location.state);
-    }
-    if (personData?.hasCar) {
+  }, [session, getUserData]);
+  
+  useEffect(() => {
+    if (!personData) return;
+    if (personData.hasCar) {
       setHasCar(personData.hasCar);
     }
-    if (personData?.relocateOption) {
+    if (personData.relocateOption) {
       setRelocateOption(personData.relocateOption);
     }
   }, [personData]);
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement> | SelectChangeEvent<string | number>) => {
   
-    const { name, value } = e.target;
-    if (name === 'country') {
-      setSelectedCountry(value as number);
-    }
-    if (name === 'state') {
-      setSelectedProvince(value as string);
-    }
+  const handleUserDataChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const {name, value} = e.target;
+  
+    setChangedForm({...changedForm, [name]: true});
+    setUserData({...userData, [name]: value});
+  }
+  const inputPropShowPassword = () => {
+		return (
+		  <InputAdornment position="end">
+        <IconButton
+          aria-label="toggle password visibility"
+          onClick={() => setShowPassword(!showPassword)}
+          edge="end"
+          sx={{ display: changedForm.password ? 'block' : 'none' }}
+        >
+          {showPassword ? <Visibility /> : <VisibilityOff />}  
+        </IconButton>
+        <IconButton
+          aria-label="toogle password reset"
+          onClick={() => {
+            setChangedForm({...changedForm, password: false});
+            setUserData({...userData, password: PASSWORD_DEFAULT})
+          }}
+        >
+          {changedForm.password && <CloseOutlined />}
+        </IconButton>
+		  </InputAdornment>
+		)
+	}
+
+  const handleClose = (value: boolean) => {
+    setOpenModal(value);
   }
 
+  const updateFunction = async (value: UserDTO) => {
+    setLoading(true);
+    try{
+      const res = await checkPasswordUser(session.user.email, value.confirmPassword)
+      if(!res){
+        setSnackbarProps({...snackbarProps, open: true, message: 'Contraseña actual incorrecta, por favor recupera tu contraseña si no la recuerdas', severity: 'error'})
+      } else {
+        const result : UserDTO | string = await updateUserHandler(userData, changedForm, session.user.email);
+        if (result instanceof String) {
+          setSnackbarProps({...snackbarProps, open: true, message: result as string, severity: 'error'})
+        } else {
+          setSnackbarProps({...snackbarProps, open: true, message: SUCCESS_MESSAGE_SNACKBAR, severity: 'success'})
+        }
+      }
+      setLoading(false);
+      setChangedForm({
+        email: false,
+        password: false
+      })
+    }catch (err) {
+      if (err instanceof Error) {
+        console.log(err.message);
+      }
+      setSnackbarProps({...snackbarProps, open: true, message: 'Error en el servidor actualizando los datos, contacte con el administrador.', severity: 'error'})
+    }
+    
+  }
 
-  if (isLoading || personIsLoading) {
-    return <div>Loading...</div>
+  const updateEmployeePreferences = async () => {
+    if (!userData.personId) {
+      router.push('/auth/login');
+      return;
+    }
+    const res = await updatePersonPreferences(userData.personId, hasCar, relocateOption);
+    if (res instanceof String) {
+      setSnackbarProps({...snackbarProps, open: true, message: 'Error actualizando los datos, intentelo de nuevo', severity: 'error'})
+      return;
+    } else {
+      const {hasCar, relocateOption} = res as {hasCar: boolean, relocateOption: boolean};
+      setHasCar(hasCar);
+      setRelocateOption(relocateOption);
+      setSnackbarProps({...snackbarProps, open: true, message: SUCCESS_MESSAGE_SNACKBAR, severity: 'success'})
+    }
   }
 
   return (
@@ -81,7 +196,7 @@ const AccountUserComponent: React.FC<AccountProps> = ({session}) => {
           justifyContent: 'center',
         }}
       >
-        <ProfileComponent assetUrl={personData?.assetUrl} title={personData?.name ?? ''} subtitle={data?.email ?? ''} />
+        <ProfileComponent assetUrl={userData?.assetUrl} title={userData?.name ?? ''} subtitle={userData?.email ?? ''} />
       </Box>
       <Grid container spacing={3} sx={{ display: 'flex', flexDirection: 'column'}}>
         <Grid size={{ xs: 12 }}>
@@ -92,7 +207,14 @@ const AccountUserComponent: React.FC<AccountProps> = ({session}) => {
                   sx={{width: {xs: '95%', sm: '80%'}}}
                   label="Email"
                   name="email"
-                  value={data?.email}
+                  autoFocus={false}
+                  value={userData?.email}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleUserDataChange(e)}
+                  onBlur={() => {
+                    if (userData.email === session.user.email){
+                      setChangedForm({...changedForm, email: false});
+                    }
+                  }}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6}}>
@@ -100,167 +222,79 @@ const AccountUserComponent: React.FC<AccountProps> = ({session}) => {
                   sx={{width: {xs: '95%', sm: '80%'}}}
                   label="Contraseña"
                   name="password"
-                  type='password'
-                  value={data?.password.substring(0, 6)}
-                />
-              </Grid>
-            </Grid>
-          </AccordionComponent>
-        </Grid>
-        <Grid size={{ xs: 12 }}>
-
-          <AccordionComponent title='Datos personales' expandedDefault={false}>
-            <Grid container spacing={2} mt={3}>
-              <Grid size={{ xs: 12, sm: 6}}>
-                <TextField
-                  fullWidth
-                  sx={{width: { sm: '80%'}}}
-                  label="Email"
-                  name="email"
-                  value={personData?.name}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6}}>
-                <TextField
-                  fullWidth
-                  sx={{width: { sm: '80%'}}}
-                  label="Apellidos"
-                  name="lastname"      
-                  value={personData?.lastname}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6}}>
-                <TextField
-                  fullWidth
-                  label="DNI/NIE"
-                  name="cifnif"      
-                  value={personData?.document}
-                  sx={{
-                    width: { sm: '80%'},
-                    paddingTop: 'calc(1 * var(--mui-spacing))',
-                    '.MuiInputLabel-root.MuiFormLabel-filled':{
-                      transform: 'translate(15px, -0px) scale(0.75) !important',
-                    },
-                    '.MuiInputLabel-root': {
-                      transform: 'translate(14px, 25px) scale(1) !important',
-                    },
-                    '.MuiInputLabel-root.Mui-focused':{
-                      transform: 'translate(15px, -0px) scale(0.75) !important',
+                  type={showPassword && changedForm.password ? 'text' : 'password'}
+                  value={userData?.password}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleUserDataChange(e)}
+                  onFocus={() => {
+                    if(changedForm.password == false){
+                      setUserData({...userData, password: ''})
+                    }
+                  }}
+                  slotProps={{
+                    input: {
+                      endAdornment: inputPropShowPassword()
                     }
                   }}
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6}}>
-                <DatePickerComponent
-                  label="Fecha de nacimiento"
-                  value={dayjs(personData?.birthdate)}
-                  errors={{}}
-                  width={{ sm: '80%'}}
-                  setValue={() => {}}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6}}>
-                <TextField
-                  fullWidth
-                  sx={{width: { sm: '80%'}}}
-                  label="Teléfono fijo"
-                  name="landlinePhone"      
-                  value={personData?.landlinePhone}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6}}>
-                <TextField
-                  fullWidth
-                  sx={{width: { sm: '80%'}}}
-                  label="Dirección"
-                  name="address"      
-                  value={personData?.location?.street}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6}}>
-                <TextField
-                  fullWidth
-                  sx={{width: { sm: '80%'}}}
-                  label="Localidad"
-                  name="city"      
-                  value={personData?.location?.city}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6}}>
-                <Box
-                  sx={{width: { sm: '80%'}}}
-                >
-                  <CountryInputComponent
-                    countries={countries}
-                    inputName='country'
-                    selectedCountry={selectedCountry}
-                    handleInputChange={handleInputChange}
-                  />
-                </Box>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6}}>
-                <Box sx={{width: { sm: '80%'}}}>
-                  <ProvincesInputComponent 
-                    provincesData={provincesData}
-                    isProvincesLoading={isProvincesLoading}
-                    selectedProvince={selectedProvince}
-                    inputName='state'
-                    handleInputChange={handleInputChange}              
-                    />
-                </Box>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6}}>
-                <TextField
-                  fullWidth
-                  sx={{width: { sm: '80%'}}}
-                  label="Código Postal"
-                  name="state"      
-                  value={personData?.location?.zip}
+              <Grid size={{ xs: 12 }} sx={{ display: 'flex', justifyContent: 'flex-end'}}>
+                <ButtonCustom 
+                  title='Guardar'
+                  loading={loading}
+                  color='secondary'
+                  onClick={() => setOpenModal(true)}
+                  disable={changedForm.email == false && changedForm.password == false}
                 />
               </Grid>
             </Grid>
           </AccordionComponent>
         </Grid>
         <Grid size={{ xs: 12 }}>
-
-          <AccordionComponent title='Preferencias de empleo' expandedDefault={false}>
-            <Grid container spacing={2} mt={3}>
-              <Grid size={{ xs: 12, sm: 6}}
-                sx={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: {xs: 'space-between', sm: 'flex-start'}}}
-              >
-                <Typography variant='h6' component={'h1'} fontWeight={'bold'} color='textPrimary'>
-                  Vehículo propio
-                </Typography>
-                <Switch
-                  id='hasCar'
-                  name='hasCar'
-                  checked={hasCar ?? false}
-                  onChange={() => setHasCar(!hasCar)}
-                  inputProps={{ 'aria-label': 'controlled' }}
+          {/* Person data */}
+          <Suspense fallback={
+            <AccordionComponent title='Datos personales' expandedDefault={false} loading={true} >
+              <Typography variant='body1' color='textSecondary'>Cargando datos...</Typography> 
+            </AccordionComponent>}
+          >
+            <AccordionComponent 
+              title='Datos personales' 
+              expandedDefault={false}
+              loading={personIsLoading}
+            >
+              <UserPersonDataComponent
+                personData={personData!} 
+                setSnackbarProps={handleSnackbarSons}
                 />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6}}
-                sx={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: {xs: 'space-between', sm: 'flex-start'}}}
-              >
-                <Typography variant='h6' component={'h1'} fontWeight={'bold'} color='textPrimary'>
-                  Disponible para reubicación
-                </Typography>
-                <Switch
-                  id='relocateOption'
-                  name='relocateOption'
-                  checked={relocateOption ?? false}
-                  onChange={() => setRelocateOption(!relocateOption)}
-                  inputProps={{ 'aria-label': 'controlled' }}
-                />
-              </Grid>
-            </Grid>
+            </AccordionComponent>
+          </Suspense>
+        </Grid>
+        <Grid size={{ xs: 12 }}>
+          <AccordionComponent title='Preferencias de empleo' 
+            expandedDefault={false} 
+            loading={personIsLoading}
+          >
+            <PersonEmploymentPreferencesComponent
+              hasCar={hasCar}
+              relocateOption={relocateOption}
+              setHasCar={setHasCar}
+              setRelocateOption={setRelocateOption}
+              saveAction={updateEmployeePreferences}
+            />
           </AccordionComponent>
         </Grid>
       </Grid>
+      <ModalCheckPassComponent 
+        userData={userData}
+        open={openModal}
+        setOpen={handleClose}
+        onSave={updateFunction}
+      />
+      <SnackbarCustom 
+        {...snackbarProps}
+      
+      />
     </Box>
   )
 }
 
 export default AccountUserComponent;
-
-

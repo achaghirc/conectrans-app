@@ -6,7 +6,8 @@ import { Country, DriverLicenceProfileDTO } from '@/lib/definitions';
 import { updateDriverLicences } from '@/lib/data/driver-licence';
 import { updateDriverProfile } from '@/lib/data/driver-profile';
 import { DriverLicencesComponentSkeleton } from '../../shared/custom/components/skeleton/DriverLicencesSkeleton';
-import SnackbarCustom, { SnakbarCustomProps } from '../../shared/custom/components/snackbarCustom';
+import SnackbarCustom, { SnackbarCustomProps } from '../../shared/custom/components/snackbarCustom';
+import { SUCCESS_MESSAGE_SNACKBAR } from '@/lib/utils';
 
 type DriverLicencesComponentProps = {
   countries: Country[] | undefined;
@@ -20,10 +21,10 @@ const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
   if (!data) {
     return <DriverLicencesComponentSkeleton />;
   }
-  const [snackbarProps, setSnackbarProps] = React.useState<SnakbarCustomProps>({
+  const [snackbarProps, setSnackbarProps] = React.useState<SnackbarCustomProps>({
     open: false,
     handleClose: (event: React.SyntheticEvent | Event, reason?: SnackbarCloseReason,) => handleCloseSnackbar(event, reason),
-  } as SnakbarCustomProps);
+  } as SnackbarCustomProps);
 
   const handleCloseSnackbar = (event: React.SyntheticEvent | Event, reason?: SnackbarCloseReason) => {
     setSnackbarProps({...snackbarProps, open: false});
@@ -40,8 +41,8 @@ const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
   
   const update = async () => {
     setLoading(true);
-    let message = 'Datos actualizados correctamente';
-    let severity: SnakbarCustomProps['severity'] = 'success';
+    let message = SUCCESS_MESSAGE_SNACKBAR;
+    let severity: SnackbarCustomProps['severity'] = 'success';
     
     const newData: DriverProfile = {
       id: data.driverProfileId,

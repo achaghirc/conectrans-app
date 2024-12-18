@@ -316,7 +316,10 @@ export type AuthenticateMessage ={
 
 
 export type PasswordType = 'password' | 'confirmPassword';
-
+export type AccountForm = {
+  email: boolean,
+  password: boolean
+}
 
 export type Country = {
     id: number;

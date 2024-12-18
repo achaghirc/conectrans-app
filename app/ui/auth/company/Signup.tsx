@@ -12,7 +12,7 @@ import { ZodIssue } from 'zod';
 import { uploadFileToCloud } from '@/lib/services/cloudinary';
 import { companySignUp, createSubscriptionPlan } from '@/lib/services/signup';
 import { useRouter } from 'next/navigation';
-import { SnakbarCustomProps } from '../../shared/custom/components/snackbarCustom';
+import { SnackbarCustomProps } from '../../shared/custom/components/snackbarCustom';
 import { ArrowBack } from '@mui/icons-material';
 import StepperComponent from '../../shared/custom/components/stepper';
 
@@ -27,7 +27,7 @@ export default function Signup({ activities, countries}: SignUpProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [mediaQuery, setMediaQuery] = useState<boolean | null>(null);
-  const [snackbarProps, setSnackbarProps] = useState<SnakbarCustomProps>({} as SnakbarCustomProps);
+  const [snackbarProps, setSnackbarProps] = useState<SnackbarCustomProps>({} as SnackbarCustomProps);
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState<State>({message: null, errors:[]});
   const [formData, setFormData] = useState<SignUpCompanyFormData>({

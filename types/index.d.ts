@@ -41,11 +41,12 @@ declare module '@prisma/client' {
       workScope: EncoderType;
     }
 
-    interface User extends BaseUser {
+    interface UserDTO extends BaseUser {
         roleCode?: string;
         companyId?: number;
         personId?: number;
         assetUrl?: string;
         name?: string;
+        confirmPassword?: string;
     }
 }

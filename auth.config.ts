@@ -3,7 +3,7 @@ import Credentials from 'next-auth/providers/credentials';
 import { getUserByEmail } from './lib/data/user';
 import { signInSchema } from './lib/validations/loginValidations';
 import bcrypt from 'bcryptjs';
-import { User } from './lib/definitions';
+import { UserDTO } from '@prisma/client';
 
 export default {
     providers: [
@@ -39,20 +39,14 @@ export default {
     ]
 } satisfies NextAuthConfig;
 
-async function getUser(email: string): Promise<User | undefined> {
+async function getUser(email: string): Promise<UserDTO | undefined> {
     try {
-        const user: User | undefined = await getUserByEmail(email);
+        const user: UserDTO | undefined = await getUserByEmail(email);
         
         if (!user) {
             throw new CustomError('No encontramos una cuenta con ese correo. ¿Te gustaría registrarte?', 'NoUserFound')
         }
-        const userDef = {
-            id: user.id,
-            email: user.email,
-            password: user.password,
-            roleCode: user.roleCode,
-        } as User;
-        return userDef;
+       return user;
     } catch (error) {
         console.error(error);
         return undefined;

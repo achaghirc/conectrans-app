@@ -7,7 +7,8 @@ import { AddCircleOutlineOutlined } from '@mui/icons-material'
 import AddEducationComponent from '../../shared/auth/AddEducationComponent'
 import { deleteEducations, saveEducationData } from '@/lib/data/education'
 import { Session } from 'next-auth'
-import SnackbarCustom, { SnakbarCustomProps } from '../../shared/custom/components/snackbarCustom'
+import SnackbarCustom, { SnackbarCustomProps } from '../../shared/custom/components/snackbarCustom'
+import { SUCCESS_MESSAGE_SNACKBAR } from '@/lib/utils'
 
 type DriverEducationComponentProps = {
   session: Session | null;
@@ -18,10 +19,10 @@ type DriverEducationComponentProps = {
 const DriverEducationComponent: React.FC<DriverEducationComponentProps> = (
   { session, data, saveAction}
 ) => {
-  const [snackbarProps, setSnackbarProps] = React.useState<SnakbarCustomProps>({
+  const [snackbarProps, setSnackbarProps] = React.useState<SnackbarCustomProps>({
     open: false,
     handleClose: (event: React.SyntheticEvent | Event, reason?: SnackbarCloseReason,) => handleCloseSnackbar(event, reason),
-  } as SnakbarCustomProps);
+  } as SnackbarCustomProps);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [changedData, setChangedData] = React.useState<boolean>(false);
   const [open, setOpen] = React.useState<boolean>(false)
@@ -63,7 +64,7 @@ const DriverEducationComponent: React.FC<DriverEducationComponentProps> = (
 
   const update = async () => {
     setLoading(true);
-    let message = 'Datos actualizados correctamente';
+    let message = SUCCESS_MESSAGE_SNACKBAR;
     let severity = snackbarProps.severity;
     const newEducations = educations.filter((edu) => !data.includes(edu));
 

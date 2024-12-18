@@ -11,9 +11,10 @@ import { EncoderType } from '@prisma/client'
 import { deleteExperiences, saveExperiences } from '@/lib/data/experiences';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getAssetFileByUserId, removeAssetFromDatabase, saveAssetOnDatabase } from '@/lib/data/asset';
-import SnackbarCustom, { SnakbarCustomProps } from '../../shared/custom/components/snackbarCustom';
+import SnackbarCustom, { SnackbarCustomProps } from '../../shared/custom/components/snackbarCustom';
 import { removeFileFromCloud, uploadFileToCloud } from '@/lib/services/cloudinary';
 import { set } from 'zod';
+import { SUCCESS_MESSAGE_SNACKBAR } from '@/lib/utils';
 
 type DriverExperienceComponentProps = {
   session: Session | null;
@@ -27,10 +28,10 @@ const DriverExperienceComponent: React.FC<DriverExperienceComponentProps> = (
   { session, encoders, data, saveAction}
 ) => {
   const queryClient = useQueryClient();
-  const [snackbarProps, setSnackbarProps] = React.useState<SnakbarCustomProps>({
+  const [snackbarProps, setSnackbarProps] = React.useState<SnackbarCustomProps>({
     open: false,
     handleClose: (event: React.SyntheticEvent | Event, reason?: SnackbarCloseReason,) => handleCloseSnackbar(event, reason),
-  } as SnakbarCustomProps);
+  } as SnackbarCustomProps);
   const [message, setMessage] = React.useState<string>('');
 
   const [loading, setLoading] = React.useState<boolean>(false);
@@ -149,7 +150,7 @@ const DriverExperienceComponent: React.FC<DriverExperienceComponentProps> = (
     saveAction();
     setChangedData(false);
     setLoading(false);
-    setSnackbarProps({...snackbarProps, open: true, message: 'Datos actualizados correctamente', severity: 'success'});
+    setSnackbarProps({...snackbarProps, open: true, message: SUCCESS_MESSAGE_SNACKBAR, severity: 'success'});
     setIsDeleted(false);
     queryClient.refetchQueries({queryKey: ['assetFile', session!.user.id]});
   }

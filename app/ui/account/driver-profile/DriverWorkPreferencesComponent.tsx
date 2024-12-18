@@ -7,7 +7,8 @@ import { MenuProperties } from '../../shared/styles/styles';
 import { DriverPreferencesDTO } from '@/lib/definitions';
 import { DriverEmploymentPreferencesDTO, DriverWorkRangePreferencesDTO, EncoderType } from '@prisma/client';
 import { updateEmployeeTypes, updateWorkRangeTypes } from '@/lib/data/preferences';
-import SnackbarCustom, { SnakbarCustomProps } from '../../shared/custom/components/snackbarCustom';
+import SnackbarCustom, { SnackbarCustomProps } from '../../shared/custom/components/snackbarCustom';
+import { SUCCESS_MESSAGE_SNACKBAR } from '@/lib/utils';
 
 type DriverWorkPreferencesComponentProps = {
   data: DriverPreferencesDTO  | undefined;
@@ -18,10 +19,10 @@ type DriverWorkPreferencesComponentProps = {
 const DriverWorkPreferencesComponent: React.FC<DriverWorkPreferencesComponentProps> = (
   {data, encoders, saveAction}
 ) => {
-  const [snackbarProps, setSnackbarProps] = React.useState<SnakbarCustomProps>({
+  const [snackbarProps, setSnackbarProps] = React.useState<SnackbarCustomProps>({
     open: false,
     handleClose: (event: React.SyntheticEvent | Event, reason?: SnackbarCloseReason,) => handleCloseSnackbar(event, reason),
-  } as SnakbarCustomProps);
+  } as SnackbarCustomProps);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [changedData, setChangedData] = React.useState<boolean>(false);
   const employeeEncoders: EncoderType[] = React.useMemo(() => encoders?.filter((encoder) =>  encoder.type === 'EMPLOYEE_TYPE') ?? [], [encoders]);
@@ -128,7 +129,7 @@ const DriverWorkPreferencesComponent: React.FC<DriverWorkPreferencesComponentPro
     }
 
     if (employeeResult.status == 'fulfilled' && workRangeResult.status === 'fulfilled'){
-      message = 'Datos actualizados correctamente';
+      message = SUCCESS_MESSAGE_SNACKBAR;
       severity = 'success';
     }
 

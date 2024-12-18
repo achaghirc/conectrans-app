@@ -15,7 +15,7 @@ export function DatePickerComponent({value, label, name, errors, width, setValue
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
       <DemoContainer components={['DatePicker']}>
         <DatePicker
-			      format='YYYY-MM-DD'
+			      format='DD-MM-YYYY'
             label={label}
             name={name ?? ''}
             value={value}
@@ -24,7 +24,8 @@ export function DatePickerComponent({value, label, name, errors, width, setValue
               textField: {
                 error: handleZodError(errors ?? {errors: [], message: null}, name ?? ''),
                 helperText: handleZodHelperText(errors ?? {errors: [], message: null}, name ?? ''),
-                required: true
+                required: true,
+                placeholder: '01-01-2024'
               }
             }}
             sx={{
@@ -45,14 +46,15 @@ export function DateMobilePickerComponent({value,label, name, errors, setValue}:
 				<MobileDatePicker
           label={label}
           name={name ?? ''}
-					format='YYYY-MM-DD'
+					format='DD-MM-YYYY'
 					value={value}
 					onChange={(newValue) => setValue(newValue)}
 					slotProps={{
 						textField: {
 							error: handleZodError(errors, name ?? ''),
 							helperText: handleZodHelperText(errors, name ?? ''),
-              required: true
+              required: true,
+              placeholder: '01-01-2024'
 						}
 					}}
 					sx={{

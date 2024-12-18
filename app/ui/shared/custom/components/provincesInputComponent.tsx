@@ -1,20 +1,27 @@
 import { Province } from "@/lib/definitions";
-import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
-import { ChangeEvent } from "react";
+import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
+import React, { ChangeEvent, useEffect } from "react";
 
 export type ProvincesInputComponentProps = {
   provincesData: Province[] | undefined;
-  isProvincesLoading: boolean;
+  isProvincesLoading?: boolean;
   selectedProvince: string;
   inputName: string;
   style?: any;
   handleInputChange: (e: ChangeEvent<HTMLInputElement> | SelectChangeEvent<string | number>) => void;
 }
 
-const ProvincesInputComponent: React.FC<ProvincesInputComponentProps> = (
-  {provincesData, isProvincesLoading, selectedProvince, inputName, style, handleInputChange}
-) => {
-  if (provincesData && provincesData.length == 0) {
+const ProvincesInputComponent: React.FC<ProvincesInputComponentProps> = React.memo(
+  ({provincesData, isProvincesLoading, selectedProvince, inputName, style, handleInputChange}
+) => {  
+  if (isProvincesLoading) {
+    return (
+      <Typography variant="body1" align="center">
+        Loading...
+      </Typography>
+    );
+  }
+  if (!provincesData || provincesData.length == 0) {
     return (
       <TextField
         fullWidth
@@ -31,7 +38,7 @@ const ProvincesInputComponent: React.FC<ProvincesInputComponentProps> = (
       <InputLabel>Provincia</InputLabel>
       <Select
         label='Provincia'
-        name='locationState'
+        name={inputName}
         value={selectedProvince}
         placeholder={isProvincesLoading ? 'Loading...' : 'Selecciona una provincia'}
         onChange={(e:SelectChangeEvent<string>) => handleInputChange(e)}
@@ -69,5 +76,6 @@ const ProvincesInputComponent: React.FC<ProvincesInputComponentProps> = (
     </FormControl>
   );
 }
+);
 
 export default ProvincesInputComponent;

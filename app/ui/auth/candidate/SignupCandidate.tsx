@@ -9,7 +9,7 @@ import CadidateUserForm from './steps/CandidateUserForm';
 import dayjs from 'dayjs';
 import { validateProfesionalData, validateUserAuthData, validateUserData } from '@/lib/validations/userSignupValidate';
 import { removeFileFromCloud, uploadFileToCloud } from '@/lib/services/cloudinary';
-import { SnakbarCustomProps } from '../../shared/custom/components/snackbarCustom';
+import { SnackbarCustomProps } from '../../shared/custom/components/snackbarCustom';
 import { candidateSingup } from '@/lib/services/signup';
 import { authenticate } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
@@ -20,7 +20,7 @@ const steps = ['Datos de usuario', 'Datos de candidato', 'Datos Profesionales'];
 export default function SignupCandidate({ countries, encoders}: SignUpCandidateProps) {
 	const router = useRouter();
 	const [mediaQuery, setMediaQuery] = useState<boolean | null>(null);
-	const [snackbarProps, setSnackbarProps] = useState<SnakbarCustomProps>({} as SnakbarCustomProps);
+	const [snackbarProps, setSnackbarProps] = useState<SnackbarCustomProps>({} as SnackbarCustomProps);
 	const [formData, setFormData] = useState<SignUpCandidateFormData>({
 		email: 'amine101@gmail.com',
 		password: '09092286',

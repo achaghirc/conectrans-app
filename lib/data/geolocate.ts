@@ -53,3 +53,18 @@ export async function getProvincesByCountryId(id: number): Promise<Province[] | 
         console.log(e);
     }
 }
+
+export async function getGeolocationData(countryId: number) {
+    try {
+        const [countries, provinces] = await Promise.all([
+            getCountries(),
+            getProvincesByCountryId(countryId),
+        ]);
+        return {
+            countries: countries,
+            provinces: provinces,
+        }
+    } catch(e) {
+        console.log(e);
+    }
+}

@@ -1,6 +1,7 @@
 import { ExpandMoreOutlined } from "@mui/icons-material";
-import { Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typography } from "@mui/material";
+import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Box, CircularProgress, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
+import ButtonCustom from "../button/ButtonCustom";
 
 type AccordionProps = {
   title: string,
