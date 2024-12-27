@@ -3,12 +3,11 @@
 import React, { useEffect } from 'react'
 import Grid from '@mui/material/Grid2';
 import { Autocomplete, Button, CircularProgress, FormControl, InputLabel, Select, SnackbarCloseReason, TextField } from '@mui/material';
-import { MenuProperties } from '../../shared/styles/styles';
 import { DriverPreferencesDTO } from '@/lib/definitions';
 import { DriverEmploymentPreferencesDTO, DriverWorkRangePreferencesDTO, EncoderType } from '@prisma/client';
 import { updateEmployeeTypes, updateWorkRangeTypes } from '@/lib/data/preferences';
 import SnackbarCustom, { SnackbarCustomProps } from '../../shared/custom/components/snackbarCustom';
-import { SUCCESS_MESSAGE_SNACKBAR } from '@/lib/utils';
+import { SUCCESS_MESSAGE_SNACKBAR } from '@/lib/constants';;
 
 type DriverWorkPreferencesComponentProps = {
   data: DriverPreferencesDTO  | undefined;

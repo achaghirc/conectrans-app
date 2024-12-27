@@ -14,7 +14,7 @@ import { getAssetFileByUserId, removeAssetFromDatabase, saveAssetOnDatabase } fr
 import SnackbarCustom, { SnackbarCustomProps } from '../../shared/custom/components/snackbarCustom';
 import { removeFileFromCloud, uploadFileToCloud } from '@/lib/services/cloudinary';
 import { set } from 'zod';
-import { SUCCESS_MESSAGE_SNACKBAR } from '@/lib/utils';
+import { SUCCESS_MESSAGE_SNACKBAR } from '@/lib/constants';;
 
 type DriverExperienceComponentProps = {
   session: Session | null;

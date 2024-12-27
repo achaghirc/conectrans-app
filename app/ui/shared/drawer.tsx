@@ -23,6 +23,23 @@ export default function DrawerCustom(
 ) {
 
 	const router = useRouter();
+
+  const navigate = () => {
+    switch(session?.user.roleCode) {
+      case 'USER':
+        router.push('/account/user');
+        break;
+      case 'COMPANY':
+        router.push('/account/company');
+        break;
+      case 'ADMIN':
+        router.push('/account/admin');
+        break;
+      default:
+        router.push('/auth/login');
+        break;
+    }
+  }
 	return (
     <>
 			<Box sx={{ marginTop: 2 }}>
@@ -63,7 +80,7 @@ export default function DrawerCustom(
 					<Divider variant={'middle'} />
 					{session ? (
 						  <>
-							<MenuItem onClick={() => router.push('/account/account-data')} sx={{ mt: 1 }}>
+							<MenuItem onClick={navigate} sx={{ mt: 1 }}>
 								<AccountCircleOutlined  sx={{ mr: 1}} />
 								<Typography variant='body1' sx={{ color: 'black'}}>
 										Cuenta

@@ -2,7 +2,6 @@ import React, { ChangeEvent, useLayoutEffect, useState } from 'react'
 import Grid from '@mui/material/Grid2';
 import { Box, Button, Checkbox, Divider, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Icon, IconButton, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import { Country, EducationDTO, EncoderType, PersonLanguageDTO, SignUpCandidateFormData, ExperienceDTO, State } from '@/lib/definitions';
-import { handleZodError, handleZodHelperText } from '@/lib/utils';
 import { AddCircleOutlineOutlined, FilePresentOutlined, RemoveCircleOutline } from '@mui/icons-material';
 import ExperienceComponent from '@/app/ui/shared/auth/ExperienceComponent';
 import { MenuProperties } from '@/app/ui/shared/styles/styles';
@@ -12,6 +11,7 @@ import AddEducationComponent from '@/app/ui/shared/auth/AddEducationComponent';
 import { useQuery } from '@tanstack/react-query';
 import { getLanguages } from '@/lib/data/languaje';
 import LanguagesComponentSignUp from '@/app/ui/shared/auth/LanguageComponentSignup';
+import useUtilsHook from '@/app/ui/shared/hooks/useUtils';
 
 type CadidateUserFormProps = {
     formData: SignUpCandidateFormData;
@@ -27,6 +27,7 @@ const getEncoderTypeByCode = (encoders: EncoderType[], encoderCode: string) => {
 
 
 export default function CandidateProfesionalDataForm({formData, errors, countries,encoders, setFormData}: CadidateUserFormProps) {
+  const { handleZodError, handleZodHelperText } = useUtilsHook();
   const [educationToEdit, setEducationToEdit] = useState<EducationDTO>();
 	const [open, setOpen] = useState<boolean>(false);
 	const [openEducationComponent, setOpenEducationComponent] = useState<boolean>(false);

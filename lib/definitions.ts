@@ -50,9 +50,11 @@ export type CompanyDTO = {
     description: string;
     email: string | null;
     phone: string;
+    landlinePhone?: string;
     assetUrl: string;
     cifnif: string;
     userId: string;
+    contactPersonId?: number;
     contactPersonName?: string;
     contactPersonLastname?: string;
     contactPersonPhone?: string;
@@ -345,4 +347,15 @@ export type ProvinceCountryType = {
 export type SignUpCandidateProps = {
     countries: Country[];
     encoders: EncoderType[];
+}
+
+
+
+///MAPS
+export type MapComponentProps = {
+  width?: string;
+  height?: string;
+  center?: { lat: number, lng: number };
+  zoom?: number;
+  locations: ReadonlyArray<google.maps.LatLngLiteral>;
 }

@@ -53,6 +53,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                   token.companyId = company.id;
                   token.name = company.name;
                   token.assetUrl = company.assetUrl;
+                  token.personId = company.contactPersonId;
+                  token.description = company.description;
                 }
               });
             }
@@ -80,6 +82,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           session.user.name = token.name as string
           session.user.assetUrl = token.assetUrl as string
           session.user.companyId = token.companyId as number
+          session.user.companyDescription = token.description as string
           session.user.personId = token.personId as number
           return session
         },

@@ -1,5 +1,5 @@
-import AccountPage from '@/app/ui/account/account-data/AccountPage'
-import AccountUserComponent from '@/app/ui/account/account-data/AccountUserComponent'
+import AccountDataComponent from '@/app/ui/account/AccountDataComponent'
+import AccountUserComponent from '@/app/ui/account/user/AccountUserComponent'
 import MobileNavScreen from '@/app/ui/shared/nav/MobileNavScreen'
 import Navbar from '@/app/ui/shared/navbar'
 import { auth } from '@/auth'
@@ -14,7 +14,7 @@ const Page = async () => {
         {session && session.user.roleCode === 'USER' ?(
           <AccountUserComponent session={session} />
         ) : (
-          <AccountPage session={session} />
+          <AccountDataComponent session={session} />
         )
       }
       </div>

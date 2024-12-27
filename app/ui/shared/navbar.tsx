@@ -12,10 +12,8 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import { Button, Drawer } from '@mui/material';
 //es-lint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { ReactComponent as LogoConectrans } from '../../../public/Conectrans_Logo_White.svg';
-import Image from 'next/image';
 import DrawerCustom from './drawer';
-import { getSession, SessionProvider, useSession } from 'next-auth/react';
+import { SessionProvider } from 'next-auth/react';
 import { Session } from 'next-auth';
 import ConectransLogo from './logo/conectransLogo';
 

@@ -32,6 +32,8 @@ model Person {
   Asset              Asset?             @relation(fields: [resumeId], references: [id])
   User               User               @relation(fields: [userId], references: [id])
   PersonLanguages    PersonLanguages[]
+
+  @@index([userId], map: "person_userid_idx")
 }
 
 model ContactPerson {
@@ -60,6 +62,8 @@ model User {
   Person       Person?
   Subscription Subscription[]
   Role         Role           @relation(fields: [roleId], references: [id])
+
+  @@index([email], map: "user_email_idx")
 }
 
 model Role {
@@ -120,6 +124,8 @@ model Company {
   ContactPerson   ContactPerson @relation(fields: [contactPersonId], references: [id])
   Location        Location      @relation(fields: [locationId], references: [id])
   User            User          @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "company_userid_idx")
 }
 
 model Asset {
@@ -130,9 +136,9 @@ model Asset {
   width              Int
   height             Int
   format             String
-  originalFilename   String @default("")
   createdAt          DateTime @default(now())
   updatedAt          DateTime
+  originalFilename   String   @default("")
   Company            Company?
   PersonProfileImage Person?  @relation("AssetImageProfileId")
   Person             Person?
@@ -211,7 +217,6 @@ model DriverLicence {
   Country         country       @relation(fields: [countryId], references: [id])
   DriverProfile   DriverProfile @relation(fields: [driverProfileId], references: [id])
   LicenceType     EncoderType   @relation(fields: [licenceTypeId], references: [id])
-  Offer           Offer[]
 }
 
 model Experience {
@@ -250,22 +255,93 @@ model EncoderType {
   DriverLicence               DriverLicence[]
   DriverWorkRangePreferences  DriverWorkRangePreferences[]  @relation("WorkScopeRelation")
   Experience                  Experience[]
+  OfferEmploymentPreferences  OfferEmploymentPreferences[]  @relation("EmploymentTypeRelation")
+  OfferLicencePreferences     OfferLicencePreferences[]     @relation("LicenceTypeRelation")
+  OfferWorkRangePreferences   OfferWorkRangePreferences[]   @relation("WorkScopeRelation")
   PlanPreferences             PlanPreferences[]             @relation("preferencePlanEncType")
 }
 
-model Subscription {
-  id                   Int      @id @default(autoincrement())
-  userId               String
-  planId               Int
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime
-  endDate              DateTime
-  startDate            DateTime
-  status               String   @default("pending") @db.VarChar
-  stripeSubscriptionId String?
-  Offer                Offer[]
-  Plan                 Plan     @relation(fields: [planId], references: [id])
-  User                 User     @relation(fields: [userId], references: [id])
+model PlanPreferences {
+  id                    Int         @id @default(autoincrement())
+  planId                Int
+  preferencePlanId      Int
+  Plan                  Plan        @relation(fields: [planId], references: [id])
+  preferencePlanEncType EncoderType @relation("preferencePlanEncType", fields: [preferencePlanId], references: [id])
+}
+
+model Offer {
+  id                         Int                          @id @default(autoincrement())
+  title                      String                       @db.VarChar
+  subtitle                   String                       @db.VarChar
+  description                String?                      @db.VarChar
+  startDate                  DateTime
+  endDate                    DateTime
+  salary                     String                       @db.VarChar
+  contractType               String                       @db.VarChar
+  locationId                 Int
+  subscriptionId             Int
+  userId                     String
+  createdAt                  DateTime                     @default(now())
+  updatedAt                  DateTime
+  capCertification           Boolean                      @default(false)
+  digitalTachograph          Boolean                      @default(false)
+  workDay                    String                       @db.VarChar
+  isAnonymous                Boolean                      @default(false)
+  ApplicationOffer           ApplicationOffer[]
+  Location                   Location                     @relation(fields: [locationId], references: [id])
+  Subscription               Subscription                 @relation(fields: [subscriptionId], references: [id])
+  User                       User                         @relation(fields: [userId], references: [id])
+  OfferEmploymentPreferences OfferEmploymentPreferences[]
+  OfferLicencePreferences    OfferLicencePreferences[]
+  OfferWorkRangePreferences  OfferWorkRangePreferences[]
+
+  @@index([userId], map: "offer_userid_idx")
+  @@index([userId, subscriptionId], map: "offer_userid_subscriptionid_idx")
+}
+
+model OfferLicencePreferences {
+  id            Int         @id @default(autoincrement())
+  offerId       Int
+  licenceTypeId Int
+  EncoderType   EncoderType @relation("LicenceTypeRelation", fields: [licenceTypeId], references: [id])
+  Offer         Offer       @relation(fields: [offerId], references: [id])
+
+  @@index([offerId], map: "offer_licence_offerid_idx")
+}
+
+model OfferEmploymentPreferences {
+  id               Int         @id @default(autoincrement())
+  offerId          Int
+  employmentTypeId Int
+  EncoderType      EncoderType @relation("EmploymentTypeRelation", fields: [employmentTypeId], references: [id])
+  Offer            Offer       @relation(fields: [offerId], references: [id])
+
+  @@index([offerId], map: "offer_employment_offerid_idx")
+}
+
+model OfferWorkRangePreferences {
+  id          Int         @id @default(autoincrement())
+  offerId     Int
+  workScopeId Int
+  Offer       Offer       @relation(fields: [offerId], references: [id])
+  EncoderType EncoderType @relation("WorkScopeRelation", fields: [workScopeId], references: [id])
+
+  @@index([offerId], map: "offer_workrange_offerid_idx")
+}
+
+model ApplicationOffer {
+  id        Int      @id @default(autoincrement())
+  personId  Int
+  offerId   Int
+  status    String   @db.VarChar
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Offer     Offer    @relation(fields: [offerId], references: [id])
+  Person    Person   @relation(fields: [personId], references: [id])
+
+  @@index([personId], map: "application_personid_idx")
+  @@index([offerId], map: "application_offerid_idx")
+  @@index([personId, offerId], map: "application_personid_offerid_idx")
 }
 
 model Plan {
@@ -281,47 +357,23 @@ model Plan {
   accessLimited   Boolean           @default(true)
   price           Decimal           @default(0)
   PlanPreferences PlanPreferences[]
-  subscription    Subscription[]
+  Subscription    Subscription[]
 }
 
-model PlanPreferences {
-  id                    Int         @id @default(autoincrement())
-  planId                Int
-  preferencePlanId      Int
-  Plan                  Plan        @relation(fields: [planId], references: [id])
-  preferencePlanEncType EncoderType @relation("preferencePlanEncType", fields: [preferencePlanId], references: [id])
-}
+model Subscription {
+  id                   Int      @id @default(autoincrement())
+  userId               String
+  planId               Int
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime
+  endDate              DateTime
+  startDate            DateTime
+  status               String   @default("pending") @db.VarChar
+  stripeSubscriptionId String?
+  Offer                Offer[]
+  Plan                 Plan     @relation(fields: [planId], references: [id])
+  User                 User     @relation(fields: [userId], references: [id])
 
-model Offer {
-  id               Int                @id @default(autoincrement())
-  title            String             @db.VarChar
-  subtitle         String             @db.VarChar
-  description      String?            @db.VarChar
-  startDate        DateTime
-  endDate          DateTime
-  salary           String             @db.VarChar
-  isAnonimous      Boolean            @default(false)
-  contractType     String             @db.VarChar
-  driverLicenceId  Int
-  locationId       Int
-  subscriptionId   Int
-  userId           String
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime
-  ApplicationOffer ApplicationOffer[]
-  DriverLicence    DriverLicence      @relation(fields: [driverLicenceId], references: [id])
-  Location         Location           @relation(fields: [locationId], references: [id])
-  Subscription     Subscription       @relation(fields: [subscriptionId], references: [id])
-  User             User               @relation(fields: [userId], references: [id])
-}
-
-model ApplicationOffer {
-  id        Int      @id @default(autoincrement())
-  personId  Int
-  offerId   Int
-  status    String   @db.VarChar
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-  Offer     Offer    @relation(fields: [offerId], references: [id])
-  Person    Person   @relation(fields: [personId], references: [id])
+  @@index([userId], map: "subscription_userid_idx")
+  @@index([userId, planId], map: "subscription_userid_planid_idx")
 }

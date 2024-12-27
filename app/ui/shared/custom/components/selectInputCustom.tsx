@@ -1,7 +1,7 @@
 import { Country, Province, SignUpCandidateFormData, State } from "@/lib/definitions";
-import { handleZodError, handleZodHelperText } from "@/lib/utils";
 import { FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, styled } from "@mui/material";
 import { useEffect, useState } from "react";
+import useUtilsHook from "../../hooks/useUtils";
 
 export const SelectInputCustom = styled(Select)(({}) => ({
 	maxHeight: 300,
@@ -28,6 +28,7 @@ export const SelectFormInput = ({
 	errors,
 	onChange
 }: SelectFormProps) => {
+  const { handleZodError, handleZodHelperText } = useUtilsHook();
 	const [countries, setCountries] = useState<Country[]>([]);
 	const [provinces, setProvinces] = useState<Province[]>([]);
 

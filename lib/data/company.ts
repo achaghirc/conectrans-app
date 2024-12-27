@@ -1,12 +1,12 @@
 'use server';
 import prisma from "@/app/lib/prisma/prisma";
 import { Asset, LocationDTO } from "@prisma/client";
-import { CompanyDTO } from "../definitions";
-import { createLocation, getLocationByFilter, getLocationById, LocationFilter, updateLocationByCompany } from "./location";
+import { CompanyDTO} from "../definitions";
+import { createLocation, getLocationById, updateLocationByCompany } from "./location";
 import { Location } from "@prisma/client";
-import { create } from "domain";
-import { getActitivieByCode, getActitivies } from "./activity";
-import { QueryClient } from "@tanstack/react-query";
+import { getActitivieByCode } from "./activity";
+import { takeNumberFromString } from "../utils";
+import { getAssetById } from "./asset";
 
 
 export async function getCompanyByUserId(userId: string): Promise<CompanyDTO | undefined> {
@@ -65,6 +65,74 @@ export async function getCompanyByUserId(userId: string): Promise<CompanyDTO | u
     }
 }
 
+export async function getCompanyById(companyId: number): Promise<CompanyDTO | undefined> {
+  try{
+    const company = await prisma.company.findUnique({
+      where: {
+        id: companyId,
+      },
+      include: {
+        Asset: {
+            select: {
+                url: true,
+            },
+        },
+        Location: true,
+        Activity: true,
+      }
+    });
+    if (!company) {
+      return undefined;
+    }
+    const location : LocationDTO | undefined = await getLocationById(company.locationId!);
+    return {
+      ...company,
+      assetUrl: company.Asset!.url,
+      locationStreet: company.Location!.street,
+      locationNumber: company.Location!.number,
+      locationCity: company.Location!.city,
+      locationState: company.Location!.state,
+      locationCountryId: company.Location!.countryId,
+      locationCountryName: location!.countryName,
+      locationCountryCode: location!.countryCode,
+      locationZip: company.Location!.zip,
+      activityName: company.Activity!.name,
+      activityCode: company.Activity!.code,
+    }
+  }catch (error) {
+    throw new Error(`Error getting company ${error}`);
+  }
+}
+
+export async function getCompanySlimDTOById(companyId: number): Promise<Partial<CompanyDTO> | undefined> {
+
+  try{
+    const company = await prisma.company.findUnique({
+      where: {
+        id: companyId,
+      },
+      select: {
+        name: true,
+        socialName: true,
+        description: true,
+        assetId: true,
+      },
+    });
+    if (!company) {
+      return undefined;
+    }
+    const asset: Asset | null = await getAssetById(company.assetId!);
+    return {
+      name: company.name,
+      socialName: company.socialName,
+      description: company.description,
+      assetUrl: asset ? asset.url : undefined,
+    }
+  } catch (error) { 
+    throw new Error(`Error getting company ${error}`);
+  }
+
+}
 
 
 export async function updateCompanyData(company: CompanyDTO): Promise<CompanyDTO> {
@@ -72,12 +140,14 @@ export async function updateCompanyData(company: CompanyDTO): Promise<CompanyDTO
     const activity = await getActitivieByCode(company.activityCode!);
     if (!activity) {throw new Error(`Activity not found`);}
 
+    const number = (await takeNumberFromString(company.locationStreet || "")).toString();
+
     let location: LocationDTO | undefined = await getLocationById(company.locationId!);
     if (!location) {
       const newLocation : Location = {
         id: 0,
         street: company.locationStreet!,
-        number: company.locationNumber!,
+        number: number,
         city: company.locationCity!,
         state: company.locationState!,
         countryId: company.locationCountryId!,
@@ -95,7 +165,7 @@ export async function updateCompanyData(company: CompanyDTO): Promise<CompanyDTO
       const newLocation : Location = {
         id: 0,
         street: company.locationStreet!,
-        number: company.locationNumber!,
+        number: number,
         city: company.locationCity!,
         state: company.locationState!,
         countryId: company.locationCountryId!,

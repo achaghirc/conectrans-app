@@ -8,7 +8,7 @@ import AddEducationComponent from '../../shared/auth/AddEducationComponent'
 import { deleteEducations, saveEducationData } from '@/lib/data/education'
 import { Session } from 'next-auth'
 import SnackbarCustom, { SnackbarCustomProps } from '../../shared/custom/components/snackbarCustom'
-import { SUCCESS_MESSAGE_SNACKBAR } from '@/lib/utils'
+import { SUCCESS_MESSAGE_SNACKBAR } from '@/lib/constants';
 
 type DriverEducationComponentProps = {
   session: Session | null;

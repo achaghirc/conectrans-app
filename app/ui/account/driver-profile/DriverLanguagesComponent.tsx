@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query'
 import { deletePersonLanguages, getLanguages, savePersonLanguages } from '@/lib/data/languaje'
 import { Session } from 'next-auth'
 import SnackbarCustom, { SnackbarCustomProps } from '../../shared/custom/components/snackbarCustom'
-import { SUCCESS_MESSAGE_SNACKBAR } from '@/lib/utils'
+import { SUCCESS_MESSAGE_SNACKBAR } from '@/lib/constants';
 
 type DriverLanguagesComponentProps = {
   session: Session | null;

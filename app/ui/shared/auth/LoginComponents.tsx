@@ -3,7 +3,7 @@ import { Stack, styled, TextField } from "@mui/material";
 
 export const SignInContainer = styled(Stack)(({ theme }) => ({
 	width: '100%',
-    minHeight: '100%',
+  minHeight: '100%',
 	padding: theme.spacing(3),
 	gap: theme.spacing(3),
 	[theme.breakpoints.up('sm')]: {

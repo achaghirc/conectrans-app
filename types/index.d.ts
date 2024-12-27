@@ -8,13 +8,18 @@ import { Company as PrismaCompany,
   DriverWorkRangePreferences,
   User as BaseUser,
   country,
+  Offer,
    } from "@prisma/client";
+
+import { CompanyDTO as CompanyDefinitionsDTO } from '@lib/definitions';
 
 declare module '@prisma/client' {
     interface CompanyDTO extends PrismaCompany {
         Asset: {
             url: string;
         } & PrismaCompany;
+        activityName: string;
+        activityCode: string;
     }
 
     interface LocationDTO extends Location {
@@ -23,7 +28,7 @@ declare module '@prisma/client' {
     }
 
     interface SubscriptionDTO extends PrismaSubscription {
-        Plan: Plan;
+        Plan: PlanDTO;
     }
 
     interface DriverLicenceDTO extends PrismaDriverLicence {
@@ -44,9 +49,34 @@ declare module '@prisma/client' {
     interface UserDTO extends BaseUser {
         roleCode?: string;
         companyId?: number;
+        companyDescription?: string;
         personId?: number;
         assetUrl?: string;
         name?: string;
         confirmPassword?: string;
+    }
+
+    interface PlanDTO extends Plan {
+        description: string;
+        price: number;
+        priceMonthly?: number;
+        priceBianual?: number;
+        priceYearly?: number;
+        planPreferences: EncoderType[];
+    }
+
+    interface OfferDTO extends Offer {
+        location: LocationDTO;
+        company?: CompanyDefinitionsDTO;
+        isAnonymous: boolean;
+        subscription: SubscriptionDTO;
+        employmentType: EncoderType[];
+        workRange: EncoderType[];
+        licenseType: EncoderType[];
+        licenseAdr: EncoderType[];
+    }
+    interface OfferSlimDTO extends Offer {
+        id?: number;
+        isAnonymous: boolean;
     }
 }

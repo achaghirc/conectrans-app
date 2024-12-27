@@ -1,5 +1,5 @@
 'use client';
-import { Plan, SignUpCompanyFormData } from '@/lib/definitions';
+import { SignUpCompanyFormData } from '@/lib/definitions';
 import { Box, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import SubscriptionCard from '@/app/ui/shared/custom/components/subscription/SubscriptionCard';
@@ -7,20 +7,21 @@ import { useState } from 'react';
 import { getAllPlans } from '@/lib/data/plan';
 import SubscriptionCardSkeleton from '@/app/ui/shared/custom/components/skeleton/SubscriptionCardSkeleton';
 import { useQuery } from '@tanstack/react-query';
+import { PlanDTO } from '@prisma/client';
 interface ResumeFormProps {
   formData: SignUpCompanyFormData;
   setFormData: (data: any) => void;
 };
 
 export default function ResumeForm({ formData, setFormData }: ResumeFormProps) {
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<PlanDTO | null>(null);
 
   const { data: plans = [], isLoading, isError } = useQuery({
     queryKey: ['plans'], 
-    queryFn: (): Promise<Plan[] | undefined> => getAllPlans(),
+    queryFn: (): Promise<PlanDTO[] | undefined> => getAllPlans(),
   });
 
-  const onSelectPlan = (plan: Plan) => {
+  const onSelectPlan = (plan: PlanDTO) => {
     setSelectedPlan(plan);
     setFormData({ subscriptionPlan: {...formData.subscriptionPlan, planId: plan.id }});
   }
@@ -51,7 +52,7 @@ export default function ResumeForm({ formData, setFormData }: ResumeFormProps) {
       ): (
         <Grid container spacing={4} justifyContent="center">
           {plans && (
-            plans.map((plan: Plan, index: number) => (
+            plans.map((plan: PlanDTO, index: number) => (
               <Grid size={{xs: 12, sm: 6, md: 3}} key={index}>
                 <SubscriptionCard selected={selectedPlan?.id == plan.id} plan={plan} onSelectPlan={onSelectPlan}/>
               </Grid>

@@ -1,9 +1,15 @@
+import CompanyOffersPage from '@/app/ui/account/offers/CompanyOffersPage';
+import { a11yProps, CustomTabPanel } from '@/app/ui/shared/custom/components/tabPanel/CustomTabPanelComponent';
+import { auth } from '@/auth';
+import { Box, Tab, Tabs } from '@mui/material';
 import React from 'react'
 
-export default function page() {
+export default async function page() {
+  const session = await auth();;
+
   return (
-    <div>
-       Ofertas TODO
-    </div>
+    <>
+      <CompanyOffersPage session={session} />
+    </>
   )
 }

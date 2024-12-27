@@ -1,32 +1,41 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import React, { ChangeEvent, Suspense, useEffect, useMemo } from 'react'
-import { AccountProps } from './AccountPage';
-import { AccountForm, PersonDTO, Province } from '@/lib/definitions';
-import { getPersonById, getPersonByUserId, updatePersonPreferences } from '@/lib/data/person';
+import AccountDataComponent from '../AccountDataComponent';
+import { AccountForm, PersonDTO, State } from '@/lib/definitions';
+import { getPersonById, updatePersonPreferences } from '@/lib/data/person';
 import { useQuery } from '@tanstack/react-query';
-import { Box, Button, IconButton, InputAdornment, SelectChangeEvent, Switch, TextField, Typography } from '@mui/material';
+import { Box, IconButton, InputAdornment, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import ProfileComponent from '../../shared/account/ProfileComponent';
-import { getGeolocationData, getProvincesByCountryId } from '@/lib/data/geolocate';
 import AccordionComponent from '../../shared/custom/components/accordion/AccordionComponent';
 import { UserDTO } from '@prisma/client';
 import PersonEmploymentPreferencesComponent from './PersonEmploymentPreferencesComponent';
-import ButtonCustom from '../../shared/custom/components/button/ButtonCustom';
 import { CloseOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
 import ModalCheckPassComponent from '../../shared/account/ModalCheckPassComponent';
 import { checkPasswordUser, updateUserHandler } from '@/lib/data/user';
 import SnackbarCustom, { SnackbarCustomProps } from '../../shared/custom/components/snackbarCustom';
-import { SUCCESS_MESSAGE_SNACKBAR } from '@/lib/utils';
+import { ACTUAL_PASSWORD_VALIDATION_ERROR, ERROR_MESSAGE_SNACKBAR, ERROR_MESSAGE_SNACKBAR_COMPANY, ERROR_MESSAGE_SNACKBAR_SERVER, ERROR_MESSAGE_SNACKBAR_VALIDATION, PASSWORD_DEFAULT, SUCCESS_MESSAGE_SNACKBAR } from '@/lib/constants';
+import useUtilsHook from '../../shared/hooks/useUtils';
+import useUserData from '../../shared/hooks/useUserData';
+import { Session } from 'next-auth';
 
-const PASSWORD_DEFAULT = '***********';
 
 const UserPersonDataComponent = React.lazy(() => import('./UserPersonDataComponent'));
 
-const AccountUserComponent: React.FC<AccountProps> = ({session}) => {
+type AccountUserProps = {
+  session: Session | null;
+}
+
+const AccountUserComponent: React.FC<AccountUserProps> = ({session}) => {
+  const { handleZodError, handleZodHelperText} = useUtilsHook();
   const router = useRouter();
   if (!session) {return;}
-  
+
+  const [formState, setFormState] = React.useState<State>({
+    message: '',
+    errors: []
+  });
   const [openModal, setOpenModal] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [hasCar, setHasCar] = React.useState<boolean>(false);
@@ -54,49 +63,21 @@ const AccountUserComponent: React.FC<AccountProps> = ({session}) => {
   const [changedForm, setChangedForm] = React.useState<AccountForm>({
     email: false,
     password: false,
-  }
-  )
+  })
   const [showPassword, setShowPassword] = React.useState<boolean>(false);
 
-  const [userData, setUserData] = React.useState<UserDTO>({
-    email: '',
-    password: '',
-    id: '',
-    name: '',
-    roleCode: '',
-    assetUrl: 'https://res.cloudinary.com/dgmgqhoui/image/upload/w_1000,c_fill,ar_1:1,g_auto,r_max,bo_5px_solid_grey,b_rgb:262c35/v1734182403/default-logo-user_fj0tu3.png',
-  } as UserDTO);
-  
+  const { userData } = useUserData(session);
+  const [user, setUser] = React.useState<UserDTO>(userData);
   const fetchPersonData = () : Promise<PersonDTO | undefined> => getPersonById(session.user.personId ?? 0);
   const { data: personData, isLoading: personIsLoading, isError: personIsError, error: personError} = useQuery({queryKey: ['personData'], queryFn: fetchPersonData})
 
-  const getUserData = useMemo(() => {
-    if (!session) return null;
-    const {user} = session;
-
-    if (!user) return null;
-    
-    return {
-      ...userData,
-      email: user.email || '',
-      password: PASSWORD_DEFAULT,
-      id: user.id || '',
-      name: user.name || '',
-      roleCode: user.roleCode || '',
-      assetUrl: user.assetUrl ?? userData.assetUrl,
-      personId: session.user.personId
-    } as UserDTO;
-  }, [session]);
-
   useEffect(() => {
-    if (!session.user){
+    if (!userData){
       router.push('/auth/login');
     } else {
-      const user = getUserData;
-      if (user)
-        setUserData(user);
+      setUser(userData);
     }
-  }, [session, getUserData]);
+  }, [userData])
   
   useEffect(() => {
     if (!personData) return;
@@ -113,7 +94,7 @@ const AccountUserComponent: React.FC<AccountProps> = ({session}) => {
     const {name, value} = e.target;
   
     setChangedForm({...changedForm, [name]: true});
-    setUserData({...userData, [name]: value});
+    setUser({...user, [name]: value});
   }
   const inputPropShowPassword = () => {
 		return (
@@ -130,7 +111,7 @@ const AccountUserComponent: React.FC<AccountProps> = ({session}) => {
           aria-label="toogle password reset"
           onClick={() => {
             setChangedForm({...changedForm, password: false});
-            setUserData({...userData, password: PASSWORD_DEFAULT})
+            setUser({...user, password: PASSWORD_DEFAULT})
           }}
         >
           {changedForm.password && <CloseOutlined />}
@@ -148,25 +129,34 @@ const AccountUserComponent: React.FC<AccountProps> = ({session}) => {
     try{
       const res = await checkPasswordUser(session.user.email, value.confirmPassword)
       if(!res){
-        setSnackbarProps({...snackbarProps, open: true, message: 'Contraseña actual incorrecta, por favor recupera tu contraseña si no la recuerdas', severity: 'error'})
+        setSnackbarProps({...snackbarProps, open: true, message: ACTUAL_PASSWORD_VALIDATION_ERROR, severity: 'error'})
+        return;
       } else {
-        const result : UserDTO | string = await updateUserHandler(userData, changedForm, session.user.email);
-        if (result instanceof String) {
-          setSnackbarProps({...snackbarProps, open: true, message: result as string, severity: 'error'})
+        const result : UserDTO | State = await updateUserHandler(formState, user, changedForm, session.user.email);
+        if('message' in result || 'errors' in result){
+          const res = result as State;
+          const {message} = res;
+          setFormState(res);
+          console.log(res);
+          setSnackbarProps({...snackbarProps, open: true, message: message ?? ERROR_MESSAGE_SNACKBAR_VALIDATION, severity: 'error'})
         } else {
           setSnackbarProps({...snackbarProps, open: true, message: SUCCESS_MESSAGE_SNACKBAR, severity: 'success'})
+          setChangedForm({
+            email: false,
+            password: false
+          });
+          setFormState({
+            message: '',
+            errors: []
+          });
         }
       }
       setLoading(false);
-      setChangedForm({
-        email: false,
-        password: false
-      })
     }catch (err) {
       if (err instanceof Error) {
         console.log(err.message);
       }
-      setSnackbarProps({...snackbarProps, open: true, message: 'Error en el servidor actualizando los datos, contacte con el administrador.', severity: 'error'})
+      setSnackbarProps({...snackbarProps, open: true, message: ERROR_MESSAGE_SNACKBAR_SERVER, severity: 'error'})
     }
     
   }
@@ -178,7 +168,7 @@ const AccountUserComponent: React.FC<AccountProps> = ({session}) => {
     }
     const res = await updatePersonPreferences(userData.personId, hasCar, relocateOption);
     if (res instanceof String) {
-      setSnackbarProps({...snackbarProps, open: true, message: 'Error actualizando los datos, intentelo de nuevo', severity: 'error'})
+      setSnackbarProps({...snackbarProps, open: true, message: ERROR_MESSAGE_SNACKBAR, severity: 'error'})
       return;
     } else {
       const {hasCar, relocateOption} = res as {hasCar: boolean, relocateOption: boolean};
@@ -196,58 +186,11 @@ const AccountUserComponent: React.FC<AccountProps> = ({session}) => {
           justifyContent: 'center',
         }}
       >
-        <ProfileComponent assetUrl={userData?.assetUrl} title={userData?.name ?? ''} subtitle={userData?.email ?? ''} />
+        <ProfileComponent assetUrl={user?.assetUrl} title={user?.name ?? ''} subtitle={user?.email ?? ''} />
       </Box>
       <Grid container spacing={3} sx={{ display: 'flex', flexDirection: 'column'}}>
         <Grid size={{ xs: 12 }}>
-          <AccordionComponent title={'Datos de la cuenta'} expandedDefault={true}>
-            <Grid container spacing={2} mt={3}>
-              <Grid size={{ xs: 12, sm: 6}}>
-                <TextField
-                  sx={{width: {xs: '95%', sm: '80%'}}}
-                  label="Email"
-                  name="email"
-                  autoFocus={false}
-                  value={userData?.email}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleUserDataChange(e)}
-                  onBlur={() => {
-                    if (userData.email === session.user.email){
-                      setChangedForm({...changedForm, email: false});
-                    }
-                  }}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6}}>
-                <TextField
-                  sx={{width: {xs: '95%', sm: '80%'}}}
-                  label="Contraseña"
-                  name="password"
-                  type={showPassword && changedForm.password ? 'text' : 'password'}
-                  value={userData?.password}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleUserDataChange(e)}
-                  onFocus={() => {
-                    if(changedForm.password == false){
-                      setUserData({...userData, password: ''})
-                    }
-                  }}
-                  slotProps={{
-                    input: {
-                      endAdornment: inputPropShowPassword()
-                    }
-                  }}
-                />
-              </Grid>
-              <Grid size={{ xs: 12 }} sx={{ display: 'flex', justifyContent: 'flex-end'}}>
-                <ButtonCustom 
-                  title='Guardar'
-                  loading={loading}
-                  color='secondary'
-                  onClick={() => setOpenModal(true)}
-                  disable={changedForm.email == false && changedForm.password == false}
-                />
-              </Grid>
-            </Grid>
-          </AccordionComponent>
+          <AccountDataComponent session={session} setSnackbarProps={handleSnackbarSons}/>
         </Grid>
         <Grid size={{ xs: 12 }}>
           {/* Person data */}
@@ -284,7 +227,7 @@ const AccountUserComponent: React.FC<AccountProps> = ({session}) => {
         </Grid>
       </Grid>
       <ModalCheckPassComponent 
-        userData={userData}
+        userData={user}
         open={openModal}
         setOpen={handleClose}
         onSave={updateFunction}

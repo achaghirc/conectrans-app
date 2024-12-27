@@ -1,12 +1,15 @@
 'use server';
 
 import prisma from "@/app/lib/prisma/prisma";
-import { Plan, PlanPreference } from "../definitions";
-import { EncoderType, Plan as PlanPrisma } from "@prisma/client";
+import { PlanPreference } from "../definitions";
+import { EncoderType, Plan, PlanDTO, PlanPreferences } from "@prisma/client";
 import { getEncoderTypeByIdsIn } from "./encoderType";
+import { Decimal } from "@prisma/client/runtime/library";
+import { convertDecimalToNumber } from "../utils";
 
 
-export async function getAllPlans(): Promise<Plan[] | undefined> {
+
+export async function getAllPlans(): Promise<PlanDTO[] | undefined> {
     try {
         const plans =  await prisma.plan.findMany({
             orderBy: {
@@ -18,15 +21,8 @@ export async function getAllPlans(): Promise<Plan[] | undefined> {
         });
         const plansWithPreferences = await Promise.all(plans.map(async (plan) => {
             const planPreferenceIds = plan.PlanPreferences.map((preference:PlanPreference) => preference.preferencePlanId);
-            const planPreferences: EncoderType[] | undefined = await getEncoderTypeByIdsIn(planPreferenceIds); 
-            return {...plan,
-                    description: plan.description ?? '',
-                    price: plan.price?.toNumber() ?? null,
-                    priceMonthly: plan.priceMonthly?.toNumber() ?? null,
-                    priceBianual: plan.priceBianual?.toNumber() ?? null,
-                    priceYearly: plan.priceYearly?.toNumber() ?? null,
-                    planPreferences: planPreferences ?? []
-                };             
+            const planPreferences: EncoderType[] | undefined = await getEncoderTypeByIdsIn(planPreferenceIds);   
+            return buildPlanDTO(plan, planPreferences);
         }));
         return plansWithPreferences;
     }catch(e) {
@@ -34,7 +30,7 @@ export async function getAllPlans(): Promise<Plan[] | undefined> {
     }
 }
 
-export async function getPlanById(id: number): Promise<Plan | undefined> {
+export async function getPlanById(id: number): Promise<PlanDTO | undefined> {
     try {
         const plan = await prisma.plan.findFirst({
             where: {
@@ -47,20 +43,14 @@ export async function getPlanById(id: number): Promise<Plan | undefined> {
         if (!plan) return undefined;
         const planPreferenceIds = plan.PlanPreferences.map((preference:PlanPreference) => preference.preferencePlanId);
         const planPreferences: EncoderType[] | undefined = await getEncoderTypeByIdsIn(planPreferenceIds); 
-        return {...plan,
-                description: plan.description ?? '',
-                price: plan.price.toNumber() ?? null,
-                priceMonthly: plan.priceMonthly.toNumber() ?? null,
-                priceBianual: plan.priceBianual?.toNumber() ?? null,
-                priceYearly: plan.priceYearly?.toNumber() ?? null,
-                planPreferences: planPreferences ?? []
-            };
+      
+        return await buildPlanDTO(plan, planPreferences);
     } catch(e) {
         console.log(e);
     }
 }
 
-export async function getPlanByTitle(title: string): Promise<PlanPrisma | undefined> {
+export async function getPlanByTitle(title: string): Promise<PlanDTO | undefined> {
     try {
         const plan = await prisma.plan.findFirst({
             where: {
@@ -68,8 +58,24 @@ export async function getPlanByTitle(title: string): Promise<PlanPrisma | undefi
             },
         });
         if (!plan) return undefined;
-        return plan;
+        return await buildPlanDTO(plan, []);
     } catch(e) {
         console.log(e);
     }
+}
+
+export async function buildPlanDTO(plan: Plan, planPreferences: EncoderType[] | undefined): Promise<PlanDTO> {
+  const price = await convertDecimalToNumber(plan.price);
+  const priceMonthly = await convertDecimalToNumber(plan.priceMonthly);
+  const priceBianual = await convertDecimalToNumber(plan.priceBianual);
+  const priceYearly = await convertDecimalToNumber(plan.priceYearly);
+  return {...plan,
+    description: plan.description ?? '',
+    price: price,
+    priceMonthly: priceMonthly,
+    priceBianual: priceBianual,
+    priceYearly: priceYearly,
+    planPreferences: planPreferences ?? []
+  } as PlanDTO;    
+
 }

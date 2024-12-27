@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import z from 'zod';
 import prisma from '@/app/lib/prisma/prisma';
 import { getRoleByCode } from './role';
-import { AccountForm, CompanyUserAccountDTO, PersonDTO } from '../definitions';
+import { AccountForm, CompanyUserAccountDTO, PersonDTO, State } from '../definitions';
 import { getCompanyByUserId } from './company';
 import { CompanyDTO } from '../definitions';
 import { getPersonByUserId } from './person';
@@ -12,25 +12,25 @@ import { User, UserDTO } from '@prisma/client';
 
 const updateUserSchema = z.object({
     email: z.string({
-        invalid_type_error: 'Please provide a valid email',
+        invalid_type_error: 'Por favor, introduce un correo electrónico válido',
     }).email(),
     password: z.string({
-        invalid_type_error: 'Please provide a valid password',
-    }).min(6),
+        invalid_type_error: 'Por favor, introduce una contraseña válida',
+    }).min(6, 'La contraseña debe tener al menos 6 caracteres'),
 });
 
 const createUserSchema = z.object({
   email: z.string({
-      invalid_type_error: 'Please provide a valid email',
-  }).email('Correo electrónico no válido').refine(async (email) => {
+      invalid_type_error: 'Por favor, introduce un correo electrónico válido',
+  }).email('Correo electrónico no válido, Pej: example@dominio.com').refine(async (email) => {
     const user = await getUserByEmail(email);
     return !user;
   }, {
     message: 'El correo electrónico ya está en uso',
   }),
   password: z.string({
-      invalid_type_error: 'Please provide a valid password',
-  }).min(6),
+      invalid_type_error: 'Por favir, introduce una contraseña válida',
+  }).min(6, 'La contraseña debe tener al menos 6 caracteres'),
 });
 
 
@@ -71,15 +71,19 @@ export async function createUserHandler(
     } 
 }
 
-export async function updateUserHandler(userData:UserDTO, changedForm: AccountForm, actualEmail: string): Promise<UserDTO | string> {
-  let validatedData;
-  validatedData = await createUserSchema.safeParseAsync({
-    email: changedForm.email ? userData.email: actualEmail,
+export async function updateUserHandler(prevState: State, userData:UserDTO, changedForm: AccountForm, actualEmail: string): Promise<UserDTO | State> {
+  const validatedData = await createUserSchema.safeParseAsync({
+    email: changedForm.email ? userData.email : 'example@gmail.com',
     password: userData.password
   });
   
   if (!validatedData.success) {
-      return validatedData.error.message;
+      return {
+          ...prevState,
+          errors: validatedData.error.errors,
+          message: 'Error en los campos del formulario',
+      };
+      
   }
   const hashPassword = await bcrypt.hash(validatedData.data?.password, 10);
   

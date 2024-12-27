@@ -76,7 +76,7 @@ const Sidenav: React.FC<SideNavProps> = ({session, children}) => {
         <NavbarToolbarSkeleton />
 			}
       <Box sx={{ overflow: 'auto', mt: 2 }}>
-				{data ? <NavLinks role={data.role} onClick={handleDrawerClose}/> : <NavLinksSkeleton />}
+				{data ? <NavLinks session={session} role={data.role} onClick={handleDrawerClose}/> : <NavLinksSkeleton />}
       </Box>
       <Box sx={{ flexGrow: 1, position: 'absolute', bottom: 20, width: drawerWidth}} >
         <ListItem disablePadding sx={{ width: '100%' }}>
@@ -145,7 +145,7 @@ const Sidenav: React.FC<SideNavProps> = ({session, children}) => {
       </Box>
       <Box
         component="main"
-        sx={{ flexGrow: 1, p: 3, mt: {xs: 7, md: 0}, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
+        sx={{ flexGrow: 1, p: {xs: 0, md: 3}, mt: {xs: 11, md: 0}, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         {children}
       </Box>

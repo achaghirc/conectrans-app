@@ -5,6 +5,23 @@ import { Asset, Person } from "@prisma/client";
 import { getPersonByUserId } from "./person";
 import { AssetSlimDTO, CloudinaryUploadResponse, PersonDTO } from "../definitions";
 
+export async function getAssetById(id: number): Promise<Asset | null> {
+  try {
+    const asset: Asset | null = await prisma.asset.findUnique({
+      where: {
+        id: id
+      }
+    });
+    return asset;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error('Error getting asset by id '+ id);
+  }
+}
+
+
 export async function getAssetFileByUserId(userId: string): Promise<AssetSlimDTO> {
   try {
 

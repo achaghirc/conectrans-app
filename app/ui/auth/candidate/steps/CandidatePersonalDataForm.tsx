@@ -4,10 +4,11 @@ import { Country, Province, SignUpCandidateFormData, State, ValidationCIFNIFResu
 import Grid from '@mui/material/Grid2';
 import { FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 import dayjs from 'dayjs';
-import { handleZodError, handleZodHelperText } from '@/lib/utils';
 import { validateCIFNIFFormat } from '@/lib/actions';
 import { DateMobilePickerComponent, DatePickerComponent } from '@/app/ui/shared/custom/components/datePickerCustom';
 import { getProvincesByCountryId } from '@/lib/data/geolocate';
+import useUtilsHook from '@/app/ui/shared/hooks/useUtils';
+import { MenuProperties } from '@/app/ui/shared/styles/styles';
 
 type CadidateUserFormProps = {
     formData: SignUpCandidateFormData;
@@ -18,7 +19,8 @@ type CadidateUserFormProps = {
 
 
 export default function CandidatePersonalDataForm({formData, errors, countries, setFormData}: CadidateUserFormProps) {
-	const [mediaQuery, setMediaQuery] = useState<boolean | null>(null);
+	const { handleZodError, handleZodHelperText } = useUtilsHook();
+  const [mediaQuery, setMediaQuery] = useState<boolean | null>(null);
 	const [cifError, setCifError] = useState<string | null>(null);
 	const [provinces, setProvinces] = useState<Province[]>([]);
 	
@@ -201,22 +203,7 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
 							name='country'
 							value={formData.contactInfo.country.toString() ?? 64}
 							onChange={(e:SelectChangeEvent<string>) => handleSelectChange(e)}
-							MenuProps={{
-								PaperProps: {
-									style: {
-										maxHeight: 300,
-										overflow: 'auto',
-									},
-								},
-								anchorOrigin: {
-									vertical: 'bottom',
-									horizontal: 'left',
-								},
-								transformOrigin: {
-									vertical: 'top',
-									horizontal: 'left',
-								},
-							}}	
+							MenuProps={MenuProperties}	
 						>
 							{countries.map((country) => (
 								<MenuItem key={country.id} value={country.id ?? 64}>
@@ -248,22 +235,7 @@ export default function CandidatePersonalDataForm({formData, errors, countries, 
 							name='province'
 							value={formData.contactInfo.province ?? ''}
 							onChange={(e:SelectChangeEvent<string>) => handleSelectChange(e)}
-							MenuProps={{
-								PaperProps: {
-									style: {
-										maxHeight: 300,
-										overflow: 'auto',
-									}
-								},
-								anchorOrigin: {
-									vertical: 'bottom',
-									horizontal: 'left',
-								},
-								transformOrigin: {
-									vertical: 'top',
-									horizontal: 'left',
-								}
-							}}
+							MenuProps={MenuProperties}
 							>
 							{provinces.map((province) => (
 								<MenuItem key={province.id} value={province.cod_iso2}>

@@ -2,7 +2,7 @@
 import { CloudinaryUploadResponse, EducationDTO, Licence, PersonLanguageDTO, SignUpCandidateContactFormData, SignUpCandidateFormData, SignUpCandidateProps, ExperienceDTO, State } from '@/lib/definitions'
 import React, { useLayoutEffect, useState } from 'react'
 import { SignUpForm, SignUpMobileForm } from '../../shared/auth/SignupComponents';
-import StepperComponent from '../../shared/custom/components/stepper';
+import StepperComponent from '../../shared/custom/components/steppers/StepperComponent';
 import CandidatePersonalDataForm from './steps/CandidatePersonalDataForm';
 import CandidateProfesionalDataForm from './steps/CandidateProfesionalDataForm';
 import CadidateUserForm from './steps/CandidateUserForm';

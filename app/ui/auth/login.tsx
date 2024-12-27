@@ -20,6 +20,11 @@ export default function LoginModal() {
 		mediaQuery.addEventListener('change', (e) => {
 			setMediaQuery(e.matches);
 		});
+    return () => {
+      mediaQuery.removeEventListener('change', (e) => {
+        setMediaQuery(e.matches);
+      });
+    }
 	},[]);
 	return (
 		mediaQuery == null ? null : mediaQuery ? (

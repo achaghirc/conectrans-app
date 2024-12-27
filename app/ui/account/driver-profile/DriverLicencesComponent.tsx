@@ -7,7 +7,7 @@ import { updateDriverLicences } from '@/lib/data/driver-licence';
 import { updateDriverProfile } from '@/lib/data/driver-profile';
 import { DriverLicencesComponentSkeleton } from '../../shared/custom/components/skeleton/DriverLicencesSkeleton';
 import SnackbarCustom, { SnackbarCustomProps } from '../../shared/custom/components/snackbarCustom';
-import { SUCCESS_MESSAGE_SNACKBAR } from '@/lib/utils';
+import { SUCCESS_MESSAGE_SNACKBAR } from '@/lib/constants';;
 
 type DriverLicencesComponentProps = {
   countries: Country[] | undefined;

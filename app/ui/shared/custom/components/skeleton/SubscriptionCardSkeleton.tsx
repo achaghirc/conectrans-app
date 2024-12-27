@@ -1,4 +1,4 @@
-import { Box, Card, CardActions, CardContent, Divider, Skeleton } from "@mui/material";
+import { Box, Card, CardActions, CardContent, Skeleton } from "@mui/material";
 
 export const SubscriptionCardSkeleton = () => {
   return (
@@ -19,9 +19,9 @@ export const SubscriptionCardSkeleton = () => {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
-            height: 50,
+            height: 40,
             textAlign: 'start', 
-            background: 'linear-gradient(to right, #8BCDDC, #8BDCA7, #8BDCA7)', 
+            background: 'linear-gradient(to right,rgb(184, 182, 182),rgb(162, 162, 162),rgb(163, 163, 164))', 
             color: 'white' 
           }}
         >

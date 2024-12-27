@@ -1,9 +1,9 @@
-import {  FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
-import { ChangeEvent, useRef, useState } from 'react';
+import { FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
+import { ChangeEvent, useState } from 'react';
 import Grid from '@mui/material/Grid2';
 import { Country, Province, SignUpCompanyFormData, State } from '@/lib/definitions';
-import { handleZodError, handleZodHelperText } from '@/lib/utils';
 import { getProvincesByCountryId } from '@/lib/data/geolocate';
+import useUtilsHook from '@/app/ui/shared/hooks/useUtils';
 
 interface ContactoFormProps {
   formData: SignUpCompanyFormData
@@ -13,7 +13,7 @@ interface ContactoFormProps {
 }
 
 export default function ContactForm({ formData, errors, countries, setFormData }: ContactoFormProps) {
-  const inputRef = useRef(null);
+  const { handleZodError, handleZodHelperText } = useUtilsHook();
   const [provinces, setProvinces] = useState<Province[]>([]);
   
   const handleInputChange = async (e: ChangeEvent<HTMLInputElement> | any) => {

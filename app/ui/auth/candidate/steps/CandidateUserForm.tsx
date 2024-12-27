@@ -1,7 +1,6 @@
 'use client';
-import { validateCIFNIFFormat } from '@/lib/actions';
+import useUtilsHook from '@/app/ui/shared/hooks/useUtils';
 import { PasswordType, SignUpCandidateFormData, State, ValidationCIFNIFResult } from '@/lib/definitions';
-import { handleZodError, handleZodHelperText } from '@/lib/utils';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, InputAdornment, TextField } from '@mui/material'
 import Grid from '@mui/material/Grid2';
@@ -14,6 +13,7 @@ type CadidateUserFormProps = {
 }
 
 export default function CadidateUserForm({formData, errors, setFormData}: CadidateUserFormProps) {
+  const { handleZodError, handleZodHelperText } = useUtilsHook();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 

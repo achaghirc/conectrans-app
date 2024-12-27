@@ -2,12 +2,12 @@ import React, { ChangeEvent, useEffect, useLayoutEffect, useState } from 'react'
 import { EducationDTO, State } from '@/lib/definitions'
 import Grid from '@mui/material/Grid2';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, styled, TextField } from '@mui/material';
-import { handleZodError, handleZodHelperText } from '@/lib/utils';
 import { DateMobilePickerComponent, DatePickerComponent } from '../custom/components/datePickerCustom';
 import dayjs from 'dayjs';
 import { AddCircleOutline } from '@mui/icons-material';
 import { ZodIssue } from 'zod';
 import { validateEducation } from '@/lib/validations/educationValidate';
+import useUtilsHook from '../hooks/useUtils';
 
 
 const CustomDialog =  styled(Dialog)(({ theme }) => ({
@@ -49,7 +49,8 @@ export default function AddEducationComponent({
 		startYear: new Date(new Date().setHours(23,0,0,0)),
 		endYear: new Date(new Date().setHours(23,0,0,0)),
 	} as EducationDTO);
-	const [err, setErr] = useState<State>(errors ?? {message: null, errors: []});
+	const { handleZodError, handleZodHelperText } = useUtilsHook();
+  const [err, setErr] = useState<State>(errors ?? {message: null, errors: []});
 
   useEffect(() => {
     if (editEducation && editEducation != undefined) {

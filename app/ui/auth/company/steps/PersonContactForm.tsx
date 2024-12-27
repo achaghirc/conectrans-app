@@ -2,7 +2,7 @@ import { TextField } from '@mui/material';
 import { ChangeEvent } from 'react';
 import  Grid from '@mui/material/Grid2';
 import { SignUpCompanyFormData, State } from '@/lib/definitions';
-import { handleZodError, handleZodHelperText } from '@/lib/utils';
+import useUtilsHook from '@/app/ui/shared/hooks/useUtils';
 
 interface PersonContactFormProps {
   formData: SignUpCompanyFormData;
@@ -12,6 +12,7 @@ interface PersonContactFormProps {
 }
 
 export default function PersonContactForm({ formData, errors, setFormData }: PersonContactFormProps) {
+  const { handleZodError, handleZodHelperText } = useUtilsHook();
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ contactPerson: { ...formData.contactPerson, [name]: value } });

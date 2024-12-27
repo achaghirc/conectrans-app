@@ -1,8 +1,9 @@
 'use server';
 import prisma from "@/app/lib/prisma/prisma";
-import { getPlanById, getPlanByTitle } from "./plan";
-import { Subscription } from "@prisma/client";
+import { buildPlanDTO, getPlanById, getPlanByTitle } from "./plan";
+import { Plan, PlanDTO, Subscription } from "@prisma/client";
 import { SubscriptionDTO } from "@prisma/client";
+import { convertDecimalToNumber } from "../utils";
 
 export async function getSubscriptionByUserIdAndActive(userId: string): Promise<SubscriptionDTO | undefined> {
     try {
@@ -16,7 +17,11 @@ export async function getSubscriptionByUserIdAndActive(userId: string): Promise<
             }
         });
         if (!subscription) return assignPlanToUser(userId);
-        return subscription;
+        const plan: PlanDTO = await buildPlanDTO(subscription.Plan, []);
+        return {
+          ...subscription,
+          Plan: plan
+        };
     } catch(e) {
         console.log(e);
     }
@@ -63,7 +68,11 @@ export async function assignPlanToUser(userId: string, planId?: number): Promise
                 Plan: true
             }
         });
-        return subscription;
+        const planDTO: PlanDTO = await buildPlanDTO(subscription.Plan, []);
+        return {
+          ...subscription,
+          Plan: planDTO
+        };
     } catch(e) {
         console.log(e);
     }

@@ -1,3 +1,5 @@
+import { Session } from "next-auth";
+
 export type NavLinksType = {
     name: string;
     href: string;
@@ -16,6 +18,7 @@ export type NavbarSessionData = {
 }
 
 export type NavlinksProps = {
+    session: Session | null;
     role: string;
     onClick?: () => void;
 }

@@ -1,6 +1,7 @@
 'use server';
 import prisma from "@/app/lib/prisma/prisma";
 import { Country, Province, ProvinceCountryType } from "../definitions";
+import { Hash } from "crypto";
 
 
 export async function getCountries(): Promise<Country[] | undefined> {
@@ -51,6 +52,7 @@ export async function getProvincesByCountryId(id: number): Promise<Province[] | 
         return provinces;
     } catch(e) {
         console.log(e);
+        return undefined;
     }
 }
 
@@ -66,5 +68,6 @@ export async function getGeolocationData(countryId: number) {
         }
     } catch(e) {
         console.log(e);
+        return undefined;
     }
 }

@@ -11,14 +11,14 @@ type ButtonCustomProps = {
 }
 
 const ButtonCustom = (
-  {title, loading, disable, type, onClick}
+  {title, loading, color, disable, type, onClick}
   : ButtonCustomProps
 ) => {
   return (
     <Button 
       endIcon={loading ? <CircularProgress size={20} /> : null}
       variant='outlined' 
-      color='secondary' 
+      color={color}
       onClick={onClick} 
       disabled={disable}
       type={type ?? 'button'}

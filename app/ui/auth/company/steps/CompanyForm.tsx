@@ -1,14 +1,10 @@
-import { validateCompanyData } from '@/lib/validations/companySignupValidate';
-import { getActitivies } from '@/lib/data/activity';
 import { Activity, PasswordType, SignUpCompanyFormData, State, ValidationCIFNIFResult } from '@/lib/definitions';
-import { handleZodError, handleZodHelperText } from '@/lib/utils';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { TextField, MenuItem, Typography, Box, Avatar, InputAdornment, IconButton } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { ChangeEvent, useState } from 'react';
-import { ZodIssue } from 'zod';
 import { validateCIFNIFFormat } from '@/lib/actions';
-
+import useUtilsHook from '@/app/ui/shared/hooks/useUtils';
 
 interface CompanyFormProps {
   formData: SignUpCompanyFormData
@@ -17,9 +13,8 @@ interface CompanyFormProps {
   activities: Activity[] | undefined;
 }
 
-const tiposDeActividad = ['Tecnología', 'Construcción', 'Salud', 'Educación'];
-
 export default function CompanyForm({ formData,activities, errors, setFormData }: CompanyFormProps) {
+  const { handleZodError, handleZodHelperText } = useUtilsHook();
   const [logo, setLogo] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);

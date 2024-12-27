@@ -76,6 +76,15 @@ export async function getLocationByFilter(filter: LocationFilter): Promise<Locat
 
 export async function createLocation(newLocation: Location): Promise<LocationDTO> {
   try {
+    const alreadyExists = await getLocationByFilter({
+      street: newLocation.street,
+      number: newLocation.number,
+      city: newLocation.city,
+      state: newLocation.state,
+      countryId: newLocation.countryId,
+      zip: newLocation.zip,
+    });
+    if (alreadyExists) return alreadyExists;
     const createdLocation = await prisma.location.create({
       data: newLocation,
       include: {

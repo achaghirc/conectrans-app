@@ -1,7 +1,7 @@
 import Grid from "@mui/material/Grid2";
 import { Box, Divider, Skeleton } from "@mui/material";
 
-const AccountSkeleton = () => {
+const CompanyPersonContactComponentSkeleton = () => {
 	return (
 		<Box
 			sx={{
@@ -15,25 +15,6 @@ const AccountSkeleton = () => {
 				borderRadius: 5,
 			}}
 		>
-			<Box>
-				<Skeleton variant="text" width="60%" height={40} />
-				<Divider />
-			</Box>
-			<Grid container spacing={2}>
-				<Grid size={{ xs: 12, sm: 6 }}>
-					<Skeleton variant="rectangular" width="100%" height={56} sx={{ borderRadius: 2}}/>
-				</Grid>
-				<Grid size={{ xs: 12, sm: 6 }}>
-					<Skeleton variant="rectangular" width="100%" height={56} sx={{ borderRadius: 2}}/>
-				</Grid>
-				<Grid size={{ xs: 12, sm: 6 }}>
-					<Skeleton variant="rectangular" width="20%" height={40} sx={{ borderRadius: 2}}/>
-				</Grid>
-			</Grid>
-			<Box>
-				<Skeleton variant="text" width="60%" height={40} />
-				<Divider />
-			</Box>
 			<Grid container spacing={2}>
 				<Grid size={{ xs: 12, sm: 6 }}>
 					<Skeleton variant="rectangular" width="100%" height={56} sx={{ borderRadius: 2}}/>
@@ -50,7 +31,7 @@ const AccountSkeleton = () => {
 				<Grid size={{ xs: 12, sm: 6 }}>
 					<Skeleton variant="rectangular" width="100%" height={56} sx={{ borderRadius: 2}}/>
 				</Grid>
-				<Grid size={{ xs: 12, sm: 12 }}>
+				<Grid size={{ xs: 12, sm: 12 }} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
 					<Skeleton variant="rectangular" width="10%" height={40} />
 				</Grid>
 			</Grid>
@@ -58,4 +39,4 @@ const AccountSkeleton = () => {
 	);
 }
 
-export default AccountSkeleton;
+export default CompanyPersonContactComponentSkeleton;

@@ -2,12 +2,12 @@ import React, { ChangeEvent, useLayoutEffect, useState } from 'react'
 import { EncoderType, ExperienceDTO, State } from '@/lib/definitions'
 import Grid from '@mui/material/Grid2';
 import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, FormHelperText, SelectChangeEvent, styled, TextField, Typography } from '@mui/material';
-import { handleZodError, handleZodHelperText } from '@/lib/utils';
 import { DateMobilePickerComponent, DatePickerComponent } from '../custom/components/datePickerCustom';
 import dayjs from 'dayjs';
 import { AddCircleOutline } from '@mui/icons-material';
 import { ZodIssue } from 'zod';
 import { validateExperience } from '@/lib/validations/experienceValidate';
+import useUtilsHook from '../hooks/useUtils';
 
 
 const CustomDialog =  styled(Dialog)(({ theme }) => ({
@@ -45,8 +45,8 @@ export default function ExperienceComponent({
 		endYear: new Date(new Date().setHours(23,0,0,0)),
 		description: '',
 	} as ExperienceDTO);
+  const { handleZodError, handleZodHelperText } = useUtilsHook();
 	const [err, setErr] = useState<State>(errors ?? {message: null, errors: []});
-	const [error, setError] = useState(false);
 
   const maxWords = 250;
 	
@@ -88,10 +88,7 @@ export default function ExperienceComponent({
     const inputText = event.target.value;
     const wordCount = countWords(inputText);
     if (wordCount > maxWords) {
-      setError(true);
 			return;
-    } else {
-      setError(false);
     }
     setExperience({...experience, description: inputText});
   };

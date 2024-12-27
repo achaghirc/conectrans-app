@@ -3,6 +3,9 @@
 import { z } from "zod";
 import { SignUpCompanyFormData, State } from "../definitions";
 import { getUserByEmail } from "../data/user";
+import { CompanyDTO } from "@prisma/client";
+import { CompanyDTO as CompanyDefinitionDTO } from '../definitions';
+import { validateCIFNIFFormat } from "../actions";
 
 
 const FormCompanySchema = z.object({
@@ -105,13 +108,64 @@ const FormDataSchema = z.object({
     }),
 });
 
+
+const CompanyDataUpdateSchema = z.object({
+    email: z.string({
+        invalid_type_error: 'Correo electrónico no válido',
+    }).email('Correo electrónico no válido'),
+    socialName: z.string({
+        invalid_type_error: 'Campo obligatorio',
+        required_error: 'Campo obligatorio',
+    }).min(1, 'Campo obligatorio'),
+    name: z.string({
+      invalid_type_error: 'Campo obligatorio',
+      required_error: 'Campo obligatorio',
+    }).min(1, 'Campo obligatorio'),
+    cifnif: z.string({
+        required_error: 'Campo obligatorio',
+    }).min(1, 'Campo obligatorio').refine(async (cifnif) => {
+        const validate = await validateCIFNIFFormat(cifnif);
+        return validate && validate.valid;
+      }, {
+        message: 'Formato inválido para NIF, NIE o CIF',
+      }),
+    landlinePhone: z.string({
+        invalid_type_error: 'Número de teléfono no válido',
+    }).nullable(),
+    phone: z.string({
+        invalid_type_error: 'Número de teléfono no válido',
+    }).min(1, 'Número de teléfono no válido, campo obligatorio'),
+    activityCode: z.string({
+        required_error: 'Debe seleccionar una actividad. Obligatorio',
+    }).min(1, 'Debe seleccionar una actividad. Obligatorio'),
+    description: z.string({
+        required_error: 'Campo obligatorio',
+    }).min(1).max(250, 'Maximo 250 caracteres'),
+    locationStreet: z.string({
+        required_error: 'Campo obligatorio',
+    }).min(1, 'Campo obligatorio'),
+    locationCity: z.string({
+        required_error: 'Campo obligatorio',
+    }).min(1, 'Campo obligatorio'),
+    locationState: z.string({
+        required_error: 'Campo obligatorio',
+    }).min(1, 'Campo obligatorio'),
+    locationCountryId: z.number({
+        required_error: 'Campo obligatorio',
+    }).min(1, 'Campo obligatorio'),
+    locationZip: z.string({
+        required_error: 'Campo obligatorio',
+    }).min(1, 'Campo obligatorio'),
+
+});
+
 export async function validateCompanyData(prevState: State, formData: SignUpCompanyFormData) {
     const validatedFields = await FormCompanySchema.safeParseAsync({
         email: formData.company.email,
         password: formData.company.password,
         confirmPassword: formData.company.confirmPassword,
         socialName: formData.company.socialName,
-        comercialName: formData.company.comercialName,
+        name: formData.company.comercialName,
         cifnif: formData.company.cifnif,
         activityType: formData.company.activityType,
         logo: formData.company.logo,
@@ -126,6 +180,35 @@ export async function validateCompanyData(prevState: State, formData: SignUpComp
 
     return {};
 }
+
+export async function validateCompanyDataUpdate(prevState: State, company: Partial<CompanyDefinitionDTO>): Promise<State> {
+  
+  const validatedFields = await CompanyDataUpdateSchema.safeParseAsync({
+      email: company.email,
+      socialName: company.socialName,
+      name: company.name,
+      cifnif: company.cifnif,
+      activityCode: company.activityCode,
+      landlinePhone: company.landlinePhone,
+      phone: company.phone,
+      description: company.description,
+      locationStreet: company.locationStreet,
+      locationCity: company.locationCity,
+      locationState: company.locationState,
+      locationCountryId: company.locationCountryId,
+      locationZip: company.locationZip,
+  });
+  if (!validatedFields.success) {
+      return {
+          ...prevState,
+          errors: validatedFields.error.errors,
+          message: 'Error en los campos del formulario',
+      };
+  }
+
+  return {};
+}
+
 
 export async function validateContactData(prevState: State, formData: SignUpCompanyFormData) {
     const validatedFields = FormContactSchema.safeParse({

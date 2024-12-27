@@ -1,14 +1,10 @@
 'use client';
 
-import { Avatar, Box, Button, IconButton, Toolbar, Typography } from "@mui/material";
+import { Box, Button, IconButton, Typography } from "@mui/material";
 import { Session } from "next-auth";
-import SubscriptionCard from "../../shared/custom/components/subscription/SubscriptionCard";
-import { Plan } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
-import { getAllPlans } from "@/lib/data/plan";
 import { useQuery } from "@tanstack/react-query";
 import Grid from "@mui/material/Grid2";
-import { Suspense } from "react";
 import SubscriptionCardSkeleton from "../../shared/custom/components/skeleton/SubscriptionCardSkeleton";
 import { AccountBalanceOutlined, BusinessCenterOutlined, CancelOutlined, ChatBubbleOutlined, ChatBubbleTwoTone, ChatOutlined, ContactMailOutlined, EditOutlined, RemoveShoppingCartOutlined } from "@mui/icons-material";
 import dayjs from "dayjs";
@@ -26,11 +22,9 @@ export type SubscriptionsPageProps = {
 
 const SubscriptionComponent: React.FC<SubscriptionsPageProps> = ({ session }) => {
   const router = useRouter();
-  
   if (!session) {
     return;
   }
-  
   const { data: subscription, isLoading: subscriptionLoading, isError: isSubscriptionError } = useQuery({queryKey: ['userPlan', session?.user.id], queryFn: (): Promise<SubscriptionDTO | undefined> => getSubscriptionByUserIdAndActive(session?.user.id ?? '')});
 
   if (subscriptionLoading) {

@@ -7,14 +7,14 @@ import ResumenForm from './steps/ResumeForm';
 import CompanyForm from './steps/CompanyForm';
 import { Activity, CloudinaryUploadResponse, Country, SignUpCompanyFormData, State, Subscriptions } from '@/lib/definitions';
 import { authenticate } from '@/lib/actions';
-import { validateCompanyData, validateContactData, validatePersonContactData } from '@/lib/validations/companySignupValidate';
+import { validateCompanyData, validateContactData, validatePersonContactData } from '@/lib/validations/companyValidate';
 import { ZodIssue } from 'zod';
 import { uploadFileToCloud } from '@/lib/services/cloudinary';
 import { companySignUp, createSubscriptionPlan } from '@/lib/services/signup';
 import { useRouter } from 'next/navigation';
 import { SnackbarCustomProps } from '../../shared/custom/components/snackbarCustom';
 import { ArrowBack } from '@mui/icons-material';
-import StepperComponent from '../../shared/custom/components/stepper';
+import StepperComponent from '../../shared/custom/components/steppers/StepperComponent';
 
 const steps = ['Datos de Empresa', 'Datos de Contacto', 'Persona de Contacto', 'Plan de Suscripción'];
 

@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { Box, Card, CardContent, Typography, Button, Grid, Divider, ToggleButtonGroup, ToggleButton, CardActions, CardHeader, Tooltip } from "@mui/material";
+'use client';
+import { Box, Card, CardContent, Typography, Button, CardActions, Tooltip } from "@mui/material";
 import { CheckCircleOutline, InfoOutlined } from "@mui/icons-material";
-import { Plan } from "@/lib/definitions";
+import { PlanDTO } from "@prisma/client";
 
 export type SubscriptionCardProps = {
-    plan: Plan;
+    plan: PlanDTO;
     selected: boolean;
-    onSelectPlan: (plan: Plan) => void;
+    onSelectPlan: (plan: PlanDTO) => void;
 }
 
 const SubscriptionCard = ({ plan,selected, onSelectPlan } : SubscriptionCardProps) => {
@@ -29,9 +29,9 @@ const SubscriptionCard = ({ plan,selected, onSelectPlan } : SubscriptionCardProp
               flexDirection: 'row',
               justifyContent: 'space-between',
               alignItems: 'center',
-              height: 50,
+              height: 40,
               textAlign: 'start', 
-              background: 'linear-gradient(to right, #8BCDDC, #8BDCA7, #8BDCA7)', 
+              background: 'linear-gradient(to right,rgb(184, 182, 182),rgb(162, 162, 162),rgb(163, 163, 164))', 
               color: 'white' 
             }}
           >
