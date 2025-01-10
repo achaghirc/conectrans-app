@@ -1,4 +1,4 @@
-import { DriverEmploymentPreferences, DriverEmploymentPreferencesDTO, DriverLicenceDTO, DriverWorkRangePreferences, DriverWorkRangePreferencesDTO } from "@prisma/client";
+import { DriverEmploymentPreferences, DriverEmploymentPreferencesDTO, DriverLicenceDTO, DriverWorkRangePreferences, DriverWorkRangePreferencesDTO, OfferCustomDTO, OfferDTO } from "@prisma/client";
 import { Dayjs } from "dayjs";
 import { ZodIssue } from "zod";
 
@@ -237,8 +237,12 @@ export type SignUpCandidateFormData = {
     workRange: string[];
     employeeType: string[];
     summaryFile: File | null;
-    licence: Licence;
-    contactInfo: SignUpCompanyContactFormData;
+    licences: string[];
+    adrLicences: string[];
+    countryLicences: number;
+    digitalTachograph: 'YES' | 'NO' ;
+    capCertificate: 'YES' | 'NO';
+    contactInfo: SignUpCandidateContactFormData;
     experiences: ExperienceDTO[];
     educations: EducationDTO[];
     languages: PersonLanguageDTO[];
@@ -276,17 +280,20 @@ export type ExperienceDTO = {
 
 export type SignUpCandidateContactFormData = Partial<SignUpCompanyContactFormData>;
 
+export type CandidateLicence = {
+  type: 'LICENCE' | 'ADR_LICENCE';
+  licence: Licence;
+  adrLicence: Licence;
+}
+
 export type Licence = {
-    id: number;
-    name: string;
+    id?: number;
+    name?: string;
     code: string;
-    adrCode: string[];
-    digitalTachograph: 'Si' | 'No' ;
-    capCertificate: 'Si' | 'No';
     country: number;
-    expiresAt: Date;
+    countryName: string;
+    expiresAt?: Date;
     createdAt?: Date;
-    updatedAt?: Date;
 }
 
 export type ValidationCIFNIFResult = {
@@ -343,14 +350,6 @@ export type ProvinceCountryType = {
     country: Country;
     provinces: Province[];
 }
-
-export type SignUpCandidateProps = {
-    countries: Country[];
-    encoders: EncoderType[];
-}
-
-
-
 ///MAPS
 export type MapComponentProps = {
   width?: string;
@@ -358,4 +357,9 @@ export type MapComponentProps = {
   center?: { lat: number, lng: number };
   zoom?: number;
   locations: ReadonlyArray<google.maps.LatLngLiteral>;
+}
+
+export type OfferSearchResponse = {
+  offers: OfferDTO[];
+  total: number;
 }

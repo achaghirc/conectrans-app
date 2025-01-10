@@ -64,6 +64,12 @@ INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (54, 'Oferta Anónim
 INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (55, 'Ofertas Editables', 'EDITABLE_OFFER', 'PLAN_PREFERENCES');
 INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (57, 'Visualización de ofertas', 'OFFER_VISUALIZATION', 'PLAN_PREFERENCES');
 
+INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (58, '<1 año', 'LESS_1', 'EXPERIENCE');
+INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (59, '1-3 años', '1_3', 'EXPERIENCE');
+INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (60, '3-5 años', '3_5', 'EXPERIENCE');
+INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (61, '5-10 años', '5_10', 'EXPERIENCE');
+INSERT INTO "EncoderType" (id, "name", code, "type") VALUES (62, '>10 años', 'MORE_10', 'EXPERIENCE');
+
 INSERT INTO "Languages" (id, "name" , code) VALUES (1, 'Inglés', 'en') ;
 INSERT INTO "Languages" (id, "name" , code) VALUES (2, 'Español', 'es') ;
 INSERT INTO "Languages" (id, "name" , code) VALUES (3, 'Francés', 'fr') ;

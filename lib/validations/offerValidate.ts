@@ -29,14 +29,14 @@ const OfferInformationSchema = z.object({
   .min(1, 'Campo obligatorio, selecciona al menos una opción'),
   contractType: z.string()
     .min(1, 'Campo obligatorio')
-    .refine(data => data === 'Indefinido' || data === 'Temporal', {
-      message: 'El contrato debe ser de tipo Indefinido o Temporal',
+    .refine(data => data === 'INDEFINIDO' || data === 'TEMPORAL' || data === 'PRACTICAS', {
+      message: 'El contrato debe ser de tipo Indefinido, Temporal o Prácticas',
   }),
   workDay: z.string()
     .min(1, 'Campo obligatorio')
     .max(50, 'La jornada laboral no puede tener más de 50 caracteres')
-    .refine(data => data === 'Completa' || data === 'Parcial', {
-      message: 'La jornada laboral debe ser de tiempo Compleata o Parcial',
+    .refine(data => data === 'COMPLETA' || data === 'PARCIAL', {
+      message: 'La jornada laboral debe ser de tiempo Completa o Parcial',
   }),
 }).refine(data => data.startDate <= data.endDate, {
     message: 'La fecha de inicio debe ser anterior a la fecha límite',
@@ -63,10 +63,13 @@ const OfferRequirementsSchema = z.object({
   .refine(data => data === 'YES' || data === 'NO', {
     message: 'El tacógrafo digital debe ser Si o No',
   }),
-  isAnonymous: z.string()
-  .min(1, 'Campo obligatorio, seleccione una opción')
-  .refine(data => data === 'YES' || data === 'NO', {
-    message: 'La respuesta a seleccionar debe ser Si o No',
+  isAnonymous: z.boolean()
+  .refine(data => data === true || data === false, {
+    message: 'Campo obligatorio, seleccione una opción',
+  }),
+  isFeatured: z.boolean()
+  .refine(data => data === true || data === false, {
+    message: 'Campo obligatorio, seleccione una opción',
   }),
 });
 

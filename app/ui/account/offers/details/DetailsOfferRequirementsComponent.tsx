@@ -2,9 +2,7 @@ import { Box, Divider, Typography } from '@mui/material';
 import { OfferDTO } from '@prisma/client';
 import React from 'react'
 import BoxTextItem from '@/app/ui/shared/custom/components/text/BoxTextItem';
-import dayjs from 'dayjs';
-import 'dayjs/locale/es';
-dayjs.locale('es');
+
 
 type DetailsOfferRequirementsComponentProps = {
   offer: OfferDTO;
@@ -13,8 +11,7 @@ type DetailsOfferRequirementsComponentProps = {
 const DetailsOfferRequirementsComponent: React.FC<DetailsOfferRequirementsComponentProps> = ({
   offer
 }) => {
-  const startDate = dayjs(offer.startDate).format('LL');
-  const endDate = dayjs(offer.endDate).format('LL');
+
   return (
     <Box
       sx={{
@@ -33,16 +30,6 @@ const DetailsOfferRequirementsComponent: React.FC<DetailsOfferRequirementsCompon
         Requisitos de la oferta
       </Typography>
       <Divider />
-      <BoxTextItem title='Publicada' 
-        text={startDate} 
-        direction='row'
-        justifyContent='space-between'
-      />
-      <BoxTextItem title='Caduca'
-        text={endDate} 
-        direction='row'
-        justifyContent='space-between'
-      />
       <BoxTextItem title='Tipo de carnet'
         text={offer.licenseType.map((licence) => licence.name).join(", ")}
         direction='row'
@@ -55,6 +42,16 @@ const DetailsOfferRequirementsComponent: React.FC<DetailsOfferRequirementsCompon
       />
       <BoxTextItem title='Ambito de trabajo'
         text={offer.workRange.map((range) => range.name).join(", ")}
+        direction='row'
+        justifyContent='space-between'
+      />
+      <BoxTextItem title='Tipo de contrato'
+        text={offer.employmentType.map((type) => type.name).join(", ")}
+        direction='row'
+        justifyContent='space-between'
+      />
+      <BoxTextItem title='Jornada'
+        text={offer.workDay}
         direction='row'
         justifyContent='space-between'
       />

@@ -1,7 +1,6 @@
 import { AuthError, type NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { getUserByEmail } from './lib/data/user';
-import { signInSchema } from './lib/validations/loginValidations';
 import bcrypt from 'bcryptjs';
 import { UserDTO } from '@prisma/client';
 
@@ -15,14 +14,11 @@ export default {
             authorize: async (credentials) => {
                 let user = null;
 
-                const {data, success } = await signInSchema.safeParseAsync(credentials);
-                if (!success) {
-                    throw new CustomError('Please provide an email and password', 'CredentialsSignin');
+                const data = {
+                    email: credentials.email as string,
+                    password: credentials.password as string,
                 }
                 const { email, password } = data;
-                if (!email || !password) {
-                    throw new CustomError('Please provide an email and password', 'CredentialsSignin');
-                }
 
                 user = await getUser(email.toString());
                 if (!user) {

@@ -1,6 +1,6 @@
 'use server';
 
-import { z } from "zod";
+import { string, z } from "zod";
 import { SignUpCompanyFormData, State } from "../definitions";
 import { getUserByEmail } from "../data/user";
 import { CompanyDTO } from "@prisma/client";
@@ -9,7 +9,7 @@ import { validateCIFNIFFormat } from "../actions";
 
 
 const FormCompanySchema = z.object({
-    email: z.string({
+    "company.email": z.string({
         invalid_type_error: 'Correo electrónico no válido',
     }).email('Correo electrónico no válido').refine(async (email) => {
         const user = await getUserByEmail(email);
@@ -17,22 +17,25 @@ const FormCompanySchema = z.object({
     }, {
         message: 'El correo electrónico ya está en uso',
     }),
-    password: z.string().min(8, 'Contraseña no válida, debe tener al menos 8 caracteres'),
-    confirmPassword: z.string().min(8, 'Contraseña no válida, debe tener al menos 8 caracteres'),
-    socialName: z.string({
+    "company.password": z.string().min(8, 'Contraseña no válida, debe tener al menos 8 caracteres'),
+    "company.confirmPassword": z.string().min(8, 'Contraseña no válida, debe tener al menos 8 caracteres'),
+    "company.socialName": z.string({
         invalid_type_error: 'Campo obligatorio',
         required_error: 'Campo obligatorio',
     }).min(1, 'Campo obligatorio'),
-    comercialName: z.string({
+    "company.comercialName": z.string({
         required_error: 'Campo obligatorio',
     }).min(1, 'Campo obligatorio'),
-    cifnif: z.string({
+    "company.cifnif": z.string({
         required_error: 'Campo obligatorio',
     }).min(1, 'Campo obligatorio'),
-    activityType: z.string({
+    "company.activityType": z.string({
         required_error: 'Debe seleccionar una actividad. Obligatorio',
     }).min(1, 'Debe seleccionar una actividad. Obligatorio'),
-    logo: z.string().nullable(),
+    "company.logo": z.object({
+      name: z.string()
+      .min(1, 'Campo obligatorio, debe proporcionar un logo'),
+    }),
 });
 
 const FormContactSchema = z.object({
@@ -159,26 +162,28 @@ const CompanyDataUpdateSchema = z.object({
 
 });
 
-export async function validateCompanyData(prevState: State, formData: SignUpCompanyFormData) {
-    const validatedFields = await FormCompanySchema.safeParseAsync({
-        email: formData.company.email,
-        password: formData.company.password,
-        confirmPassword: formData.company.confirmPassword,
-        socialName: formData.company.socialName,
-        name: formData.company.comercialName,
-        cifnif: formData.company.cifnif,
-        activityType: formData.company.activityType,
-        logo: formData.company.logo,
-    });
-    if (!validatedFields.success) {
-        return {
-            ...prevState,
-            errors: validatedFields.error.errors,
-            message: 'Error en los campos del formulario',
-        };
-    }
+export async function validateCompanyData(prevState: State, formData: Partial<SignUpCompanyFormData>) {
+  const company = formData.company!;  
+  
+  const validatedFields = await FormCompanySchema.safeParseAsync({
+      "company.email": company.email,
+      "company.password": company.password,
+      "company.confirmPassword": company.confirmPassword,
+      "company.socialName": company.socialName,
+      "company.comercialName": company.comercialName,
+      "company.cifnif": company.cifnif,
+      "company.activityType": company.activityType,
+      "company.logo": company.logo ? company.logo : '', 
+  });
+  if (!validatedFields.success) {
+      return {
+          ...prevState,
+          errors: validatedFields.error.errors,
+          message: 'Error en los campos del formulario',
+      };
+  }
 
-    return {};
+  return {};
 }
 
 export async function validateCompanyDataUpdate(prevState: State, company: Partial<CompanyDefinitionDTO>): Promise<State> {
@@ -210,55 +215,58 @@ export async function validateCompanyDataUpdate(prevState: State, company: Parti
 }
 
 
-export async function validateContactData(prevState: State, formData: SignUpCompanyFormData) {
-    const validatedFields = FormContactSchema.safeParse({
-        streetAddress: formData.contactInfo.streetAddress,
-        zip: formData.contactInfo.zip,
-        country: formData.contactInfo.country,
-        province: formData.contactInfo.province,
-        locality: formData.contactInfo.locality,
-        mobilePhone: formData.contactInfo.mobilePhone,
-        landlinePhone: formData.contactInfo.landlinePhone,
-        website: formData.contactInfo.website,
-        contactEmail: formData.contactInfo.contactEmail,
-        description: formData.contactInfo.description,
-    });
-    if (!validatedFields.success) {
-        return {
-            ...prevState,
-            errors: validatedFields.error.errors,
-            message: 'Error en los campos del formulario',
-        };
-    }
-    return {};
+export async function validateContactData(prevState: State, formData: Partial<SignUpCompanyFormData>) {
+  const contactInfo = formData.contactInfo!;
+
+  const validatedFields = FormContactSchema.safeParse({
+    streetAddress: contactInfo.streetAddress,
+    zip: contactInfo.zip,
+    country: contactInfo.country,
+    province: contactInfo.province,
+    locality: contactInfo.locality,
+    mobilePhone: contactInfo.mobilePhone,
+    landlinePhone: contactInfo.landlinePhone,
+    website: contactInfo.website,
+    contactEmail: contactInfo.contactEmail,
+    description: contactInfo.description,
+  });
+  if (!validatedFields.success) {
+    return {
+        ...prevState,
+        errors: validatedFields.error.errors,
+        message: 'Error en los campos del formulario',
+    };
+  }
+  return {};
 }
 
-export async function validatePersonContactData(prevState: State, formData: SignUpCompanyFormData) {
-    const validatedFields = FormPersonContactSchema.safeParse({
-        name: formData.contactPerson.name,
-        lastnames: formData.contactPerson.lastnames,
-        companyPosition: formData.contactPerson.companyPosition,
-        phoneNumber: formData.contactPerson.phoneNumber,
-        email: formData.contactPerson.email,
-    });
-    if (!validatedFields.success) {
-        return {
-            ...prevState,
-            errors: validatedFields.error.errors,
-            message: 'Error en los campos del formulario',
-        };
-    }
-    return {};
+export async function validatePersonContactData(prevState: State, formData: Partial<SignUpCompanyFormData>) {
+  const contactPerson = formData.contactPerson!;  
+  const validatedFields = FormPersonContactSchema.safeParse({
+    name: contactPerson.name,
+    lastnames: contactPerson.lastnames,
+    companyPosition: contactPerson.companyPosition,
+    phoneNumber: contactPerson.phoneNumber,
+    email: contactPerson.email,
+  });
+  if (!validatedFields.success) {
+    return {
+        ...prevState,
+        errors: validatedFields.error.errors,
+        message: 'Error en los campos del formulario',
+    };
+  }
+  return {};
 }
 
 export async function validateFormData(prevState: State, formData: SignUpCompanyFormData) {
-    const validatedFields = FormDataSchema.safeParse(formData);
-    if (!validatedFields.success) {
-        return {
-            ...prevState,
-            errors: validatedFields.error.errors,
-            message: 'Error en los campos del formulario',
-        };
-    }
-    return {};
+  const validatedFields = FormDataSchema.safeParse(formData);
+  if (!validatedFields.success) {
+    return {
+      ...prevState,
+      errors: validatedFields.error.errors,
+      message: 'Error en los campos del formulario',
+    };
+  }
+  return {};
 }

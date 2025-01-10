@@ -1,11 +1,14 @@
 'use client';
 import React from 'react'
-import Logo from '../../../public/Banner_2.jpg'
+import Logo from '../../../public/Banner_3.png'
+import BigLogo from '../../../public/Banner_5.png'
 import Image from 'next/image'
 import { Button, Paper, Typography } from "@mui/material";
 import { ButtonContainer, TextContainer } from '../shared/custom/bannerContainer';
+import useMediaQueryData from '../shared/hooks/useMediaQueryData';
 
 export default function Banner() {
+  const {mediaQuery} = useMediaQueryData();
   return (
     <div>
       <Paper 
@@ -13,53 +16,101 @@ export default function Banner() {
         elevation={2}
         sx={{ 
           width: '100%',
-          height: '500px',
+          height: '600px',
           borderRadius: "20px", margin: "20px 0px", position: 'relative', overflow: 'hidden' }}
       >
         <Image 
-          src={Logo} 
-          fill={true}
-          layout="fill" 
-          objectFit="cover" 
+          src={BigLogo} 
+          objectFit="fill" 
           alt="Banner Home Conectrans" 
           quality={100}
+          layout="fill"
           priority
           />
+          <TextContainer
+            sx={{
+              position: 'relative',
+              top: '15%',
+              transform: 'translate(-50%, -50%)',
+              textAlign: 'center'
+            }}
+          
+          >
+            <Typography variant="h1"
+              component={"h1"}
+              gutterBottom
+              sx={{ display: { xs: 'none', sm: 'block'},
+              position: 'relative', top: '0%', left: '0%',
+              fontWeight: 'bold', textAlign: 'left'}}
+            >
+              OFERTAVIAL
+            </Typography>
+          </TextContainer>
           <TextContainer>
-            <Typography variant="h3" 
+            <Typography variant="h5" 
               component={"h1"} 
               gutterBottom 
-              sx={{ display: { xs: 'none', sm: 'block'}, fontWeight: 'bold', textAlign: 'left'}}
+              sx={{ display: { xs: 'none', sm: 'block'},
+              position: 'relative', top: '0%', left: '0%',
+              fontWeight: 'bold', textAlign: 'left'}}
             >
-              CONECTAMOS OFERTAS <br /> CONECTAMOS TRANSPORTE
+              CONECTAMOS OFERTAS, CONDUCTORES Y TRANSPORTE
             </Typography>
             <Typography variant="h4" 
               component={"h5"} 
               gutterBottom 
               sx={{ display: { xs: 'block', sm: 'none'}, textAlign: 'left', fontSize: '1.5rem'}}
             >
-              CONECTRAMOS OFERTAS <br /> CONECTAMOS TRANSPORTE
+              CONECTAMOS OFERTAS, CONDUCTORES Y TRANSPORTE
             </Typography>
 
-            <Typography variant="h6" component="p" fontWeight={'500'}>
-              Conectrans es la plataforma ideal para encontrar y publicar todo tipo 
-              de ofertas del sector del transporte.
+            <Typography 
+                variant="h6" 
+                component="p" 
+                fontWeight={'500'} 
+                sx={{ 
+                  width: '80%',
+                  textAlign: 'left', 
+                  textEmphasis: 'bold', 
+                  whiteSpace: 'pre-line' 
+                }}
+              >
+              OfertaVial es la plataforma ideal para encontrar y publicar todo tipo 
+              de ofertas del sector de la mobilidad profesional.
             </Typography>
           </TextContainer>
-          <ButtonContainer>
+          <ButtonContainer sx={{ display: 'flex', gap: 2, flexDirection: 'column', position: 'absolute', top: '60%', right: '30%', transform: 'translate(-40%, -0%)'}}>
             <Button 
               variant="contained" 
               color="primary" 
               size="medium" 
-              sx={{ display: {xs: 'block', sm: 'none'} }}
+              sx={{ display: {xs: 'block', sm: 'block'} }}
             >
-              <Typography variant="body2" component="p" sx={{ display: {xs: 'block', sm: 'none'} }}>
-                Ofertas para empresas
+              <Typography 
+                variant="h6" component="p" 
+                sx={{ display: {xs: 'none', sm: 'block'} }}
+                color='white'
+              >
+                Transporte de Mercancías
               </Typography>
             </Button>
             <Button 
               variant="outlined" 
-              color="primary" 
+              color="secondary"
+              size="large"
+              sx={{ display: {xs: 'none', sm: 'block'}, }}
+            > 
+              <Typography 
+                variant="h6" component="p" 
+                sx={{ display: {xs: 'none', sm: 'block'} }}
+                color='white'
+              >
+                Transporte de viajeros
+              </Typography>
+            </Button>
+            <Button 
+              variant="outlined" 
+              color="info" 
               size="large"
               sx={{ display: {xs: 'none', sm: 'block'} }}
             > 
@@ -68,7 +119,7 @@ export default function Banner() {
                 sx={{ display: {xs: 'none', sm: 'block'} }}
                 color='white'
               >
-                Ofertas para conductores
+                Transporte de vehiculo ligero
               </Typography>
             </Button>
           </ButtonContainer>

@@ -1,14 +1,12 @@
 'use server';
 
-import { CloudinaryUploadResponse, EducationDTO, ExperienceDTO, Licence, PersonLanguageDTO, Role, SignUpCandidateFormData, SignUpCompanyFormData, State } from "../definitions";
+import { CloudinaryUploadResponse, EducationDTO, ExperienceDTO, PersonLanguageDTO, Role, SignUpCandidateFormData, SignUpCompanyContactFormData, SignUpCompanyFormData, State } from "../definitions";
 import { User } from "../definitions";
 import prisma from "@/app/lib/prisma/prisma";
 import { getRoleByCode } from "../data/role";
 import bcrypt from 'bcryptjs';
 import { randomUUID } from "crypto";
-import { getPlanById } from "../data/plan";
-import { Asset, EncoderType, Languages, PersonLanguages, PrismaClient, Subscription } from "@prisma/client";
-import next from "next";
+import { EncoderType, Prisma, Subscription } from "@prisma/client";
 import { takeNumberFromString } from "../utils";
 
 
@@ -58,7 +56,7 @@ export async function companySignUp(formData: SignUpCompanyFormData, cloudinaryR
         createdAt: new Date(),
         updatedAt: new Date(),
         Country: {
-          connect: { id: contactInfo.country }
+          connect: { id: Number(contactInfo.country) }
         }
       };
 
@@ -134,11 +132,16 @@ export async function companySignUp(formData: SignUpCompanyFormData, cloudinaryR
         data: companyData
       });
 
-      return newUser;
+      return newUser as User;
     } catch (error: any) {
       console.log(error);
       return {} as User;
     }
+  },
+  {
+      maxWait: 5000, // default: 2000
+      timeout: 10000, // default: 5000
+      isolationLevel: Prisma.TransactionIsolationLevel.Serializable, // optional, default defined by database configuration
   });
   console.log(transaction);
   return transaction;
@@ -152,11 +155,7 @@ export async function candidateSingup(formData: SignUpCandidateFormData, cloudin
     name,
     lastname, 
     birthdate,
-    workRange,
-    employeeType,
-    contactInfo, 
     experiences, 
-    licence,
     educations,
     languages
   } = formData;
@@ -182,13 +181,15 @@ export async function candidateSingup(formData: SignUpCandidateFormData, cloudin
         data: user
       });
 
+
+      const contactInfo = formData.contactInfo as SignUpCompanyContactFormData;
       // Create new location
       const location = {
         street: contactInfo.streetAddress,
-        number: takeNumberFromString(contactInfo.streetAddress).toString() ?? 'S/N',
+        number: takeNumberFromString(contactInfo.streetAddress ?? '').toString() ?? 'S/N',
         city: contactInfo.locality,
         state: contactInfo.province,
-        countryId: contactInfo.country,
+        countryId: Number(contactInfo.country),
         zip: contactInfo.zip,
         latitude: 0,
         longitude: 0,
@@ -252,7 +253,7 @@ export async function candidateSingup(formData: SignUpCandidateFormData, cloudin
       
       await Promise.all([
         saveExperincesOnDatabase(experiences, newPerson.id, prisma), 
-        saveDriverProfile(licence, workRange, employeeType, newPerson.id, prisma), 
+        saveDriverProfile(formData, newPerson.id, prisma), 
         saveEducations(educations, newPerson.id, prisma),
         saveLanguages(languages, newPerson.id, prisma)
       ]);
@@ -261,6 +262,10 @@ export async function candidateSingup(formData: SignUpCandidateFormData, cloudin
       //removeFileFromCloud(cloudinaryResponse.public_id, cloudinaryResponse.format);
       throw new Error(`Transaction failed: ${error.message}`);
     }
+  }, {
+    maxWait: 5000, // default: 2000
+    timeout: 10000, // default: 5000
+    isolationLevel: Prisma.TransactionIsolationLevel.Serializable, // optional, default defined by database configuration 
   });
   return transaction;
 }
@@ -314,10 +319,14 @@ async function saveLanguages(languages: PersonLanguageDTO[], personId: number, p
  * @param employeeType The employee type the user selected
  * @param personId The id of the person to associate the licence
  */
-async function saveDriverProfile(licence: Licence, workRange: string[], employeeType: string[], personId: number, prisma: any ) {
+async function saveDriverProfile(formData: SignUpCandidateFormData, personId: number, prisma: any ) {
+  const { 
+    licences, adrLicences, countryLicences,
+    capCertificate, digitalTachograph, workRange, employeeType  
+  } = formData;
   const driverProfileData = {
-    hasCapCertification: licence.capCertificate === 'Si',
-    hasDigitalTachograph: licence.digitalTachograph === 'Si',
+    hasCapCertification: capCertificate === 'YES',
+    hasDigitalTachograph: digitalTachograph === 'YES',
     personId: personId,
   }
   const newDriverProfile = await prisma.driverProfile.create({
@@ -354,7 +363,6 @@ async function saveDriverProfile(licence: Licence, workRange: string[], employee
       }
     }
   });
- 
   // Create new driver employment preferences
   let driverEmploymentTypesList = [];
   for (const type of employmentsTypesByCodeIn) {
@@ -380,9 +388,9 @@ async function saveDriverProfile(licence: Licence, workRange: string[], employee
     throw new Error('Licence type not found');
   }
 
-  const licencesCarnet: EncoderType[] | undefined = licencesTypes.filter((licenceType: EncoderType) => licenceType.code === licence.code);
-  const licencesAdr: EncoderType[] | undefined = licencesTypes.filter((licenceType: EncoderType) => licence.adrCode.includes(licenceType.code));
-  if (!licencesCarnet || !licencesAdr) {
+  const licencesCarnet: EncoderType[] | [] = licencesTypes.filter((licenceType: EncoderType) => licences.some((licence) => licence === licenceType.name));
+  const licencesAdr: EncoderType[] | [] = licencesTypes.filter((licenceType: EncoderType) => adrLicences.some((licence) => licence === licenceType.name));
+  if ((licences && !licencesCarnet) || (adrLicences && !licencesAdr)) {
     throw new Error('Licence type not found');
   }
   
@@ -391,7 +399,7 @@ async function saveDriverProfile(licence: Licence, workRange: string[], employee
     const driverLicence = {
       licenceTypeId: carnet.id,
       driverProfileId: newDriverProfile.id,
-      countryId: licence.country
+      countryId: countryLicences
     }
     licenses.push(driverLicence);
   }
@@ -400,7 +408,7 @@ async function saveDriverProfile(licence: Licence, workRange: string[], employee
     const driverLicence = {
       licenceTypeId: adr.id,
       driverProfileId: newDriverProfile.id,
-      countryId: licence.country
+      countryId: countryLicences
     }
     licenses.push(driverLicence);
   }

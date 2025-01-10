@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Box, Divider, MenuItem, Typography } from '@mui/material'
 import LogoutIcon from '@mui/icons-material/Logout';
 import LoginIcon from '@mui/icons-material/Login';
@@ -7,8 +7,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Session } from 'next-auth';
 import { logout } from '@/lib/actions';
-import { useRouter } from 'next/navigation';
 import { AccountCircleOutlined } from '@mui/icons-material';
+import { Url } from 'next/dist/shared/lib/router/router';
 
 type DrawerProps = {
 		session: Session | null;
@@ -21,25 +21,25 @@ export default function DrawerCustom(
 		handleDrawer, handleClose, session
 	} : DrawerProps
 ) {
-
-	const router = useRouter();
-
-  const navigate = () => {
+  const [route, setRoute] = React.useState<Url>('/auth/login');
+  const navigate = (): Url => {
     switch(session?.user.roleCode) {
       case 'USER':
-        router.push('/account/user');
-        break;
+        return '/account-user/user';
       case 'COMPANY':
-        router.push('/account/company');
-        break;
+        return '/account-company/company';
       case 'ADMIN':
-        router.push('/account/admin');
-        break;
+        return '/admin/admin';
       default:
-        router.push('/auth/login');
-        break;
+        return '/auth/login';
     }
   }
+
+  useEffect(() => {
+    setRoute(navigate);
+  }, [session])
+
+
 	return (
     <>
 			<Box sx={{ marginTop: 2 }}>
@@ -80,12 +80,14 @@ export default function DrawerCustom(
 					<Divider variant={'middle'} />
 					{session ? (
 						  <>
-							<MenuItem onClick={navigate} sx={{ mt: 1 }}>
-								<AccountCircleOutlined  sx={{ mr: 1}} />
-								<Typography variant='body1' sx={{ color: 'black'}}>
-										Cuenta
-								</Typography>
-							</MenuItem>
+              <Link href={route} style={{ textDecoration: 'none' }} >
+                <MenuItem sx={{ mt: 1 }}>
+                  <AccountCircleOutlined  sx={{ mr: 1, color: 'black'}} />
+                  <Typography variant='body1' sx={{ color: 'black'}}>
+                      Cuenta
+                  </Typography>
+                </MenuItem>
+              </Link>
 							<MenuItem 
 								onClick={async () => {
 									await logout();

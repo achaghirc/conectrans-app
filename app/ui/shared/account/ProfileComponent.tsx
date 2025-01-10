@@ -32,7 +32,7 @@ const ProfileComponent: React.FC<ProfileProps> = ({assetUrl, title, subtitle}) =
         }}
       >
         <Image
-          src={assetUrl ?? 'http://res.cloudinary.com/dgmgqhoui/image/upload/v1730571413/yxthq41pzcbfdij5btlr.png'} 
+          src={assetUrl ?? 'https://res.cloudinary.com/dgmgqhoui/image/upload/w_1000,c_fill,ar_1:1,g_auto,r_max,bo_5px_solid_red,b_rgb:262c35/v1734182399/default-logo-company_i11ozb.png'} 
           alt="Profile Picture"
           width={150}
           height={150}

@@ -9,6 +9,8 @@ import { Company as PrismaCompany,
   User as BaseUser,
   country,
   Offer,
+  OfferPreferences,
+  ApplicationOffer,
    } from "@prisma/client";
 
 import { CompanyDTO as CompanyDefinitionsDTO } from '@lib/definitions';
@@ -67,16 +69,39 @@ declare module '@prisma/client' {
 
     interface OfferDTO extends Offer {
         location: LocationDTO;
-        company?: CompanyDefinitionsDTO;
         isAnonymous: boolean;
+        isFeatured: boolean;
         subscription: SubscriptionDTO;
-        employmentType: EncoderType[];
-        workRange: EncoderType[];
-        licenseType: EncoderType[];
-        licenseAdr: EncoderType[];
+        company?: CompanyDefinitionsDTO;
+        employmentType?: EncoderType[];
+        workRange?: EncoderType[];
+        licenseType?: EncoderType[];
+        licenseAdr?: EncoderType[];
+        experience?: EncoderType;
+    }
+
+    interface OfferCustomDTO extends Offer {
+      locationState: string;
+      planId: number;
+      subStatus?: string; 
+      companyName?: string;
+      companyLogoUrl?: string;
+      licenseType?: EncoderType[];
+    }
+
+    interface OfferPreferencesDTO extends OfferPreferences {
+      id?: number;
+      encoderType: EncoderType;
     }
     interface OfferSlimDTO extends Offer {
         id?: number;
         isAnonymous: boolean;
+        isFeatured: boolean;
+    }
+
+    interface ApplicationOfferDTO extends ApplicationOffer {
+      id?: number;
+      Offer: Offer;
+
     }
 }

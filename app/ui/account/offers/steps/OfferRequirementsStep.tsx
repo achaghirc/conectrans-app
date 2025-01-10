@@ -63,8 +63,8 @@ const OfferRequirementsStep: React.FC<OfferRequirementsStepProps> = (
             value={offer?.capCertification === true ? 'YES' : 'NO'}
             formState={formState}
             options={[
-              {value: 'YES', label: 'Si', id: 'YES'},
-              {value: 'NO', label: 'No', id: 'NO'}
+              {value: 'Si', label: 'YES', id: 'YES'},
+              {value: 'No', label: 'NO', id: 'NO'}
             ]}
           />
         </Grid>
@@ -76,23 +76,20 @@ const OfferRequirementsStep: React.FC<OfferRequirementsStepProps> = (
             value={offer?.digitalTachograph === true ? 'YES' : 'NO'}
             formState={formState}
             options={[
-              {value: 'YES', label: 'Si', id: 'YES'},
-              {value: 'NO', label: 'No', id: 'NO'}
+              {value: 'Si', label: 'YES', id: 'YES'},
+              {value: 'No', label: 'NO', id: 'NO'}
             ]}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
           <ControllerSelectFieldComponent
-            label='Oferta Anónima'
-            name='isAnonymous'
+            label='Experiencia mínima'
+            name='experience'
             control={control}
-            value={offer?.isAnonymous === true ? 'YES' : 'NO'}
+            value={offer?.experience!.name ?? ''}
             formState={formState}
-            options={[
-              {value: 'YES', label: 'Si', id: 'YES'},
-              {value: 'NO', label: 'No', id: 'NO'}
-            ]}
-          />
+            options={encoders?.filter(encoder => encoder.type === 'EXPERIENCE').map(encoder => ({value: encoder.name, label: encoder.name, id: encoder.id.toString()})) ?? []}
+          /> 
         </Grid>
       </Grid>
     </Box>

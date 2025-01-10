@@ -9,7 +9,7 @@ import 'dayjs/locale/es';
 dayjs.locale('es');
 import useUtilsHook from "../../hooks/useUtils"
 
-export function DatePickerComponent({value, label, name, errors, width, setValue}: {value: Dayjs, label?:string, name?: string, errors?: State, width?:any, setValue: (value: Dayjs | null) => void}) {
+export function DatePickerComponent({value, label, name, errors, width, setValue}: {value: Dayjs, label?:string, name?: string, errors?: State, width?:any, setValue?: (value: Dayjs | null) => void}) {
     dayjs.locale('es');
     const { handleZodError, handleZodHelperText } = useUtilsHook();
     return (
@@ -20,7 +20,7 @@ export function DatePickerComponent({value, label, name, errors, width, setValue
             label={label}
             name={name ?? ''}
             value={value}
-            onChange={(newValue) => setValue(newValue)}
+            onChange={(newValue) => setValue && setValue(newValue)}
             slotProps={{
               textField: {
                 error: handleZodError(errors ?? {errors: [], message: null}, name ?? ''),

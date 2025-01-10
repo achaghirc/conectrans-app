@@ -3,81 +3,60 @@ import { ChangeEvent } from 'react';
 import  Grid from '@mui/material/Grid2';
 import { SignUpCompanyFormData, State } from '@/lib/definitions';
 import useUtilsHook from '@/app/ui/shared/hooks/useUtils';
+import { Control, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
+import { ControllerTextFieldComponent } from '@/app/ui/shared/custom/components/form/ControllersReactHForm';
 
 interface PersonContactFormProps {
-  formData: SignUpCompanyFormData;
+  control: Control<Partial<SignUpCompanyFormData>>;
+  register: UseFormRegister<Partial<SignUpCompanyFormData>>;
+  watch: UseFormWatch<Partial<SignUpCompanyFormData>>;
+  setValue: UseFormSetValue<Partial<SignUpCompanyFormData>>;
   errors: State;
-  setFormData: (data: any) => void;
-  
 }
 
-export default function PersonContactForm({ formData, errors, setFormData }: PersonContactFormProps) {
-  const { handleZodError, handleZodHelperText } = useUtilsHook();
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ contactPerson: { ...formData.contactPerson, [name]: value } });
-  };
-
+export default function PersonContactForm({ 
+  control, errors 
+}: PersonContactFormProps) {
   return (
     <Grid container spacing={2}>
       <Grid size={{ xs: 12, sm: 6 }}>
-        <TextField
-          fullWidth
+        <ControllerTextFieldComponent
+          control={control}
           label="Nombre"
-          name="name"
-          value={formData.contactPerson.name}
-          onChange={handleInputChange}
-          error={handleZodError(errors,'name')}
-          helperText={handleZodHelperText(errors,'name')}
-          required
+          name="contactPerson.name"
+          formState={errors}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6 }}>
-        <TextField
-          fullWidth
+        <ControllerTextFieldComponent
           label="Apellidos"
-          name="lastnames"
-          value={formData.contactPerson.lastnames}
-          onChange={handleInputChange}
-          error={handleZodError(errors,'lastnames')}
-          helperText={handleZodHelperText(errors,'lastnames')}
-          required
+          name="contactPerson.lastnames"
+          control={control}
+          formState={errors}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6 }}>
-        <TextField
-          fullWidth
+        <ControllerTextFieldComponent
           label="Cargo en la Empresa"
-          name="companyPosition"
-          value={formData.contactPerson.companyPosition}
-          onChange={handleInputChange}
-          error={handleZodError(errors,'companyPosition')}
-          helperText={handleZodHelperText(errors,'companyPosition')}
-          required
+          name="contactPerson.companyPosition"
+          control={control}
+          formState={errors}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6 }}>
-        <TextField
-          fullWidth
+        <ControllerTextFieldComponent
           label="Teléfono"
-          name="phoneNumber"
-          value={formData.contactPerson.phoneNumber}
-          onChange={handleInputChange}
-          error={handleZodError(errors,'phoneNumber')}
-          helperText={handleZodHelperText(errors,'phoneNumber')}
-          required
+          name="contactPerson.phoneNumber"
+          control={control}
+          formState={errors}
         />
       </Grid>
-      <Grid size={{xs: 12}}>
-        <TextField
-          fullWidth
+      <Grid size={{ xs: 12 }}>
+        <ControllerTextFieldComponent
           label="Correo Electrónico"
-          name="email"
-          value={formData.contactPerson.email}
-          onChange={handleInputChange}
-          error={handleZodError(errors,'email')}
-          helperText={handleZodHelperText(errors,'email')}
-          required
+          name="contactPerson.email"
+          control={control}
+          formState={errors}
         />
       </Grid>
     </Grid>

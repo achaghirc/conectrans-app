@@ -75,6 +75,11 @@ const seedEncodersType = () => {
     {name: 'Oferta Anónima', code: 'ANONYMOUS_OFFER', type: 'PLAN_PREFERENCES'},
     {name: 'Ofertas Editables', code: 'EDITABLE_OFFER', type: 'PLAN_PREFERENCES'},
     {name: 'Visualización de ofertas', code: 'OFFER_VISUALIZATION', type: 'PLAN_PREFERENCES'},
+    {name: '<1 año', code: 'LESS_1', type: 'EXPERIENCE'},
+    {name: '1-3 años', code: '1_3', type: 'EXPERIENCE'},
+    {name: '3-5 años', code: '3_5', type: 'EXPERIENCE'},
+    {name: '5-10 años', code: '5_10', type: 'EXPERIENCE'},
+    {name: '>10 años', code: 'MORE_10', type: 'EXPERIENCE'},
   ]
 }
 

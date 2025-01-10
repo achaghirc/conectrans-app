@@ -16,6 +16,8 @@ import DrawerCustom from './drawer';
 import { SessionProvider } from 'next-auth/react';
 import { Session } from 'next-auth';
 import ConectransLogo from './logo/conectransLogo';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 
 type NavbarProps = {
@@ -61,7 +63,9 @@ export default function Navbar({session}: NavbarProps) {
             aria-label="menu"
             sx={{ mr: 2, display: { xs: 'none', md: 'flex' } }}
           >
+            <Link href='/'>
               <ConectransLogo width={'100px'} height={'auto'} fill='white' />
+            </Link>
               {/* <Image priority src={Logo} alt='Logo conectrans' width={130}/> */}
           </IconButton>
           <IconButton
@@ -71,36 +75,50 @@ export default function Navbar({session}: NavbarProps) {
             aria-label="menu"
             sx={{ mr: 2, display: { xs: 'flex', md: 'none' } }}
           >
+            <Link href='/'>
               <ConectransLogo width={'100px'} height={'auto'} fill='white' />
+            </Link>
               {/* <Image priority src={Logo} alt='Logo conectrans' width={130}/> */}
           </IconButton>
           {/* Only show on large screens otherwise show a menu options of mobile screens */}
           <Box sx={{
               display: { xs: 'none', md: 'flex' }  
           }}>
-              <Button color="inherit" variant='outlined'>Blog</Button>
-              <Button color="primary" variant='outlined' sx={{ ml: 2 }} >Ofertas</Button>
-              <IconButton 
-                  sx={{ ml: 3 }}
-                  id="basic-button"
-                  aria-controls={open ? 'basic-menu' : undefined}
-                  aria-haspopup="true"
-                  aria-expanded={open ? 'true' : undefined}
-                  onClick={handleDrawer(true)}
+            <Link href='/offers?page=1&limit=10'>
+              <Button color="inherit" variant='outlined'>
+                Blog
+              </Button>
+            </Link>
+            <Link href='/offers?page=1&limit=10'>
+              <Button 
+                variant="outlined" 
+                color="primary"
+                sx={{ ml: 2 }}
               >
-                  <AccountCircle />
-              </IconButton>
-              <Drawer
-                  anchor='right'
-                  open={state}
-                  onClose={handleDrawer(false)}
-              >
-                  <DrawerCustom
-                      session={session}
-                      handleClose={() => handleClose()} 
-                      handleDrawer={() => handleDrawer(false)}
-                  />
-              </Drawer>
+                Ofertas
+              </Button>
+            </Link>
+            <IconButton 
+                sx={{ ml: 3 }}
+                id="basic-button"
+                aria-controls={open ? 'basic-menu' : undefined}
+                aria-haspopup="true"
+                aria-expanded={open ? 'true' : undefined}
+                onClick={handleDrawer(true)}
+            >
+                <AccountCircle />
+            </IconButton>
+            <Drawer
+                anchor='right'
+                open={state}
+                onClose={handleDrawer(false)}
+            >
+                <DrawerCustom
+                    session={session}
+                    handleClose={() => handleClose()} 
+                    handleDrawer={() => handleDrawer(false)}
+                />
+            </Drawer>
           </Box>
           <Box sx={{
               display: { xs: 'flex', md: 'none' },

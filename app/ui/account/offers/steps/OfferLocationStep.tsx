@@ -6,6 +6,7 @@ import Grid from '@mui/material/Grid2';
 import { ControllerSelectFieldComponent, ControllerTextFieldComponent } from '@/app/ui/shared/custom/components/form/ControllersReactHForm';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCountries, getProvincesByCountryId } from '@/lib/data/geolocate';
+import { set } from 'zod';
 
 type OfferLocationStepProps = {
   control: Control<Partial<OfferDTO>>;
@@ -18,9 +19,8 @@ type OfferLocationStepProps = {
 const OfferLocationStep: React.FC<OfferLocationStepProps> = (
   { control, offer, setValue, formState }
 ) => {
-  const queryClient = useQueryClient();
-  const [selectedCountry, setSelectedCountry] = React.useState<number | undefined>();
-
+  const selectedCountry = offer?.location.countryId ?? 64;
+  
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [isProvincesLoading, setIsProvincesLoading] = useState<boolean>(false);
   const {data: countries, isLoading: isCountriesLoading} = useQuery({
@@ -40,19 +40,20 @@ const OfferLocationStep: React.FC<OfferLocationStepProps> = (
 
   useEffect(() => {
     if (selectedCountry == undefined) return;
+    setValue('location.countryId', selectedCountry.toString() as unknown as never);
     populateProvinces(selectedCountry);
   }, []);
 
   const extraChangeFunction = (event: any) => {
     const { name, value } = event.target;
     if (name === 'location.countryId') {
-      if(selectedCountry !== parseInt(value)) {
-        setValue('location.state', '');
-        populateProvinces(parseInt(value));
+      const countryId = countries?.find(country => country.name_es === value)?.id;
+      if(countryId != undefined && selectedCountry !== countryId) {
+        setValue('location.state', '' as unknown as never);
+        populateProvinces(countryId);
       }
     }
   }
-
 
   return (
     <Grid container spacing={2}>
@@ -83,7 +84,7 @@ const OfferLocationStep: React.FC<OfferLocationStepProps> = (
           control={control}
           value={selectedCountry ? selectedCountry.toString() : ''}
           formState={formState}
-          options={countries?.map((country) => ({value: country.cod_iso2 ?? '', label: country.name_es, id: country.id.toString()}))}
+          options={countries?.map((country) => ({value: country.name_es ?? '', label: country.id.toString(), id: country.id.toString()}))}
           extraChangeFunction={extraChangeFunction}
           isLoading={isCountriesLoading}
         />
@@ -105,7 +106,7 @@ const OfferLocationStep: React.FC<OfferLocationStepProps> = (
             value={offer?.location.state ?? ''}
             formState={formState}
             isLoading={isProvincesLoading}
-            options={provinces?.map((province) => ({ value: province.cod_iso2 ?? '', label: province.name, id: province.cod_iso2}))}
+            options={provinces?.map((province) => ({ value: province.name ?? '', label: province.name, id: province.name}))}
             extraChangeFunction={extraChangeFunction}
           />
         )}

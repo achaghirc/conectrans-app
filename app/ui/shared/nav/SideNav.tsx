@@ -15,7 +15,7 @@ const drawerWidth = 240;
 
 type SideNavProps = {
 	session: Session | null,
-  children: React.ReactNode
+  children: React.ReactNode,
 }
 
 const Sidenav: React.FC<SideNavProps> = ({session, children}) => {

@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useLayoutEffect, useState } from 'react'
 import Grid from '@mui/material/Grid2';
 import { Box, Button, Checkbox, Divider, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Icon, IconButton, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
-import { Country, EducationDTO, EncoderType, PersonLanguageDTO, SignUpCandidateFormData, ExperienceDTO, State } from '@/lib/definitions';
+import { Country, EducationDTO, EncoderType, PersonLanguageDTO, SignUpCandidateFormData, ExperienceDTO, State, Licence, CandidateLicence } from '@/lib/definitions';
 import { AddCircleOutlineOutlined, FilePresentOutlined, RemoveCircleOutline } from '@mui/icons-material';
 import ExperienceComponent from '@/app/ui/shared/auth/ExperienceComponent';
 import { MenuProperties } from '@/app/ui/shared/styles/styles';
@@ -12,13 +12,22 @@ import { useQuery } from '@tanstack/react-query';
 import { getLanguages } from '@/lib/data/languaje';
 import LanguagesComponentSignUp from '@/app/ui/shared/auth/LanguageComponentSignup';
 import useUtilsHook from '@/app/ui/shared/hooks/useUtils';
+import { ControllerDateTimePickerComponent, ControllerSelectFieldComponent, ControllerSelectMultiFieldComponent } from '@/app/ui/shared/custom/components/form/ControllersReactHForm';
+import { Control, SubmitHandler, useForm, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
+import { getEncoderTypeData } from '@/lib/data/encoderType';
+import TableLicenceComponent from '@/app/ui/shared/custom/components/table/TableLicenceComponent';
+import { set } from 'zod';
 
 type CadidateUserFormProps = {
-    formData: SignUpCandidateFormData;
-    setFormData: (data: any) => void;
-    errors: State;
-	countries: Country[];
-	encoders: EncoderType[];
+  control: Control<Partial<SignUpCandidateFormData>>;
+  register: UseFormRegister<Partial<SignUpCandidateFormData>>;
+  watch: UseFormWatch<Partial<SignUpCandidateFormData>>;  
+  setValue: UseFormSetValue<Partial<SignUpCandidateFormData>>;
+  formData: SignUpCandidateFormData;
+  setFormData: (data: any) => void;
+  errors: State;
+  countries: Country[];
+  encoders: EncoderType[];
 }
 
 const getEncoderTypeByCode = (encoders: EncoderType[], encoderCode: string) => {
@@ -26,32 +35,38 @@ const getEncoderTypeByCode = (encoders: EncoderType[], encoderCode: string) => {
 }
 
 
-export default function CandidateProfesionalDataForm({formData, errors, countries,encoders, setFormData}: CadidateUserFormProps) {
+export default function CandidateProfesionalDataForm({
+  control,register, watch, setValue, formData, errors, countries,encoders, setFormData
+}: CadidateUserFormProps) {
+
   const { handleZodError, handleZodHelperText } = useUtilsHook();
+  const [adrLicences, setAdrLicences] = useState<Licence[]>([]);
   const [educationToEdit, setEducationToEdit] = useState<EducationDTO>();
 	const [open, setOpen] = useState<boolean>(false);
 	const [openEducationComponent, setOpenEducationComponent] = useState<boolean>(false);
 	const licenceCodes = getEncoderTypeByCode(encoders,'CARNET');
 	const workRanges = getEncoderTypeByCode(encoders,'WORK_SCOPE')
-	const adrLicences = getEncoderTypeByCode(encoders, 'CARNET_ADR');
+	const adrLicencesCodes = getEncoderTypeByCode(encoders, 'CARNET_ADR');
 	const employeeType = getEncoderTypeByCode(encoders, 'EMPLOYEE_TYPE');
 	const experiences = getEncoderTypeByCode(encoders, 'EXPERIENCE_TYPE');
 	const [fileError, setFileError] = useState<string | null>(null);
 
   const { data: languages, isLoading: loadingLanguages, isError: isError } = useQuery({queryKey: ['languages'], queryFn: () =>  getLanguages()});
 
-	const handleSelectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		let { value } = e.target;
-		const licenceType = licenceCodes.find((type) => type.code === value);
-		setFormData({licence: {...formData.licence, code: licenceType?.code, name: licenceType?.name}})
-	}
+  const {data: encodersData, isLoading: isEncodersLoading} = useQuery({
+    queryKey: ['encoders'],
+    queryFn: () => getEncoderTypeData(),
+    staleTime: 1000 * 60 * 60 * 24 * 7,
+  });
+
 	const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files && e.target.files[0]) {
 			if(e.target.files[0].size > 25000000){
 				setFileError('El tamaño del archivo no puede ser mayor a 25MB');
 				return;
 			}
-		  	setFormData({ ...formData, summaryFile: e.target.files[0] });
+      const file : File = e.target.files[0];
+		  setValue('summaryFile', file);
 			setFileError(null);
 		} else {
 			setFileError('El archivo no es válido');
@@ -68,32 +83,51 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
 			if(name === 'workRange' || name === 'employeeType'){
 				setFormData({...formData, [name]: value});
 			} else {
-				setFormData({licence: {...formData.licence, [name]: value}});
+				// setFormData({licence: {...formData.licence, [name]: value}});
 			}
 	}
 
   const handleAddLanguage = (selectedLanguage: PersonLanguageDTO) => { 
-    setFormData({...formData, languages: [...formData.languages, selectedLanguage]});
+    let languages = watch('languages');
+    if (!languages) languages = [];
+    if (languages.includes(selectedLanguage)) return;
+    setValue('languages', [...languages, selectedLanguage]);
   }
   const handleDeleteLanguage = (language: PersonLanguageDTO) => {
-    const newLanguages = formData.languages.filter((lang) => lang !== language);
-    setFormData({...formData, languages: newLanguages});
+    const languages = watch('languages');
+    if (!languages) return;
+    const newLanguages = languages.filter((lang) => lang !== language);
+    setValue('languages', newLanguages);
   }
 
   const handleAddExperienceData = (experience: ExperienceDTO) => {
-    const newExperiences = [...formData.experiences, experience];
-    setFormData({...formData, experiences: newExperiences});
+    let actualExperiences = watch('experiences');
+    if (!actualExperiences) actualExperiences = [];
+    if (actualExperiences.includes(experience)) return;
+    const newExperiences = [...actualExperiences, experience];
+    setValue('experiences', newExperiences);
   }
 
+	const deleteExperience = (row: ExperienceDTO) => {
+    const experiences = watch('experiences');
+    if (!experiences) return;
+		const newExperiences = experiences.filter((exp) => exp !== row);
+    setValue('experiences', newExperiences);
+	}
+
   const handleAddEducationData = (educations: EducationDTO[]) => {
-    const newEducations = [...formData.educations, ...educations];
-    setFormData({...formData, educations: newEducations});
-    console.log(formData.educations);
+    let actualEducations = watch('educations');
+    if (!actualEducations) actualEducations = [];
+
+    const newEducations = [...actualEducations, ...educations];
+    setValue('educations', newEducations);
   }
 
   const handleDeleteEducation = (education: EducationDTO) => {
-    const newEducations = formData.educations.filter((edu) => edu !== education);
-    setFormData({...formData, educations: newEducations});
+    let educations = watch('educations');
+    if (!educations) return;
+    const newEducations = educations.filter((edu) => edu !== education);
+    setValue('educations', newEducations);
   }
 
   const handleEditEducation = (education: EducationDTO) => {
@@ -101,189 +135,102 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
     setOpenEducationComponent(true);
   }
 
-	const handleCheckChange = (e: ChangeEvent<HTMLInputElement>, checked: boolean) => {
-		e.preventDefault();
-		const { name, id } = e.target;
-		let value = 'No'
-		if (name === 'Si' && checked){
-				value = 'Si'
-		}
-		setFormData({licence: {...formData.licence, [id]: value}})
-	}
-
-	const deleteExperience = (row: ExperienceDTO) => {
-		const newExperiences = formData.experiences.filter((exp) => exp !== row);
-		setFormData({...formData, experiences: newExperiences});
-	}
-
   return (
 		<>
 			<Grid container spacing={2} sx={{ display: 'flex', flexDirection: {xs: 'row', sm: 'row'} }}>
+        <Grid size={{ xs:12, sm: 6 }}>
+          <ControllerSelectMultiFieldComponent
+            label='Tipo de Carnet'
+            control={control}
+            name='licences'
+            formState={errors}
+            isLoading={isEncodersLoading}
+            options={!isEncodersLoading ? licenceCodes && licenceCodes.map((encoder) => ({
+              value: encoder.name,
+              label: encoder.name,
+              id: encoder.id.toString()
+            })) : []}
+            />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6}}>
+          <ControllerSelectFieldComponent 
+            label='País de emisión'
+            control={control}
+            name='countryLicences'
+            formState={errors}
+            isLoading={false}
+            options={countries ? countries.map((country) => ({
+              value: country.name_es ?? '',
+              label: country.id.toString() ?? '',
+              id: country.id.toString()
+            })) : []}
+          />
+        </Grid>
 				<Grid size={{ xs:12, sm: 6 }}>
-					<TextField
-						fullWidth
-						select
-						label="Tipo de carnet"
-						name="code"
-						value={formData.licence.code ?? ''}
-						onChange={handleSelectChange}
-						error={handleZodError(errors,'code')}
-						helperText={handleZodHelperText(errors,'code')}
-						required
-					>
-						{licenceCodes && licenceCodes.map((tipo) => (
-							<MenuItem key={tipo.code} value={tipo.code}>
-								{tipo.name}
-							</MenuItem>
-						))}
-					</TextField>
+          <ControllerSelectMultiFieldComponent
+            label='Carnet de mercancías peligrosas'
+            control={control}
+            name='adrLicences'
+            formState={errors}
+            isLoading={isEncodersLoading}
+            options={!isEncodersLoading ? adrLicencesCodes && adrLicencesCodes.map((encoder) => ({
+              value: encoder.name,
+              label: encoder.name,
+              id: encoder.id.toString()
+            })) : []}
+          />
 				</Grid>
-				<Grid size={{ xs: 12, sm: 6 }}>
-					<FormControl fullWidth error={handleZodError(errors, 'country')} required>
-						<InputLabel>País de emisión</InputLabel>
-						<Select
-							label="País de emisión"
-							id='country'
-							name='country'
-							value={formData.licence.country.toString()}
-							onChange={(e:SelectChangeEvent<string>) => handleFormControlSelect(e)}
-							MenuProps={MenuProperties}
-						>
-							{countries.map((country) => (
-								<MenuItem key={country.id} value={country.id}>
-									{country.name_es}
-								</MenuItem>
-							))}
-						</Select>
-						<FormHelperText>{handleZodHelperText(errors, 'country')}</FormHelperText>
-					</FormControl>
-				</Grid>
-				<Grid size={{ xs: 12 }}>
-					<FormControl fullWidth error={handleZodError(errors, 'adrCode')}>
-						<InputLabel id="adr_carnet">Carnet de mercancías peligrosas</InputLabel>
-						<Select
-							label='Carnet de mercancías peligrosas'
-							id='adr_carnet'
-							multiple
-							name="adrCode"
-							value={formData.licence.adrCode ?? []}
-							onChange={(e: SelectChangeEvent<string | string[]>) => handleFormControlSelect(e)}
-							MenuProps={MenuProperties}
-						>
-							{adrLicences && adrLicences.map((tipo) => (
-								<MenuItem key={tipo.code} value={tipo.code}>
-									{tipo.name}
-								</MenuItem>
-							))}
-						</Select>
-						<FormHelperText>{handleZodHelperText(errors, 'adrCode') ?? 'Carnet de mercancías peligrosas'}</FormHelperText>
-					</FormControl>
-				</Grid>
-				<Grid size={{ xs: 12 }}>
-					<FormControl fullWidth error={handleZodError(errors, 'employeeType')}>
-						<InputLabel id="employeeType">Tipo de empleo</InputLabel>
-						<Select
-							label='Tipo de empleo'
-							id='employeeType'
-							multiple
-							name="employeeType"
-							value={formData.employeeType ?? []}
-							renderValue={(selected) => selected.join(', ')}
-							onChange={(e: SelectChangeEvent<string[]>) => handleFormControlSelect(e)}
-							MenuProps={MenuProperties}
-						>
-							{employeeType && employeeType.map((tipo) => (
-								<MenuItem key={tipo.code} value={tipo.name}>
-									<Checkbox checked={formData.employeeType ? formData.employeeType.includes(tipo.name) : false} />
-									<ListItemText primary={tipo.name} />
-								</MenuItem>
-							))}
-						</Select>
-						<FormHelperText>{handleZodHelperText(errors, 'employeeType') ?? 'Tipo de empleado'}</FormHelperText>
-					</FormControl>
-				</Grid>
+				<Grid size={{ xs: 12, sm: 6}}>
+					<ControllerSelectMultiFieldComponent 
+            label='Tipo de empleado'
+            control={control}
+            name='employeeType'
+            formState={errors}
+            isLoading={isEncodersLoading}
+            options={!isEncodersLoading ? employeeType && employeeType.map((encoder) => ({
+              value: encoder.code,
+              label: encoder.name,
+              id: encoder.id.toString()
+            })) : []}
+          /> 
+        </Grid>
 				<Grid size={{ xs: 6, sm: 6 }}>
-					<Box sx={{ pl: 2, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-						<FormLabel component={"label"}>
-								Tarjeta digital
-						</FormLabel>
-						<FormGroup sx={{ display: 'flex', flexDirection: 'row'}}>
-							<FormControlLabel
-								control={<Checkbox 
-									checked={formData.licence.digitalTachograph === 'Si'} 
-									onChange={handleCheckChange} 
-									name='Si' 
-									id='digitalTachograph'
-								/>}
-								label={'Si'}
-								/>
-							<FormControlLabel
-								control={<Checkbox 
-									checked={formData.licence.digitalTachograph === 'No' || formData.licence.digitalTachograph == undefined} 
-									onChange={(e:ChangeEvent<HTMLInputElement>, checked: boolean ) => handleCheckChange(e, checked)} 
-									name='No' 
-									id='digitalTachograph'
-									/>
-								}
-								label={'No'}
-								/>
-						</FormGroup>
-						<FormHelperText>{handleZodHelperText(errors, 'digitalTachograph')}</FormHelperText>
-					</Box>
+					<ControllerSelectFieldComponent
+            label='Certificado CAP'
+            name='capCertification'
+            control={control}
+            formState={errors}
+            options={[
+              {value: 'Si', label: 'YES', id: 'YES'},
+              {value: 'No', label: 'NO', id: 'NO'}
+            ]}
+          />
 				</Grid>
-				<Grid size={{ xs: 6, sm: 6 }}>
-					<Box sx={{ pl: 2, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-						<FormLabel component={"label"}>
-								Certificado CAP
-						</FormLabel>
-						<FormGroup sx={{ display: 'flex', flexDirection: 'row'}}>
-							<FormControlLabel
-								control={
-									<Checkbox 
-										checked={formData.licence.capCertificate === 'Si'} 
-										onChange={handleCheckChange} 
-										name='Si'
-										id='capCertificate'
-										/>
-									}
-								label={'Si'}
-								/>
-							<FormControlLabel
-								control={
-									<Checkbox 
-										checked={formData.licence.capCertificate === 'No' || formData.licence.capCertificate == undefined} 
-										onChange={(e:ChangeEvent<HTMLInputElement>, checked: boolean ) => handleCheckChange(e, checked)} 
-										name='No' 
-										id='capCertificate'
-									/>}
-								label={'No'}
-								/>
-						</FormGroup>
-						<FormHelperText>{handleZodHelperText(errors, 'digitalTachograph')}</FormHelperText>
-					</Box>
-				</Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <ControllerSelectFieldComponent
+            label='Tacógrafo Digital'
+            name='digitalTachograph'
+            control={control}
+            formState={errors}
+            options={[
+              {value: 'Si', label: 'YES', id: 'YES'},
+              {value: 'No', label: 'NO', id: 'NO'}
+            ]}
+          />
+        </Grid>
 				<Grid size={{ xs: 12 }}>
-					<FormControl fullWidth error={handleZodError(errors, 'workRange')}>
-						<InputLabel id="workRange">Ámbito de trabajo</InputLabel>
-						<Select
-							label='Ámbito de trabajo'
-							id='workRange'
-							multiple
-							name="workRange"
-							value={formData.workRange ?? []}
-							renderValue={(selected) => selected.join(', ')}
-							onChange={(e: SelectChangeEvent<string[]>) => handleFormControlSelect(e)}
-							MenuProps={MenuProperties}
-						>
-							{workRanges && workRanges.map((tipo) => (
-								<MenuItem key={tipo.code} value={tipo.name}>
-									<Checkbox checked={formData.workRange.includes(tipo.name)} />
-									<ListItemText primary={tipo.name} />
-								</MenuItem>
-							))}
-						</Select>
-						<FormHelperText>{handleZodHelperText(errors, 'workRange') ?? 'Ambito de trabajo deseado'}</FormHelperText>
-					</FormControl>
+          <ControllerSelectMultiFieldComponent 
+            label='Ámbito de trabajo'
+            control={control}
+            name='workRange'
+            formState={errors}
+            isLoading={isEncodersLoading}
+            options={!isEncodersLoading ? workRanges && workRanges.map((encoder) => ({
+              value: encoder.code,
+              label: encoder.name,
+              id: encoder.id.toString()
+            })) : []}
+          />
 				</Grid>
 				<Grid size={{ xs: 12 }}>
 					<Box>
@@ -293,7 +240,10 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
 					</Box>
 					<Divider sx={{ mb: 2 }}/>
 				</Grid>
-				<TableExperiencesComponent experiences={formData.experiences} deleteExperience={(row) => deleteExperience(row)} />
+				<TableExperiencesComponent 
+          experiences={watch('experiences') ?? []} 
+          deleteExperience={(row) => deleteExperience(row)} 
+        />
 				<Box 
 					sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' }}
 				>
@@ -315,7 +265,11 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
           </Typography>
         </Box>
         <Divider sx={{ mb: 3 }}/>
-        <TableEducationComponent educations={formData.educations} deleteEducationExperience={handleDeleteEducation} editEducationExperience={handleEditEducation} />
+        <TableEducationComponent 
+          educations={watch('educations') ?? []} 
+          deleteEducationExperience={handleDeleteEducation} 
+          editEducationExperience={handleEditEducation} 
+        />
         <Box 
           sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' }}
         >
@@ -333,7 +287,7 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
       <Grid size={{ xs: 12 }}>
         <LanguagesComponentSignUp
           languages={languages ?? []} 
-          selectedLenguages={formData.languages} 
+          selectedLenguages={watch('languages') ?? []} 
           loadingLanguages={loadingLanguages} 
           isError={isError} 
           handleAddLanguage={handleAddLanguage} 
@@ -348,7 +302,7 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
 				</Box>
 				<Divider sx={{ mb: 0 }}/>
 			</Grid>
-			<Grid size={{ xs: 12 }} display={formData.summaryFile ? 'block' : 'none'}>
+			<Grid size={{ xs: 12 }} display={watch('summaryFile') ? 'block' : 'none'}>
 				<Box 
 					sx={{
 						display: 'flex',
@@ -366,7 +320,7 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
 					}}
 				>
 					<FilePresentOutlined sx={{ width: 30, height: 30}} />
-					<Typography variant='body1' fontWeight={'semibold'}>{formData.summaryFile?.name ?? ''}</Typography>
+					<Typography variant='body1' fontWeight={'semibold'}>{watch('summaryFile')?.name ?? ''}</Typography>
 				</Box>
 					<IconButton onClick={handleRemoveFile}>
 						<RemoveCircleOutline color='error' />
@@ -384,6 +338,7 @@ export default function CandidateProfesionalDataForm({formData, errors, countrie
 							id='file'
 							type="file" 
 							accept={'.pdf, .doc, .docx, .jpg, .png'}
+              {...register('summaryFile')}
 							onChange={handleFileChange}
 							style={{ display: 'none', marginTop: '8px' }}
 						/>

@@ -1,18 +1,97 @@
 import ButtonCustom from '@/app/ui/shared/custom/components/button/ButtonCustom';
 import BoxTextItem from '@/app/ui/shared/custom/components/text/BoxTextItem';
-import { Box, Divider, Typography } from '@mui/material';
+import { Box, Button, Divider, Typography } from '@mui/material';
 import { OfferDTO } from '@prisma/client';
 import { Session } from 'next-auth';
 import React from 'react'
 
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
+import { useQuery } from '@tanstack/react-query';
+import { existsApplicationOfferByPerson } from '@/lib/data/applicationOffers';
+import { CheckCircleOutline } from '@mui/icons-material';
+dayjs.locale('es');
+
 type DetailsOfferInformationComponentProps = {
   session: Session | null;
   offer: OfferDTO; 
+  handleEditOffer: () => void;
+  handleUserApply: VoidFunction
 }
 
 const DetailsOfferInformationComponent: React.FC<DetailsOfferInformationComponentProps> = (
-  { session, offer }
-) => {
+  { session, offer, handleEditOffer, handleUserApply }
+) => {  
+  const startDate = dayjs(offer.startDate).format('LL');
+  const endDate = dayjs(offer.endDate).format('LL');
+
+  const { data: alreadyAppliyed, isLoading } = useQuery({
+    queryKey: ['existsApplicationOfferByPerson', session?.user.personId, offer.id],
+    queryFn: (): Promise<Boolean | undefined > => existsApplicationOfferByPerson(session?.user.personId ?? 0, offer.id),
+    enabled: session?.user.personId !== undefined,
+    staleTime: 1000 * 60 * 60 * 24 * 7,
+  })
+
+  const getButtons = () => {
+
+    if (session && session.user?.id === offer.userId) {
+      return (
+        <Box 
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+          }}
+        >
+          <ButtonCustom 
+            title='Editar oferta'
+            color='primary'
+            disable={false}
+            onClick={handleEditOffer}
+            loading={false}
+          />
+          <ButtonCustom 
+            title='Eliminar oferta'
+            color='secondary'
+            disable={false}
+            onClick={() => console.log('Eliminar la oferta')}
+            loading={false}
+          />
+        </Box>
+      )
+    } else if (isLoading) {
+      return (
+        <ButtonCustom 
+          title='Buscando si ya te has inscrito'
+          color='primary'
+          disable={true}
+          loading={isLoading}
+        />
+      )
+    } else if (!alreadyAppliyed) {
+      return (
+        <ButtonCustom 
+          title='Inscribirme en la oferta'
+          color='primary'
+          disable={false}
+          onClick={handleUserApply}
+          loading={false}
+        />
+      )
+    } else if (alreadyAppliyed) {
+      return (
+        <Button
+          color='success'
+          variant='contained'
+          onClick={() => {}}
+          endIcon={<CheckCircleOutline />}
+        >
+          Ya estas inscrito en esta oferta
+        </Button>
+      )
+    }
+  }
+
   return (
     <Box
       sx={{
@@ -30,42 +109,11 @@ const DetailsOfferInformationComponent: React.FC<DetailsOfferInformationComponen
         Acerca de la oferta
       </Typography>
       <BoxTextItem title='Salario' text={offer.salary} />
-      <BoxTextItem title='Tipo de contrato' text={offer.employmentType.map((type) => type.name).join(', ')} />
-      <BoxTextItem title='Jornada' text={offer.workDay} />
+      <BoxTextItem title='Publicada' text={startDate} />
+      <BoxTextItem title='Caduca' text={endDate} />
       <BoxTextItem title='CAP' text={offer.capCertification ? 'Obligatorio' : 'Opcional'} />
       <BoxTextItem title='Tacógrafo digital' text={offer.digitalTachograph ? 'Obligatorio' : 'Opcional'} />
-      {session && session.user?.id === offer.userId ? (
-        <Box 
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2,
-          }}
-        >
-          <ButtonCustom 
-            title='Editar oferta'
-            color='primary'
-            disable={false}
-            onClick={() => console.log('Editar la oferta')}
-            loading={false}
-          />
-          <ButtonCustom 
-            title='Eliminar oferta'
-            color='secondary'
-            disable={false}
-            onClick={() => console.log('Eliminar la oferta')}
-            loading={false}
-          />
-        </Box>
-      ): (
-        <ButtonCustom 
-          title='Inscribirme en la oferta'
-          color='primary'
-          disable={false}
-          onClick={() => console.log('Inscribirme en la oferta')}
-          loading={false}
-        />
-      )}
+      {getButtons()}
     </Box>
   )
 }

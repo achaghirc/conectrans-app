@@ -1,0 +1,7 @@
+export enum EncoderTypeEnum {
+  EMPLOYEE_TYPE = 'EMPLOYEE_TYPE',
+  CARNET = 'CARNET',
+  CARNET_ADR = 'CARNET_ADR',
+  WORK_SCOPE = 'WORK_SCOPE',
+  EXPERIENCE = 'EXPERIENCE',
+}

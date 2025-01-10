@@ -1,18 +1,24 @@
 'use client';
+import { ControllerTextFieldComponent } from '@/app/ui/shared/custom/components/form/ControllersReactHForm';
 import useUtilsHook from '@/app/ui/shared/hooks/useUtils';
 import { PasswordType, SignUpCandidateFormData, State, ValidationCIFNIFResult } from '@/lib/definitions';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, InputAdornment, TextField } from '@mui/material'
 import Grid from '@mui/material/Grid2';
 import React, { ChangeEvent, useState } from 'react'
+import { Control, UseFormSetValue } from 'react-hook-form';
 
 type CadidateUserFormProps = {
+  control: Control<Partial<SignUpCandidateFormData>>;
+  setValue: UseFormSetValue<Partial<SignUpCandidateFormData>>;
   formData: SignUpCandidateFormData;
   setFormData: (data: any) => void;
   errors: State;
 }
 
-export default function CadidateUserForm({formData, errors, setFormData}: CadidateUserFormProps) {
+export default function CadidateUserForm({
+  control, setValue, formData, errors, setFormData
+}: CadidateUserFormProps) {
   const { handleZodError, handleZodHelperText } = useUtilsHook();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -44,49 +50,33 @@ export default function CadidateUserForm({formData, errors, setFormData}: Cadida
   return (
     <Grid container spacing={2}>
       <Grid size={{xs:12}}>
-        <TextField
-          fullWidth
+        <ControllerTextFieldComponent 
+          control={control}
           label="Correo electrónico"
           name="email"
-          value={formData.email}
-          onChange={handleInputChange}
-          placeholder='example@email.com'
-          error={handleZodError(errors, 'email')}
-          helperText={handleZodHelperText(errors,'email')}
+          formState={errors}
+
         />
       </Grid>
       <Grid size={{xs:12, sm: 6}}>
-        <TextField
-          fullWidth
-          label="Contraseña"
-          type={!showPassword ? "password" : "text"}
+        <ControllerTextFieldComponent
+          label='Contraseña'
+          control={control}
           name="password"
-          value={formData.password}
-          onChange={handleInputChange}
-          error={handleZodError(errors,'password')}
-          helperText={handleZodHelperText(errors,'password')}
-          slotProps={{
-            input:{
-              endAdornment: inputPropShowPassword('password')
-            }
-          }}
+          formState={errors}
+          type={!showPassword ? "password" : "text"}
+          inputAdornment={inputPropShowPassword('password')}
+
         />
       </Grid>
       <Grid size={{xs:12, sm: 6}}>
-        <TextField
-          fullWidth
-          label="Confirmar Contraseña"
-          type={!showConfirmPassword ? "password" : "text"}
+        <ControllerTextFieldComponent 
+          control={control}
+          label='Confirmar Contraseña'
           name="confirmPassword"
-          value={formData.confirmPassword}
-          onChange={handleInputChange}
-          error={handleZodError(errors,'confirmPassword')}
-          helperText={handleZodHelperText(errors,'confirmPassword')}
-          slotProps={{
-            input:{
-              endAdornment: inputPropShowPassword('confirmPassword')
-            }
-          }}
+          formState={errors}
+          type={!showConfirmPassword ? "password" : "text"}
+          inputAdornment={inputPropShowPassword('confirmPassword')}
         />
       </Grid>
     </Grid>

@@ -1,10 +1,11 @@
-import { Box, } from '@mui/material';
+import { Box, TablePagination, } from '@mui/material';
 import { OfferDTO } from '@prisma/client';
-import React from 'react'
+import React, { useEffect } from 'react'
 import EditOfferComponent from './edit/EditOfferComponent';
 import SnackbarCustom, { SnackbarCustomProps } from '../../shared/custom/components/snackbarCustom';
 import { Session } from 'next-auth';
 import OfferCardComponent from './OfferCardComponent';
+import Link from 'next/link';
 
 type OffersListComponentProps = {
   session: Session;
@@ -14,7 +15,9 @@ type OffersListComponentProps = {
 const OffersListComponent: React.FC<OffersListComponentProps> = (
   { session, offers }
 ) => {
-
+  const [paginatedOffers, setPagginatedOffers] = React.useState<OfferDTO[]>(offers);
+  const [page, setPage] = React.useState(0);
+  const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
   const [snackbarProps, setSnackbarProps] = React.useState<SnackbarCustomProps>({
     open: false,
@@ -43,9 +46,39 @@ const OffersListComponent: React.FC<OffersListComponentProps> = (
     setOfferSelected(offer);
     setOpen(true);
   }
+
+  const handleEditSuccess = (offer: OfferDTO) => {
+    setOfferSelected(null);
+    // set the new Offer in the list in the same position as the previous one
+    const index = offers.findIndex(o => o.id === offer.id);
+    if (index !== -1) {
+      const updatedOffers = [...offers];
+      updatedOffers[index] = offer;
+      const updatedOffersOrderedByIsFeaturedAndCreatedAt = updatedOffers.sort((a, b) => {
+        if (a.isFeatured === b.isFeatured) {
+          return b.createdAt.toISOString().localeCompare(a.createdAt.toISOString());
+        }
+        return a.isFeatured ? -1 : 1;
+      });
+      setPagginatedOffers(updatedOffersOrderedByIsFeaturedAndCreatedAt.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage));
+    }
+  }
+
   const handleDelete = (offer: OfferDTO) => {
     console.log('delete', offer);
   }
+
+  const handleOnPageChange = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+    setPage(newPage);
+    const paginatedOffers = offers.slice(newPage * rowsPerPage, newPage * rowsPerPage + rowsPerPage);
+    setPagginatedOffers(paginatedOffers);
+  }
+
+  useEffect(() => {
+    if(!offers || offers.length == 0) return;
+    const paginatedOffers = offers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    setPagginatedOffers(paginatedOffers);
+  }, [])
 
   return (
     <>
@@ -53,16 +86,38 @@ const OffersListComponent: React.FC<OffersListComponentProps> = (
         <EditOfferComponent 
           open={open}
           setOpen={() => setOpen(!open)}
-          session={session}
-          setSnackbarProps={() => {}}
+          setSnackbarProps={handleSnackbarSons}
           offer={offerSelected} 
+          onSuccess={handleEditSuccess}
         />
       )}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: {xs: 2, md: 0}, mr: {xs: 1, md: 0}, ml: {xs: 1, md: 0}}}>
-        {offers.map((offer) => (
-          <OfferCardComponent key={offer.id} offer={offer} handleEdit={handleEdit} handleDelete={handleDelete}/>
+        {paginatedOffers.map((offer) => (
+          <Link 
+            key={offer.id} 
+            href={`/account-company/offers/${offer.id}`} 
+            passHref
+            style={{ textDecoration: 'none', color: 'inherit'}}
+            >
+            <OfferCardComponent key={offer.id} offer={offer} handleEdit={handleEdit} handleDelete={handleDelete} />
+          </Link>
         ))} 
       </Box>
+      <TablePagination 
+        align='center'
+        component={'div'}
+        count={offers.length}
+        rowsPerPageOptions={[3,5,10,15,20]}
+        page={page}
+        onPageChange={(event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => handleOnPageChange(event, newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={() => {}}
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          right: 0,
+        }}
+      />
       <SnackbarCustom {...snackbarProps}/>
     </>
   )

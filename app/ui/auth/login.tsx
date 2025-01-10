@@ -7,8 +7,18 @@ import ForgotPassword from '../icons/forgotPassword';
 import { ArrowBack, BusinessOutlined, LockOutlined, PeopleOutline, Visibility, VisibilityOff } from '@mui/icons-material';
 import { authenticate } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
-import { AuthenticateMessage } from '@/lib/definitions';
+import { AuthenticateMessage, State } from '@/lib/definitions';
 import { SignInForm, SignInMobileForm, TextFieldCustom } from '../shared/auth/LoginComponents';
+import ButtonCustom from '../shared/custom/components/button/ButtonCustom';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { ZodIssue } from 'zod';
+import { ControllerTextFieldComponent } from '../shared/custom/components/form/ControllersReactHForm';
+import { validateSignInData } from '@/lib/validations/loginValidations';
+
+type LoginForm = {
+  email: string;
+  password: string;
+}
 
 
 export default function LoginModal() {
@@ -42,17 +52,20 @@ export default function LoginModal() {
 
 
 const FormLogin = () => {
-	const [emailError, setEmailError] = useState(false);
-	const [emailErrorMessage, setEmailErrorMessage] = useState('');
-	const [passwordError, setPasswordError] = useState(false);
-	const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
+  const [loading, setIsLoading] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
-	const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
 	const [open, setOpen] = useState(false);
+  const [state, setState] = useState<State>({
+    message: '',
+    errors: []
+  })
+  const router = useRouter();
 
-	const [isPending, startTransition] = useTransition();
+  const { 
+    control, 
+    handleSubmit
+  } = useForm<LoginForm>();
 
-	const router = useRouter();
 	const handleClickOpen = () => {
 		setOpen(true);
 	};
@@ -61,21 +74,21 @@ const FormLogin = () => {
 		setOpen(false);
 	};
 
-	// Update the handleSubmit method in your LoginModal component
-	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
-		setEmailError(false);
-		setPasswordError(false);
-		setErrorMessage(undefined);
-		const data = new FormData(event.currentTarget);
-		const email = data.get('email') as string;
-		const password = data.get('password') as string;
+  const onSubmit: SubmitHandler<LoginForm> = async(data) => {
+    console.log(data)
+    setIsLoading(true);
+    const { email, password } = data;
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('password', password);
 
-		if (emailError || passwordError) {
-			return;
-		}
+    const validate:State = await validateSignInData(state, formData);
+    if (validate.errors && validate.errors.length > 0) {
+      setState(validate);
+      return;
+    }
 		try {
-			const response: AuthenticateMessage | undefined = await authenticate(undefined, data);
+			const response: AuthenticateMessage | undefined = await authenticate(undefined, formData);
 			console.log('Response:', response);
 			if (!response) {
 				return;
@@ -84,51 +97,64 @@ const FormLogin = () => {
 				router.push('/');
 				return;
 			}
-			switch (response.type) {
-				case 'email':
-					setEmailError(true);
-					setEmailErrorMessage(response.message);
-					break;
-				case 'password':
-					setPasswordError(true);
-					setPasswordErrorMessage(response.message);
-					break;
-				default:
-					setErrorMessage(response.message);
-					break;
-			}
+      switch (response.type) {
+        case 'email':
+          setState({
+            ...state,
+            message: response.message ?? 'No user found with that email',
+            errors: [{
+              message: response.message ?? 'No user found with that email',
+              path: ['email'],
+              code: 'invalid_literal',
+              expected: '',
+              received: ''
+            }]
+          });
+          break;
+        case 'password':
+          setState({
+            ...state,
+            message: response.message ?? 'Incorrect password',
+            errors: [{
+              message: response.message ?? 'Incorrect password',
+              path: ['password'],
+              code: 'invalid_literal',
+              expected: '',
+              received: ''
+            }]
+          });
+          break;
+        default:
+          setState({
+            ...state,
+            message: response.message ?? 'Error en el inicio de sesión. Por favor, inténtalo de nuevo.',
+            errors: [{
+              message: response.message ?? 'Error en el inicio de sesión. Por favor, inténtalo de nuevo.',
+              path: ['email'],
+              code: 'invalid_literal',
+              expected: '',
+              received: ''
+            }]
+          });
+          break;
+      }
 		} catch (error: any) {
 			console.error('Authentication error:', error.cause);
-			setErrorMessage('An unexpected error occurred. Please try again.');
-		}
-	};
-
-	const validateInputs = () => {
-		const email = document.getElementById('email') as HTMLInputElement;
-		const password = document.getElementById('password') as HTMLInputElement;
-
-		let isValid = true;
-
-		if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
-			setEmailError(true);
-			setEmailErrorMessage('Please enter a valid email address.');
-			isValid = false;
-		} else {
-			setEmailError(false);
-			setEmailErrorMessage('');
-		}
-
-		if (!password.value || password.value.length < 6) {
-			setPasswordError(true);
-			setPasswordErrorMessage('Password must be at least 6 characters long.');
-			isValid = false;
-		} else {
-			setPasswordError(false);
-			setPasswordErrorMessage('');
-		}
-
-		return isValid;
-	};
+      setState({
+        ...state,
+        message: 'An unexpected error occurred. Please try again.',
+        errors: [{
+          message: 'An unexpected error occurred. Please try again.',
+          expected: '',
+          received: '',
+          code: 'invalid_literal',
+          path: ['general']
+        }]
+      }); 
+		} finally {
+      setIsLoading(false);
+    }
+  }
 
 	const inputPropShowPassword = () => {
 		return (
@@ -144,7 +170,7 @@ const FormLogin = () => {
 		)
 	}
 	return (
-		<Fragment>
+		<form onSubmit={handleSubmit(onSubmit)}>
 			<ArrowBack sx={{ display: { sm: 'none' } }} onClick={() => router.back()}/>
 			<Box sx={{ display: 'flex', flexDirection:'column', alignItems: 'center'}}>
 				<Image
@@ -158,9 +184,7 @@ const FormLogin = () => {
 				</Box>
 			</Box>
 			<Box
-				component="form"
-				onSubmit={handleSubmit}
-				noValidate
+				component="div"
 				sx={{
 					display: 'flex',
 					flexDirection: 'column',
@@ -168,56 +192,29 @@ const FormLogin = () => {
 					gap: 2,
 				}}
 			>
-				<FormControl>
-					<TextFieldCustom
-						label="Correo electrónico"
-						error={emailError}
-						helperText={emailErrorMessage}
-						id="email"
-						type="email"
-						name="email"
-						placeholder="email@example.com"
-						autoComplete="email"
-						autoFocus
-						required
-						fullWidth
-						variant="outlined"
-						color={emailError ? 'error' : 'primary'}
-						sx={{ ariaLabel: 'email'}}	
-					/>
-				</FormControl>
-				<FormControl>
-					<TextField
-						label="Contraseña"
-						error={passwordError}
-						helperText={passwordErrorMessage}
-						name="password"
-						placeholder="••••••"
-						type={!showPassword ? "password": "text"}
-						id="password"
-						autoComplete="current-password"
-						autoFocus
-						required
-						fullWidth
-						variant="outlined"
-						color={passwordError ? 'error' : 'primary'}
-						slotProps={{
-							input:{
-								endAdornment: inputPropShowPassword()
-							}
-							}}
-					/>
-				</FormControl>
+        <ControllerTextFieldComponent 
+          control={control}
+          label='Correo electrónico'
+          formState={state}
+          name="email"
+          placeholder='example@gmail.com'
+        />
+        <ControllerTextFieldComponent
+          label='Contraseña'
+          formState={state}
+          name="password"
+          type={!showPassword ? "password" : "text"}
+          placeholder='Contraseña'
+          inputAdornment={inputPropShowPassword()}
+          control={control}
+        />
 				<ForgotPassword open={open} handleClose={handleClose} />
-				<Button
+				<ButtonCustom
 					type="submit"
-					fullWidth
-					variant="outlined"
-					onClick={validateInputs}
-					aria-disabled={isPending}
-				>
-					Iniciar sesión
-				</Button>
+					title="Iniciar sesión"
+          loading={loading}
+          color="primary"
+				/>
 				<Box sx={{ display: 'flex', justifyContent: 'center' }}>
 						<Link
 							color='textSecondary'
@@ -261,7 +258,7 @@ const FormLogin = () => {
 				</Button>
 				</Link>
 			</Box>
-		</Fragment>
+		</form>
 	)
 }
 

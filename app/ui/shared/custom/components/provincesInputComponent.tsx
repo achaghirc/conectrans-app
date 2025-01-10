@@ -67,7 +67,7 @@ const ProvincesInputComponent: React.FC<ProvincesInputComponentProps> = React.me
           <MenuItem disabled>Loading...</MenuItem>
         ) : (
           provincesData && provincesData.map((province) => (
-          <MenuItem key={province.id} value={province.cod_iso2}>
+          <MenuItem key={province.id} value={province.name}>
             {province.name}
           </MenuItem>
         )))

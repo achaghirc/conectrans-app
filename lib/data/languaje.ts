@@ -45,7 +45,7 @@ export async function getPersonLanguageByUserId(userId: string): Promise<PersonL
 
 export async function savePersonLanguages(personLanguages: PersonLanguageDTO[], userId: string): Promise<void> {
   try {
-    const personId = await getPersonIdByUserId('');
+    const personId = await getPersonIdByUserId(userId);
     if (!personId) {
       throw new Error('Person not found');
     }

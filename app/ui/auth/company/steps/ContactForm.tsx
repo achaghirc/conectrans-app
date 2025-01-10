@@ -1,229 +1,156 @@
-import { FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent } from 'react';
 import Grid from '@mui/material/Grid2';
-import { Country, Province, SignUpCompanyFormData, State } from '@/lib/definitions';
-import { getProvincesByCountryId } from '@/lib/data/geolocate';
-import useUtilsHook from '@/app/ui/shared/hooks/useUtils';
+import { SignUpCompanyFormData, State } from '@/lib/definitions';
+import { getCountries, getProvincesByCountryId } from '@/lib/data/geolocate';
+import { ControllerSelectFieldComponent, ControllerTextFieldComponent } from '@/app/ui/shared/custom/components/form/ControllersReactHForm';
+import { useQuery } from '@tanstack/react-query';
+import { Control, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 
 interface ContactoFormProps {
-  formData: SignUpCompanyFormData
-  countries: Country[] | undefined;
-  setFormData: (data: any) => void;
+  control: Control<Partial<SignUpCompanyFormData>>;
+  register: UseFormRegister<Partial<SignUpCompanyFormData>>;
+  watch: UseFormWatch<Partial<SignUpCompanyFormData>>;
+  setValue: UseFormSetValue<Partial<SignUpCompanyFormData>>;
   errors: State;
 }
 
-export default function ContactForm({ formData, errors, countries, setFormData }: ContactoFormProps) {
-  const { handleZodError, handleZodHelperText } = useUtilsHook();
-  const [provinces, setProvinces] = useState<Province[]>([]);
+export default function ContactForm({ 
+  control, watch, setValue, errors
+  }: ContactoFormProps) {
   
+  const {data: countries, isLoading: isCountriesLoading} = useQuery({
+    queryKey: ['countries'],
+    queryFn: () => getCountries(),
+    staleTime: 1000 * 60 * 60 * 24 * 7,
+  });
+  const countryId = watch('contactInfo.country');
+  const {data: provincesData, isLoading: isProvincesLoading} = useQuery({
+    queryKey: ['provinces', countryId],
+    queryFn: () => getProvincesByCountryId(Number(countryId)),
+    enabled: countryId !== undefined,
+  });
+  
+
   const handleInputChange = async (e: ChangeEvent<HTMLInputElement> | any) => {
     const { name, value } = e.target;
-    let contactInfo = formData.contactInfo;
     if(name === 'country') {
 			const country = countries && countries.find((country) => country.id === parseInt(value));
 			if (country && country.cod_iso2) {
-				const provinces: Province[] | undefined = await getProvincesByCountryId(country.id);
-				if (provinces == undefined || provinces.length == 0) {
-						contactInfo.province = '';
-						setProvinces([]);		
-				}else {
-						setProvinces(provinces);
-				}
+        setValue('contactInfo.country', country.id);
+        setValue('contactInfo.province', '');
 			}
 		}
-    setFormData({ contactInfo: { ...formData.contactInfo, [name]: value } });
   };
 
   return (
     <Grid container spacing={2}>
       <Grid size={{ xs: 12 }}>
-        <TextField
-          fullWidth
-          type='text'
+        <ControllerTextFieldComponent
+          control={control}
           label="Dirección"
-          name="streetAddress"
-          value={formData.contactInfo.streetAddress}
-          onChange={handleInputChange}
-          error={handleZodError(errors, 'streetAddress')}
-          helperText={handleZodHelperText(errors, 'streetAddress')}
-          required
+          name="contactInfo.streetAddress"
+          formState={errors}
+          placeholder="Dirección"
+
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6 }}>
-        <TextField
-          fullWidth
+        <ControllerTextFieldComponent
+          control={control}
           label="Código Postal"
-          name="zip"
-          value={formData.contactInfo.zip}
-          onChange={handleInputChange}
-          error={handleZodError(errors, 'zip')}
-          helperText={handleZodHelperText(errors, 'zip')}
-          required
+          name="contactInfo.zip"
+          formState={errors}
+          placeholder="Código Postal"
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6 }}>
-      {countries == undefined || countries.length == 0  ? (
-					<TextField
-						fullWidth
-						label="País"
-						name="country"
-						value={formData.contactInfo.country}
-						onChange={handleInputChange}
-						error={handleZodError(errors, 'country')}
-						helperText={handleZodHelperText(errors, 'country')}
-						required
-						/>
-				) : ( 
-					<FormControl fullWidth error={handleZodError(errors, 'country')} required>
-						<InputLabel>País</InputLabel>
-						<Select 
-							label="País"
-							id='country'
-							name='country'
-							value={formData.contactInfo.country.toString() ?? 64}
-							onChange={(e:SelectChangeEvent<string>) => handleInputChange(e)}
-							MenuProps={{
-								PaperProps: {
-									style: {
-										maxHeight: 300,
-										overflow: 'auto',
-									},
-								},
-								anchorOrigin: {
-									vertical: 'bottom',
-									horizontal: 'left',
-								},
-								transformOrigin: {
-									vertical: 'top',
-									horizontal: 'left',
-								},
-							}}	
-						>
-							{countries.map((country) => (
-								<MenuItem key={country.id} value={country.id ?? 64}>
-									{country.name_es}
-								</MenuItem>
-							))}
-						</Select>
-						<FormHelperText>{handleZodHelperText(errors, 'country')}</FormHelperText>
-					</FormControl>
-				)}
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6 }}>
-        {provinces.length == 0 ? (
-					<TextField
-						fullWidth
-						label="Provincia"
-						name="province"
-						value={formData.contactInfo.province}
-						onChange={handleInputChange}
-						error={handleZodError(errors, 'province')}
-						helperText={handleZodHelperText(errors, 'province')}
-						required
-					/>
-				) : (
-					<FormControl fullWidth error={handleZodError(errors, 'province')} required>
-						<InputLabel>Provincia</InputLabel>
-						<Select
-							label='Provincia'
-							name='province'
-							value={formData.contactInfo.province ?? ''}
-							onChange={(e:SelectChangeEvent<string>) => handleInputChange(e)}
-							MenuProps={{
-								PaperProps: {
-									style: {
-										maxHeight: 300,
-										overflow: 'auto',
-									}
-								},
-								anchorOrigin: {
-									vertical: 'bottom',
-									horizontal: 'left',
-								},
-								transformOrigin: {
-									vertical: 'top',
-									horizontal: 'left',
-								}
-							}}
-							>
-							{provinces.map((province) => (
-								<MenuItem key={province.id} value={province.cod_iso2}>
-									{province.name}
-								</MenuItem>
-							))}
-							</Select>
-					</FormControl>
-				)}
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <TextField
-            fullWidth
-            label="Localidad"
-            name="locality"
-            value={formData.contactInfo.locality}
-            onChange={handleInputChange}
-            error={handleZodError(errors, 'locality')}
-            helperText={handleZodHelperText(errors, 'locality')}
-            required
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <TextField
-            fullWidth
-            label="Teléfono Móvil"
-            name="mobilePhone"
-            value={formData.contactInfo.mobilePhone}
-            onChange={handleInputChange}
-            error={handleZodError(errors, 'mobilePhone')}
-            helperText={handleZodHelperText(errors, 'mobilePhone')}
-            required
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <TextField
-            fullWidth
-            label="Teléfono Fijo"
-            name="landlinePhone"
-            value={formData.contactInfo.landlinePhone}
-            onChange={handleInputChange}
-          />
-        </Grid>
-        <Grid size={{ xs: 12 }}>
-          <TextField
-            fullWidth
-            label="Sitio Web"
-            name="website"
-            value={formData.contactInfo.website}
-            onChange={handleInputChange}
-          />
-        </Grid>
-        <Grid size={{ xs: 12 }}>
-          <TextField
-            fullWidth
-            label="Correo Electrónico de Contacto"
-            name="contactEmail"
-            value={formData.contactInfo.contactEmail}
-            onChange={handleInputChange}
-            error={handleZodError(errors, 'contactEmail')}
-            helperText={handleZodHelperText(errors, 'contactEmail')}
-            required
-          />
-        </Grid>
-        <Grid size={{ xs: 12 }}>
-          <TextField
-            fullWidth
-            label="Descripción"
-            name="description"
-            value={formData.contactInfo.description}
-            onChange={handleInputChange}
-            multiline
-            rows={4}
-            maxRows={6}
-            error={handleZodError(errors, 'description')}
-            helperText={handleZodHelperText(errors, 'description')}
-            required
-          />
-        </Grid>
+        <ControllerSelectFieldComponent
+          control={control}
+          label="País"
+          name="contactInfo.country"
+          extraChangeFunction={handleInputChange}
+          options={countries?.map((country) => ({value: country.name_es ?? '', label: country.id.toString(), id: country.id.toString()}))}
+          isLoading={isCountriesLoading}
+          formState={errors}
+          placeholder='Selecciona un país'
+        />
       </Grid>
-    );
-  }
+      <Grid size={{ xs: 12, sm: 6 }}>
+        {isProvincesLoading || (provincesData && provincesData.length == 0) ? (
+          <ControllerTextFieldComponent
+            label="Provincia"
+            name="contactInfo.province"
+            control={control}
+            value={watch('contactInfo.province') ?? ''}
+            formState={errors}    
+          />
+				) : (
+					<ControllerSelectFieldComponent 
+            control={control}
+            label="Provincia"
+            name="contactInfo.province"
+            formState={errors}
+            isLoading={isProvincesLoading}
+            options={provincesData ? provincesData.map((province) => ({ value: province.name ?? '', label: province.name, id: province.name})) : []}
+            extraChangeFunction={handleInputChange}
+          />
+				)}
+      </Grid>
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <ControllerTextFieldComponent
+          control={control}
+          label="Localidad"
+          name="contactInfo.locality"
+          formState={errors}
+        />
+      </Grid>
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <ControllerTextFieldComponent 
+          placeholder="Teléfono Móvil"
+          label="Teléfono Móvil"
+          name="contactInfo.mobilePhone"
+          formState={errors}
+          control={control}
+        />
+      </Grid>
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <ControllerTextFieldComponent 
+          placeholder="Teléfono Fijo"
+          label="Teléfono Fijo"
+          name="contactInfo.landlinePhone"
+          formState={errors}
+          control={control}
+        />
+      </Grid>
+      <Grid size={{ xs: 12 }}>
+        <ControllerTextFieldComponent 
+          placeholder="www.ejemplo.com"
+          label="Sitio Web"
+          name="contactInfo.website"
+          formState={errors}
+          control={control}
+        />
+      </Grid>
+      <Grid size={{ xs: 12 }}>
+        <ControllerTextFieldComponent
+          label='Correo Electrónico de Contacto'
+          name='contactInfo.contactEmail'
+          control={control}
+          formState={errors}
+          placeholder='email@gmail.com'
+        />
+      </Grid>
+      <Grid size={{ xs: 12 }}>
+        <ControllerTextFieldComponent
+          label='Descripción'
+          name='contactInfo.description'
+          control={control}
+          formState={errors}
+          placeholder='Descripción de la empresa'
+          rows={4}
+          multiline
+        />
+      </Grid>
+    </Grid>
+  );
+}

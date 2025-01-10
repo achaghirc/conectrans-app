@@ -37,6 +37,7 @@ const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
   const licenceEncoders: EncoderType[] = encoders?.filter((encoder) =>  encoder.type === 'CARNET') ?? [];
   const adrLicencesEncoders: EncoderType[] = encoders?.filter((encoder) => encoder.type === 'CARNET_ADR') ?? [];
   const [driverLicence, setDriverLicence] = useState<DriverLicenceDTO>(data.licences.filter((driverLicence) => driverLicence.LicenceType.type === 'CARNET')[0]);
+  const [driverLicenceTypes, setDriverLicenceTypes] = useState<EncoderType[]>(data.licences.filter((driverLicence) => driverLicence.LicenceType.type === 'CARNET').map((el) => el.LicenceType));
   const [driverAdrLicenceTypes, setDriverAdrLicenceTypes] = useState<EncoderType[]>(data.licences.filter((driverLicence) => driverLicence.LicenceType.type === 'CARNET_ADR').map((el) => el.LicenceType)); 
   
   const update = async () => {
@@ -52,7 +53,8 @@ const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
     }
 
     const [driverProfileResult, licenceDataResult] = await Promise.allSettled(
-      [updateDriverProfile(newData), updateLicenceData])
+      [updateDriverProfile(newData), updateLicenceData]
+    );
     if (driverProfileResult.status === 'rejected' || licenceDataResult.status === 'rejected'){
       message = 'Error actualizando los datos';
       severity = 'error';
@@ -70,51 +72,47 @@ const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
   }
 
   const updateLicenceData = async () => {
-    const licencesDelete: DriverLicenceDTO[] = [];
-    const licences = [];
-    if (driverLicence) {
-      licences.push(driverLicence);
-    }
+
+    const driverLicences = data.licences;
+    const selectedLicences = [...driverLicenceTypes, ...driverAdrLicenceTypes];
+    const currentMap = new Map(driverLicences.map((licence:DriverLicenceDTO) => [licence.id, licence]));
+    const updatedMap = new Map(selectedLicences.map((licence:EncoderType) => [driverLicences.find((item) => item.LicenceType.code == licence.code)?.id, {
+      id: driverLicences.find((item) => item.LicenceType.code == licence.code)?.id ?? undefined,
+      driverProfileId: driverLicence.driverProfileId,
+      licenceTypeId: licence.id,
+      countryId: driverLicence.countryId,
+      LicenceType: licence,
+      Country: driverLicence.Country,
+    } as DriverLicenceDTO]));
     
-    const driverAdrLicences = data.licences.filter((driverLicence) => driverLicence.LicenceType.type === 'CARNET_ADR');
-    driverAdrLicences.forEach((el, index) => {
-      if(!driverAdrLicenceTypes.find((adr) => adr.id === el.LicenceType.id)) {
-        licencesDelete.push(el);
-      } else if (driverAdrLicenceTypes.find((adr) => adr.id === el.LicenceType.id)) {
-        licences.push(el);
-      }
-    });
-    driverAdrLicenceTypes.forEach((el, index) => {
-      if(!driverAdrLicences.find((adr) => adr.LicenceType.id === el.id)) {
-        const newLicence: DriverLicenceDTO = {
-          id: undefined,
-          driverProfileId: driverLicence.driverProfileId,
-          licenceTypeId: el.id,
-          countryId: driverLicence.countryId,
-          LicenceType: el,
-          Country: driverLicence.Country,
-        }
-        licences.push(newLicence);
-      }
-    })
-    await updateDriverLicences(licences, licencesDelete);
+    const licencesToDelete: DriverLicenceDTO[] = Array.from(currentMap.keys())
+      .filter(x => !updatedMap.has(x))
+      .map((id) => currentMap.get(id))
+      .filter((licence): licence is DriverLicenceDTO => licence !== undefined)
+    const licencesToAdd: DriverLicenceDTO[] = Array.from(updatedMap.keys())
+      .filter(x => !currentMap.has(x))
+      .map((id) => updatedMap.get(id))
+      .filter((licence): licence is DriverLicenceDTO => licence !== undefined);
+
+    await updateDriverLicences(licencesToAdd, licencesToDelete);
   }
 
 
   return (
-    <Grid container spacing={4} p={0}>
+    <Grid container spacing={3} p={0}>
       <Grid size={{ xs: 12, sm: 6}}>
         <FormControl fullWidth>
           <Autocomplete
             id="licenceType"
+            multiple
             options={licenceEncoders ?? []}
             getOptionLabel={(option) => option.name}
-            value={driverLicence.LicenceType ?? null}
+            value={driverLicenceTypes ?? []}
             isOptionEqualToValue={(option, value) => option.id === value.id}
             renderInput={(params) => (
               <TextField
               {...params}
-              sx={{width: {xs: '95%', sm: '80%'}}}
+              sx={{width: {xs: '95%', sm: '100%'}}}
               label="Carnet de conducir"
               name="carnet"
               />
@@ -123,7 +121,7 @@ const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
               if (!newValue) {
                 return;
               }
-              setDriverLicence({...driverLicence, LicenceType: newValue, licenceTypeId: newValue.id});
+              setDriverLicenceTypes(newValue);
               setChangedData(true);
             }}
             />
@@ -140,7 +138,7 @@ const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
             renderInput={(params) => (
               <TextField
               {...params}
-              sx={{width: {xs: '95%', sm: '90%'}}}
+              sx={{width: {xs: '95%', sm: '100%'}}}
               label="Carnet ADR"
               name="adrCode"
               />
@@ -180,7 +178,7 @@ const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
               renderInput={(params) => (
                 <TextField
                 {...params}
-                sx={{width: {xs: '95%', sm: '90%'}}}
+                sx={{width: {xs: '95%', sm: '100%'}}}
                 label="Carnet ADR"
                 name="adrCode"
                 />

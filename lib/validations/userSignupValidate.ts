@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getUserByEmail } from '../data/user';
 import { Sign } from 'crypto';
 import { SignUpCandidateFormData, State } from '../definitions';
+import { count } from 'console';
 
 const FormUserAuthSchema = z.object({
     email: z.string({
@@ -22,55 +23,59 @@ const FormUserSchema = z.object({
   name: z.string().min(1, 'El nombre es obligatorio'),
   lastname: z.string().min(1, 'Los apellidos son obligatorios'),
   cifnif: z.string().min(1, 'El CIF/NIF es obligatorio'),
-  phone: z.string().min(1, 'El teléfono es obligatorio'),
+  "contactInfo.phone": z.string().min(1, 'El teléfono es obligatorio'),
   birthdate: z.date({
     required_error: 'Campo obligatorio',
+    invalid_type_error: 'Campo obligatorio',
   }).max(date18YearsAgo, 'Recuerda que debes ser mayor de edad +18.'),
-  streetAddress: z.string({
+  "contactInfo.streetAddress": z.string({
     required_error: 'Campo obligatorio',
   }).min(1, 'La dirección es obligatoria'),
-  zip: z.string({
+  "contactInfo.zip": z.string({
     required_error: 'Campo obligatorio',
   }).min(1, 'El código postal es obligatorio'),
-  country: z.number({
+  "contactInfo.country": z.number({
     required_error: 'Campo obligatorio',
   }).min(1, 'El país es obligatorio'),
-  province: z.string({
+  "contactInfo.province": z.string({
     required_error: 'Campo obligatorio',
   }).min(1, 'La provincia es obligatoria'),
-  locality: z.string({
+  "contactInfo.locality": z.string({
     required_error: 'Campo obligatorio',
   }).min(1, 'La localidad es obligatoria'),
-  mobilePhone: z.string({
+  "contactInfo.mobilePhone": z.string({
     required_error: 'Campo obligatorio',
   }).min(1, 'Campo obligatorio'),
-  landlinePhone: z.string(),
+  "contactInfo.landlinePhone": z.string(),
 });
 
 const FormUserProfesionalSchema = z.object({
-    workRange: z.array(z.string({
-        required_error: 'Campo obligatorio',
-    }).min(1, 'Campo obligatorio')).min(1, 'Campo obligatorio'),
-    employeeType: z.array(z.string({
-        required_error: 'Campo obligatorio',
-    }).min(1, 'Campo obligatorio')),
-    licence: z.object({
-        // adrCode is an array of strings
-        adrCode: z.array(z.string({
-            required_error: 'Campo obligatorio',
-        }).min(1, 'Campo obligatorio')),
-        code: z.string({
-            required_error: 'Campo obligatorio',
-        }).min(1, 'Campo obligatorio'),
-        country: z.number({
-            required_error: 'Campo obligatorio',
-        }).min(1, 'Campo obligatorio'),
-    }),
+  workRange: z.array(z.string({
+    required_error: 'Campo obligatorio',
+  }).min(1, 'Campo obligatorio')).min(1, 'Debe seleccionar al menos un rango de trabajo'),
+  employeeType: z.array(z.string({
+    required_error: 'Campo obligatorio',
+  }).min(1, 'Campo obligatorio')).min(1, 'Debe seleccionar al menos un tipo de empleado'),
+  licences: z.array(
+    z.string({
+    required_error: 'Campo obligatorio',
+  }).min(1, 'Campo obligatorio'))
+  .nonempty('Debe seleccionar al menos una licencia'),
+  adrLicences: z.array(z.string()),
+  countryLicences: z.number({
+    required_error: 'Campo obligatorio',
+  }).min(1, 'Campo obligatorio'),
+  capCertificate: z.string({
+    required_error: 'Campo obligatorio',
+  }).min(1, 'Campo obligatorio'),
+  digitalTachograph: z.string({
+    required_error: 'Campo obligatorio',
+  }).min(1, 'Campo obligatorio'),
 });
 
 
 
-export async function validateUserAuthData(prevState: State, formData: SignUpCandidateFormData) {
+export async function validateUserAuthData(prevState: State, formData: Partial<SignUpCandidateFormData>) {
     const validateUserForm = await FormUserAuthSchema.safeParseAsync(formData);
     if (!validateUserForm.success) {
         return {
@@ -82,38 +87,42 @@ export async function validateUserAuthData(prevState: State, formData: SignUpCan
 
     return {};
 }
-export async function validateUserData(prevState: State, formData: SignUpCandidateFormData) {
-    const validateUserForm = await FormUserSchema.safeParseAsync({
-        name: formData.name,
-        lastname: formData.lastname,
-        cifnif: formData.cifnif,
-        phone: formData.contactInfo.mobilePhone,
-        birthdate: formData.birthdate,
-        streetAddress: formData.contactInfo.streetAddress,
-        zip: formData.contactInfo.zip,
-        country: formData.contactInfo.country,
-        province: formData.contactInfo.province,
-        locality: formData.contactInfo.locality,
-        mobilePhone: formData.contactInfo.mobilePhone,
-        landlinePhone: formData.contactInfo.landlinePhone,
-    });
-    if (!validateUserForm.success) {
-        return {
-            ...prevState,
-            errors: validateUserForm.error.errors,
-            message: 'Error en los campos del formulario',
-        };
-    }
-
-    return {};
+export async function validateUserData(prevState: State, formData: Partial<SignUpCandidateFormData>) {
+  const contactInfo = formData.contactInfo!;
+  const validateUserForm = await FormUserSchema.safeParseAsync({
+    name: formData.name,
+    lastname: formData.lastname,
+    cifnif: formData.cifnif,
+    birthdate: formData.birthdate,
+    "contactInfo.streetAddress": contactInfo.streetAddress,
+    "contactInfo.zip": contactInfo.zip,
+    "contactInfo.country": Number(contactInfo.country),
+    "contactInfo.province": contactInfo.province,
+    "contactInfo.locality": contactInfo.locality,
+    "contactInfo.mobilePhone": contactInfo.mobilePhone,
+    "contactInfo.landlinePhone": contactInfo.landlinePhone,
+    "contactInfo.phone": contactInfo.mobilePhone,
+  });
+  if (!validateUserForm.success) {
+    return {
+        ...prevState,
+        errors: validateUserForm.error.errors,
+        message: 'Error en los campos del formulario',
+    };
+  }
+  return {};
 }
 
-export async function validateProfesionalData(prevState: State, formData: SignUpCandidateFormData) {
+export async function validateProfesionalData(prevState: State, formData: Partial<SignUpCandidateFormData>) {
     console.log(formData);
     const validateUserForm = await FormUserProfesionalSchema.safeParseAsync({
         workRange: formData.workRange,
         employeeType: formData.employeeType,
-        licence: formData.licence,
+        licences: formData.licences,
+        adrLicences: formData.adrLicences,
+        countryLicences: formData.countryLicences,
+        digitalTachograph: formData.digitalTachograph,
+        capCertificate: formData.capCertificate,
     });
     if (!validateUserForm.success) {
         return {

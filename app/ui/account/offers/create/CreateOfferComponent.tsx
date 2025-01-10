@@ -1,10 +1,10 @@
-import React, { useLayoutEffect } from 'react'
+import React from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { OfferDTO } from '@prisma/client'
 import { State } from '@/lib/definitions'
 import { Session } from 'next-auth'
 import { SnackbarCustomProps } from '../../../shared/custom/components/snackbarCustom'
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material'
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, FormGroup, Switch, Typography } from '@mui/material'
 
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
@@ -17,6 +17,7 @@ import OfferRequirementsStep from '../steps/OfferRequirementsStep'
 import OfferLocationStep from '../steps/OfferLocationStep'
 import { validateOfferInformation, validateOfferLocation, validateOfferRequirements } from '@/lib/validations/offerValidate'
 import { createOffer } from '@/lib/data/offer'
+import useMediaQueryData from '@/app/ui/shared/hooks/useMediaQueryData'
 dayjs.locale('es')
 
 
@@ -37,20 +38,9 @@ const CreateOfferComponent:React.FC<CreateOfferComponentProps> = ({
 }) => {
   const [loading, setLoading] = React.useState<boolean>(false);
   const [activeStep, setActiveStep] = React.useState(0);
-  const [mediaQuery, setMediaQuery] = React.useState<boolean>(false);
-  useLayoutEffect(() => {
-    const mediaQuery = window.matchMedia('(min-width: 600px)');
-    setMediaQuery(mediaQuery.matches);
-    mediaQuery.addEventListener('change', (e) => {
-      setMediaQuery(e.matches);
-    });
-    return () => {
-      mediaQuery.removeEventListener('change', (e) => {
-        setMediaQuery(e.matches);
-      });
-    }
-  },[]);
-
+  
+  const { mediaQuery } = useMediaQueryData();
+  
   const { data: encoders, isLoading: isLoadingEncoders, isError: isErrorEncoders} = useQuery({ 
     queryKey: ['encoders'], 
     queryFn: () => getEncoderTypeData() 
@@ -62,6 +52,7 @@ const CreateOfferComponent:React.FC<CreateOfferComponentProps> = ({
   });
   const {
     control,
+    register,
     watch,
     setValue,
     handleSubmit,
@@ -93,9 +84,6 @@ const CreateOfferComponent:React.FC<CreateOfferComponentProps> = ({
         severity: 'error'
       })
     }
-
-
-    console.log('submit')
   }
 
   const getStepContent = (step: number) => {  
@@ -197,7 +185,23 @@ const CreateOfferComponent:React.FC<CreateOfferComponentProps> = ({
             justifyContent: 'center',
           }}
         >
-        <DialogTitle>Crear oferta</DialogTitle>
+        <DialogTitle sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', gap: 2}}>
+          Crear oferta
+          <Box>
+            <FormGroup sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', gap: 1}}>
+              <FormControlLabel 
+                control={<Switch {...register('isFeatured')}/>} 
+                label="Detacada" 
+                labelPlacement='start' 
+              />
+              <FormControlLabel 
+                control={<Switch {...register('isAnonymous')} />} 
+                label="Anónima" 
+                labelPlacement='start' 
+              />
+            </FormGroup>
+          </Box>
+        </DialogTitle>
         <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: '80%'}}>
           <DialogContentText fontSize={12}>
             Emplea este modal para crear una nueva oferta. Tenga en cuenta que, dependiendo de su plan de suscripción, es posible que no pueda editar la oferta una vez creada.

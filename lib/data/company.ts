@@ -1,6 +1,6 @@
 'use server';
 import prisma from "@/app/lib/prisma/prisma";
-import { Asset, LocationDTO } from "@prisma/client";
+import { Asset, LocationDTO, Prisma } from "@prisma/client";
 import { CompanyDTO} from "../definitions";
 import { createLocation, getLocationById, updateLocationByCompany } from "./location";
 import { Location } from "@prisma/client";
@@ -40,7 +40,7 @@ export async function getCompanyByUserId(userId: string): Promise<CompanyDTO | u
         }
         const location : LocationDTO | undefined = await getLocationById(company.locationId!);
         const companyDTO: CompanyDTO = {...company, 
-                assetUrl: company.Asset!.url,
+                assetUrl: company.Asset != null? company.Asset.url : 'https://res.cloudinary.com/dgmgqhoui/image/upload/w_1000,c_fill,ar_1:1,g_auto,r_max,bo_5px_solid_red,b_rgb:262c35/v1734182399/default-logo-company_i11ozb.png',
                 contactPersonName: company.ContactPerson!.name,
                 contactPersonLastname: company.ContactPerson!.lastname,
                 contactPersonPhone: company.ContactPerson!.phone,
@@ -64,7 +64,6 @@ export async function getCompanyByUserId(userId: string): Promise<CompanyDTO | u
         throw new Error(`Error getting company ${error}`);
     }
 }
-
 export async function getCompanyById(companyId: number): Promise<CompanyDTO | undefined> {
   try{
     const company = await prisma.company.findUnique({
@@ -87,7 +86,7 @@ export async function getCompanyById(companyId: number): Promise<CompanyDTO | un
     const location : LocationDTO | undefined = await getLocationById(company.locationId!);
     return {
       ...company,
-      assetUrl: company.Asset!.url,
+      assetUrl: company.Asset != null? company.Asset.url : 'https://res.cloudinary.com/dgmgqhoui/image/upload/w_1000,c_fill,ar_1:1,g_auto,r_max,bo_5px_solid_red,b_rgb:262c35/v1734182399/default-logo-company_i11ozb.png',
       locationStreet: company.Location!.street,
       locationNumber: company.Location!.number,
       locationCity: company.Location!.city,
@@ -103,9 +102,7 @@ export async function getCompanyById(companyId: number): Promise<CompanyDTO | un
     throw new Error(`Error getting company ${error}`);
   }
 }
-
 export async function getCompanySlimDTOById(companyId: number): Promise<Partial<CompanyDTO> | undefined> {
-
   try{
     const company = await prisma.company.findUnique({
       where: {
@@ -121,6 +118,13 @@ export async function getCompanySlimDTOById(companyId: number): Promise<Partial<
     if (!company) {
       return undefined;
     }
+    if (company.assetId === null) {
+      return {
+        name: company.name,
+        socialName: company.socialName,
+        description: company.description,
+      }
+    }
     const asset: Asset | null = await getAssetById(company.assetId!);
     return {
       name: company.name,
@@ -131,10 +135,7 @@ export async function getCompanySlimDTOById(companyId: number): Promise<Partial<
   } catch (error) { 
     throw new Error(`Error getting company ${error}`);
   }
-
 }
-
-
 export async function updateCompanyData(company: CompanyDTO): Promise<CompanyDTO> {
   try {
     const activity = await getActitivieByCode(company.activityCode!);
@@ -242,4 +243,24 @@ export async function updateCompanyData(company: CompanyDTO): Promise<CompanyDTO
 
 
 
+}
+export async function getCompanySlimByUserId(userId: string): Promise<Partial<CompanyDTO> | undefined> {
+  try {
+    const companies = await prisma.$queryRaw<Partial<CompanyDTO>[]>(Prisma.sql`
+      SELECT 
+        "company"."name" as "name", 
+        "company"."socialName" as "socialName", 
+        "company"."description" as "description", 
+        "as"."url" as "assetUrl"
+      FROM "Company" as "company"
+      INNER JOIN "Asset" as "as" ON "as"."id" = "company"."assetId"
+      WHERE "company"."userId" = ${userId}
+    `);
+    if (companies.length === 0) {
+      return undefined;
+    }
+   return companies[0];
+  } catch (error) {
+    throw new Error(`Error getting company ${error}`);
+  }
 }

@@ -255,9 +255,7 @@ model EncoderType {
   DriverLicence               DriverLicence[]
   DriverWorkRangePreferences  DriverWorkRangePreferences[]  @relation("WorkScopeRelation")
   Experience                  Experience[]
-  OfferEmploymentPreferences  OfferEmploymentPreferences[]  @relation("EmploymentTypeRelation")
-  OfferLicencePreferences     OfferLicencePreferences[]     @relation("LicenceTypeRelation")
-  OfferWorkRangePreferences   OfferWorkRangePreferences[]   @relation("WorkScopeRelation")
+  OfferPreferences            OfferPreferences[]            @relation("OfferPreferencesTypeRelation")
   PlanPreferences             PlanPreferences[]             @relation("preferencePlanEncType")
 }
 
@@ -287,46 +285,26 @@ model Offer {
   digitalTachograph          Boolean                      @default(false)
   workDay                    String                       @db.VarChar
   isAnonymous                Boolean                      @default(false)
+  isFeatured                 Boolean                      @default(false)
   ApplicationOffer           ApplicationOffer[]
   Location                   Location                     @relation(fields: [locationId], references: [id])
   Subscription               Subscription                 @relation(fields: [subscriptionId], references: [id])
   User                       User                         @relation(fields: [userId], references: [id])
-  OfferEmploymentPreferences OfferEmploymentPreferences[]
-  OfferLicencePreferences    OfferLicencePreferences[]
-  OfferWorkRangePreferences  OfferWorkRangePreferences[]
+  OfferPreferences OfferPreferences[]
 
   @@index([userId], map: "offer_userid_idx")
   @@index([userId, subscriptionId], map: "offer_userid_subscriptionid_idx")
 }
-
-model OfferLicencePreferences {
-  id            Int         @id @default(autoincrement())
-  offerId       Int
-  licenceTypeId Int
-  EncoderType   EncoderType @relation("LicenceTypeRelation", fields: [licenceTypeId], references: [id])
-  Offer         Offer       @relation(fields: [offerId], references: [id])
-
-  @@index([offerId], map: "offer_licence_offerid_idx")
-}
-
-model OfferEmploymentPreferences {
+model OfferPreferences {
   id               Int         @id @default(autoincrement())
   offerId          Int
-  employmentTypeId Int
-  EncoderType      EncoderType @relation("EmploymentTypeRelation", fields: [employmentTypeId], references: [id])
+  encoderTypeId    Int
+  EncoderType      EncoderType @relation("OfferPreferencesTypeRelation", fields: [encoderTypeId], references: [id])
+  type             String
   Offer            Offer       @relation(fields: [offerId], references: [id])
 
-  @@index([offerId], map: "offer_employment_offerid_idx")
-}
-
-model OfferWorkRangePreferences {
-  id          Int         @id @default(autoincrement())
-  offerId     Int
-  workScopeId Int
-  Offer       Offer       @relation(fields: [offerId], references: [id])
-  EncoderType EncoderType @relation("WorkScopeRelation", fields: [workScopeId], references: [id])
-
-  @@index([offerId], map: "offer_workrange_offerid_idx")
+  @@index([offerId], map: "offer_preferences_offerid_idx")
+  @@index([type], map: "offer_preferences_type_code")
 }
 
 model ApplicationOffer {

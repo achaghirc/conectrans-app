@@ -17,13 +17,13 @@ const ButtonAddCustom: React.FC<ButtonSpeedDialCustomProps> = (
 ) => {
   return (
     <Box sx={{ 
-        height: '100vh', 
-        transform: 'translateZ(0px)', 
-        flexGrow: 1,
-        position: 'fixed', 
-        bottom: 16, // Espaciado desde la parte inferior de la pantalla
-        right: 16, // Espaciado desde el borde derecho de la pantalla
-        zIndex: 1000, // Capa de visualización  
+      height: '100vh', 
+      transform: 'transalteX(-50px)', 
+      flexGrow: 1,
+      position: 'fixed', 
+      bottom: 40, // Espaciado desde la parte inferior de la pantalla
+      right: {sx: '35%', md: '40%'}, // Centrado horizontalmente
+      zIndex: 1000, // Capa de visualización  
       }}>
       <SpeedDial
         ariaLabel="SpeedDial basic example"

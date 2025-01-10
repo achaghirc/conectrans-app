@@ -2,16 +2,21 @@
 import { getOfferById } from '@/lib/data/offer';
 import Grid  from '@mui/material/Grid2';
 import { OfferDTO } from '@prisma/client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Session } from 'next-auth'
 import { notFound } from 'next/navigation';
-import React from 'react'
+import React, { useEffect } from 'react'
 import DetailsOfferResumeComponent from './DetailsOfferResumeComponent';
 import { Box, Card, CardMedia, Paper, Typography } from '@mui/material';
 import DetailsOfferInformationComponent from './DetailsOfferInformationComponent';
 import DetailsOfferRequirementsComponent from './DetailsOfferRequirementsComponent';
 import CountdownComponent from '@/app/ui/shared/custom/components/countdownComponent';
 import MapComponent from '@/app/ui/maps/MapComponent';
+import DetailsOfferSkeleton from '@/app/ui/shared/custom/components/skeleton/DetailsOfferSkeleton';
+import EditOfferComponent from '../edit/EditOfferComponent';
+import SnackbarCustom, { SnackbarCustomProps } from '@/app/ui/shared/custom/components/snackbarCustom';
+import UserApplyOffer from '../apply/UserApplyOffer';
+import { existsApplicationOfferByPerson } from '@/lib/data/applicationOffers';
 
 const DEFAULT_CENTER = { lat: 38.956600744288735, lng: -5.878132026448462 };
 const DEFAULT_ZOOM = 11; // You can change this according to your needs, or you can also recive this as a prop to make map component more reusable.
@@ -29,27 +34,75 @@ type DetailsOfferComponentProps = {
 const DetailsOfferComponent: React.FC<DetailsOfferComponentProps> = (
   { session, offerId }
 ) => {
-  const {data: offer, isLoading, isError} = useQuery({
-    queryKey: ['offer', offerId],
-    queryFn: (): Promise<OfferDTO | null> => getOfferById(parseInt(offerId)),
-    enabled: !!session && !!offerId,
+  const [open, setOpen] = React.useState<boolean>(false);
+  const [openApply, setOpenapply] = React.useState<boolean>(false);
+  const queryClient = useQueryClient();
+  const [snackbarProps, setSnackbarProps] = React.useState<SnackbarCustomProps>({
+    open: false,
+    message: '',
+    severity: 'success',
+    handleClose: () => handleCloseSnackbar()
   });
+
+  const handleCloseSnackbar = () => {
+    setSnackbarProps({...snackbarProps, open: false})
+  }
+  const handleSnackbarSons = (snackbarProps: Partial<SnackbarCustomProps>) => {
+    const {open, message, severity} = snackbarProps;
+    setSnackbarProps({
+      ...snackbarProps,
+      open: open ?? false,
+      message: message ?? '',
+      severity: severity ?? 'success',
+      handleClose: handleCloseSnackbar
+    })
+
+  }
+
+  const handleUserApply = () => {
+    setOpenapply(true);
+  }
+
+  const handleEditOffer = () => {
+    setOpen(true);
+  }
+  
+  const {data: offerSelected, isLoading, isError} = useQuery({
+    queryKey: ['offer', Number(offerId)],
+    queryFn: () => getOfferById(Number(offerId)),
+  });
+
+  useQuery({
+    queryKey: ['existsApplicationOfferByPerson', session?.user.personId,  Number(offerId)],
+    queryFn: (): Promise<Boolean | undefined > => existsApplicationOfferByPerson(session?.user.personId ?? 0, Number(offerId)),
+    staleTime: 1000 * 60 * 60 * 24 * 7,
+    enabled: session?.user.personId !== undefined,
+    notifyOnChangeProps: [],
+  });
+  const handleEditSuccess = (offer: OfferDTO) => { 
+    // setOfferSelected(offer);
+  }
 
   if (isError) {
     notFound();
   }
   if (isLoading) {
-    return <div>Loading...</div>
+    return <DetailsOfferSkeleton />
+  }
+  const location = {
+    lat: offerSelected?.location.latitude ?? DEFAULT_CENTER.lat,
+    lng: offerSelected?.location.longitude ?? DEFAULT_CENTER.lng,
   }
   return (
-    <div>
+    <Box component={'div'}>
       <Box component={'div'} sx={{ display: {xs: 'none', md: 'flex'}, height: 30, width: '100%' }}></Box>
-      {offer && (
+      {offerSelected && (
+        <>
         <Grid container spacing={2}>
-          <Grid size={{xs: 12, md: 8}}>
-            <DetailsOfferResumeComponent offer={offer} />
-            <Box sx={{ display: 'flex', flexDirection: {xs: 'column', md: 'row'}, justifyContent: 'space-between'}}> 
-              <DetailsOfferRequirementsComponent offer={offer} />
+          <Grid size={{xs: 12,sm: 12, md: 12, lg: 8}}>
+            <DetailsOfferResumeComponent offer={offerSelected} />
+            <Box sx={{ display: 'flex', flexDirection: {xs: 'column', sm: 'column', md: 'row'}, justifyContent: 'space-between'}}> 
+              <DetailsOfferRequirementsComponent offer={offerSelected} />
               <Paper
                 elevation={2}
                 sx={{
@@ -64,48 +117,68 @@ const DetailsOfferComponent: React.FC<DetailsOfferComponentProps> = (
                   width: { md: '100%' },
                 }}
               >
-                <MapComponent height='300px' width='100%' center={DEFAULT_CENTER} zoom={DEFAULT_ZOOM} locations={LOCATIONS} />
+                <MapComponent height='300px' width='100%' center={location} zoom={DEFAULT_ZOOM} locations={[location]} />
               </Paper>
             </Box>
             
             <CountdownComponent 
               title='La oferta finaliza en'
-              endDate={offer.endDate} />
-    
+              endDate={offerSelected.endDate} />
+
           </Grid>
-          <Grid size={{xs: 12, md: 4}}>
+          <Grid size={{xs: 12, sm: 12, md: 12, lg: 4}}>
             <Grid container spacing={2} direction={'column'}>
               <Grid size={{xs: 12}}>
-                <DetailsOfferInformationComponent session={session} offer={offer} />
+                <DetailsOfferInformationComponent session={session} offer={offerSelected} handleEditOffer={handleEditOffer} handleUserApply={handleUserApply} />
               </Grid>
               <Grid size={{xs: 12}}>
                 <Box component={'div'} 
                   sx={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    gap: 2,
-                    m: 1
+                    display: 'flex',
+                    flex: 1, // Allows this component to expand
+                    alignItems: 'center', // Centers the content vertically
+                    justifyContent: 'center', // Centers the content horizontally
+                    overflow: 'hidden', // Prevents overflow
                   }}
                   >
-                  <Card sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 0, borderRadius: 5, boxShadow: 1}}>
-                  <CardMedia
-                    component="img"
-                    height="100%"
-                    sx={{
-                      objectFit: 'fill',
-                      borderRadius: 5,
-                    }}
-                    image="/IGM_Banner2.jpeg"
-                    alt={offer.company.name}
-                  />
+                  <Card sx={{ display: 'flex', borderRadius: 5, boxShadow: 1}}>
+                    <CardMedia
+                      component="img"
+                      sx={{
+                        width: '100%', // Make it responsive
+                        height: 'auto',
+                        minWidth: '100%', // Preserve aspect ratio
+                        maxHeight: '100%', // Avoid overflow in height
+                        objectFit: 'fill', // Prevent image from being cropped
+                        borderRadius: 5,
+                      }}
+                      image="/IGM_Banner2.jpeg"
+                      alt={offerSelected.company.name}
+                    />
                   </Card>
                 </Box>
               </Grid>
             </Grid>
           </Grid>
         </Grid>
+        <EditOfferComponent 
+          offer={offerSelected!} 
+          open={open}
+          setOpen={setOpen}
+          setSnackbarProps={handleSnackbarSons}
+          onSuccess={(offer: OfferDTO) => handleEditSuccess(offer)}
+        />
+        <UserApplyOffer 
+          session={session}
+          offerId={offerSelected.id}
+          open={openApply}
+          setOpen={setOpenapply}
+          setSnackbarProps={handleSnackbarSons}
+        />
+        </>
       )}
-    </div>
+      <SnackbarCustom {...snackbarProps} />
+    </Box>
   )
 }
 

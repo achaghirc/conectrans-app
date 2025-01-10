@@ -5,6 +5,7 @@ import { Lato } from 'next/font/google';
 import { ThemeProvider } from '@mui/material';
 import theme from './theme';
 import { ReactQueryClientProvider } from './react-query-provider';
+import NetworkConnectionCheck from './network-connection-check';
 
 const latoFont = Lato({
   weight: ['300', '400', '700', '900'],
@@ -35,6 +36,7 @@ export default function RootLayout({
               {children}
             </ThemeProvider>
           </AppRouterCacheProvider>
+          <NetworkConnectionCheck />
         </body>
       </html>
     </ReactQueryClientProvider>

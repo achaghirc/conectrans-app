@@ -1,6 +1,6 @@
 import { EducationDTO } from '@/lib/definitions';
 import { EditOutlined, RemoveCircleOutline } from '@mui/icons-material';
-import { Box, IconButton, Paper, SxProps, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
+import { Box, IconButton, Paper, SxProps, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import React from 'react'
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';

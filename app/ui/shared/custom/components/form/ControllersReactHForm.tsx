@@ -1,23 +1,35 @@
 import { State } from '@/lib/definitions';
-import { Box, Checkbox, CircularProgress, FormControl, FormHelperText, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
+import { Box, Checkbox, CircularProgress, FormControl, FormHelperText, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, SxProps, TextField, Theme } from '@mui/material';
 import React from 'react'
 import { Controller } from 'react-hook-form';
 import useUtilsHook from '../../../hooks/useUtils';
 import { MenuProperties } from '../../../styles/styles';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs, { Dayjs } from 'dayjs';
+import 'dayjs/locale/es';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
+dayjs.locale('es');
 
 type ControllerTextFieldComponentProps = {
   control: any;
-  value: string;
+  value?: string;
   label: string;
   name: string;
   formState?: State;
   placeholder?: string;
   multiline?: boolean;
   rows?: number;
+  sx?: SxProps<Theme> | undefined;
+  type?: 'text' | 'password' | 'email' | 'number';
+  inputAdornment?: React.ReactNode;
+  onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 export const ControllerTextFieldComponent: React.FC<ControllerTextFieldComponentProps> = (
-  {control, value, name, label, formState, placeholder, multiline, rows}
+  {control, value, name, label, formState, placeholder, multiline, rows, sx, type, inputAdornment, onBlur}
 ) => {
   const {handleZodError, handleZodHelperText} = useUtilsHook();
   return (
@@ -30,10 +42,17 @@ export const ControllerTextFieldComponent: React.FC<ControllerTextFieldComponent
           {...field}
           fullWidth
           label={label}
+          type={type ?? 'text'}
           multiline={multiline ?? false}
           rows={rows ?? 1}
           onChange={(event) => {
             field.onChange(event);
+          }}
+          slotProps={{
+            input: {
+              sx: sx,
+              endAdornment: inputAdornment
+            },
           }}
           error={formState?.errors && handleZodError(formState, name)}
           helperText={formState?.errors && handleZodHelperText(formState, name)}
@@ -51,18 +70,19 @@ export type ControllerSelectFieldOptions = {
 }
 type ControllerSelectFieldComponentProps = {
   control: any;
-  value: string[] | string;
+  value?: string[] | string;
   label: string;
   name: string;
   formState?: State;
   placeholder?: string;
   options?: ControllerSelectFieldOptions[];
   isLoading?: boolean;
+  sx?: SxProps<Theme> | undefined;
   extraChangeFunction?: (value: any) => void;
 }
 const initialState = {message: '', errors: []};
 export const ControllerSelectMultiFieldComponent: React.FC<ControllerSelectFieldComponentProps> = (
-  {control, value, name, label, formState, placeholder, options}
+  {control, value, name, label, formState, placeholder, sx, options}
 ) => {
   const {handleZodError, handleZodHelperText} = useUtilsHook();
   return (
@@ -78,7 +98,9 @@ export const ControllerSelectMultiFieldComponent: React.FC<ControllerSelectField
           id={name}
           multiple
           name={name}
+          placeholder={placeholder}
           value={field.value || []}
+          sx={sx}
           renderValue={(selected) => (
             <>
               <Box sx={{ display: {xs: 'none', md: 'block'}, 
@@ -86,7 +108,7 @@ export const ControllerSelectMultiFieldComponent: React.FC<ControllerSelectField
                 whiteSpace: 'nowrap', 
                 overflow: 'hidden', 
                 textOverflow: 'ellipsis' }}>
-                {selected.join(', ')}
+                {selected && selected.join(', ')}
               </Box>
               <Box sx={{ 
                 display: { xs: 'block', md: 'none' }, 
@@ -111,7 +133,7 @@ export const ControllerSelectMultiFieldComponent: React.FC<ControllerSelectField
           {options && options.map((option) => (
             <MenuItem key={option.id} value={option.label}>
               <Checkbox checked={option.id ? field.value.includes(option.label) : false} />
-              <ListItemText primary={option.label} />
+              <ListItemText primary={option.value} />
             </MenuItem>
           ))}
         </Select>
@@ -123,7 +145,7 @@ export const ControllerSelectMultiFieldComponent: React.FC<ControllerSelectField
 }
 
 export const ControllerSelectFieldComponent: React.FC<ControllerSelectFieldComponentProps> = (
-  {control, label, value,name, placeholder, formState, options, isLoading, extraChangeFunction}
+  {control, label, value,name, placeholder, formState, options, isLoading, sx, extraChangeFunction}
 ) => {
   const { handleZodError, handleZodHelperText } = useUtilsHook();
   return (
@@ -149,13 +171,14 @@ export const ControllerSelectFieldComponent: React.FC<ControllerSelectFieldCompo
               MenuProps: MenuProperties  
             },
             input:{
-              endAdornment: isLoading && <CircularProgress size={20} />
+              endAdornment: isLoading && <CircularProgress size={20} />,
+              sx: sx
             }
           }}
         > 
           {options && options.map((option) => (
-            <MenuItem key={option.id} value={option.id}>
-              {option.label}
+            <MenuItem key={option.id} value={option.label}>
+              {option.value}
             </MenuItem>
           ))}
         </TextField>
@@ -163,6 +186,7 @@ export const ControllerSelectFieldComponent: React.FC<ControllerSelectFieldCompo
     />
   )
 }
+
 
 export const ControllerAutcompleteFieldComponent: React.FC<ControllerSelectFieldComponentProps> = (
   {control, label, value,name, placeholder, formState, options}
@@ -192,6 +216,86 @@ export const ControllerAutcompleteFieldComponent: React.FC<ControllerSelectField
             </MenuItem>
           ))}
         </TextField>
+      )}
+    />
+  )
+}
+
+
+type ControllerDateFieldComponentProps = {
+  control: any;
+  value?: Dayjs;
+  label: string;
+  name: string;
+  formState?: State;
+  placeholder?: string;
+  sx?: SxProps<Theme> | undefined;
+}
+
+export const ControllerDateTimePickerComponent: React.FC<ControllerDateFieldComponentProps> = (
+  {control, value, name, label, formState, placeholder, sx}
+) => {
+  const { handleZodError, handleZodHelperText } = useUtilsHook();
+  return (
+    <Controller
+      name={name}
+      control={control}
+      defaultValue={value ?? ''}
+      render={({ field }) => (
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+          <DemoContainer components={['DatePicker']}>
+            <DatePicker
+                format='DD-MM-YYYY'
+                label={label}
+                name={name ?? ''}
+                value={field.value}
+                onChange={(newValue) => field.onChange(newValue)}
+                slotProps={{
+                  textField: {
+                    error: formState?.errors && handleZodError(formState, name),
+                    helperText: formState?.errors && handleZodHelperText(formState, name),
+                    required: true,
+                    placeholder: placeholder
+                  }
+                }}
+                sx={sx}
+            />
+          </DemoContainer>
+        </LocalizationProvider>
+      )}
+    />
+  )
+}
+export const ControllerDateTimeMobilePickerComponent: React.FC<ControllerDateFieldComponentProps> = (
+  {control, value, name, label, formState, placeholder, sx}
+) => {
+  const { handleZodError, handleZodHelperText } = useUtilsHook();
+  return (
+    <Controller
+      name={name}
+      control={control}
+      defaultValue={value ?? ''}
+      render={({ field }) => (
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+          <DemoContainer components={['MobileDatePicker']}>
+            <MobileDatePicker
+              label={label}
+              name={name ?? ''}
+              format='DD-MM-YYYY'
+              value={field.value}
+              onChange={(newValue) => field.onChange(newValue)}
+              slotProps={{
+                textField: {
+                  error: handleZodError(formState ?? {message: '', errors: []}, name ?? ''),
+                  helperText: handleZodHelperText(formState ?? {message: '', errors: []}, name ?? ''),
+                  required: true,
+                  placeholder: placeholder
+                }
+              }}
+              sx={sx}
+            />
+          </DemoContainer>
+        </LocalizationProvider>
       )}
     />
   )

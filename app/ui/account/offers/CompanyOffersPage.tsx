@@ -16,7 +16,7 @@ import { useRouter } from 'next/navigation';
 import OffersListSkeleton from '../../shared/custom/components/skeleton/OffersListSkeletonComponent';
 
 type CompanyOffersPageProps = {
-  session: Session | null;
+  session: Session;
 }
 
 const CompanyOffersPage: React.FC<CompanyOffersPageProps> = (
@@ -113,11 +113,13 @@ const CompanyOffersPage: React.FC<CompanyOffersPageProps> = (
           <OffersListComponent session={session} offers={filterHistoricalOffers(offers)} />
         )}
       </CustomTabPanel>
-      <ButtonAddCustom actions={[{
-        name: 'Crear oferta',
-        icon: <AddCircleOutline />,
-        onClick: () => setOpenCreateOffer(true)
-      }]}/>
+      <ButtonAddCustom 
+        actions={[{
+          name: 'Crear oferta',
+          icon: <AddCircleOutline />,
+          onClick: () => setOpenCreateOffer(true)
+        }]}
+      />
       <CreateOfferComponent 
         session={session} 
         open={openCreateOffer} 

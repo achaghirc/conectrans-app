@@ -57,7 +57,7 @@ const FooterButton = styled(Button)(({ theme }) => ({
 
 export default function Footer() {
   return (
-    <FooterContainer>
+    <FooterContainer sx={{ zIndex: 1000}}>
       <Grid container spacing={2} justifyContent="space-between">
         {/* Logo en la esquina izquierda */}
         <Grid size={{xs:12, md:4}}>

@@ -1,4 +1,4 @@
-import { ControllerSelectMultiFieldComponent, ControllerTextFieldComponent } from "@/app/ui/shared/custom/components/form/ControllersReactHForm";
+import { ControllerSelectFieldComponent, ControllerSelectFieldOptions, ControllerSelectMultiFieldComponent, ControllerTextFieldComponent } from "@/app/ui/shared/custom/components/form/ControllersReactHForm";
 import { State } from "@/lib/definitions";
 import { EncoderType, Offer, OfferDTO } from "@prisma/client";
 import React, { useEffect, useLayoutEffect } from "react";
@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 import { Box, Typography } from "@mui/material";
 import useUtilsHook from "@/app/ui/shared/hooks/useUtils";
 import { MAX_WORDS_DESCRIPTION_500 } from "@/lib/constants";
+import useMediaQueryData from "@/app/ui/shared/hooks/useMediaQueryData";
 
 type OfferInformationStepProps = {
   control: Control<Partial<Offer>>;
@@ -25,20 +26,7 @@ const OfferInformationStep: React.FC<OfferInformationStepProps> = (
   { control, formState, encoders, offer, watch, setValue}
 ) => {
   const { handleZodError, handleZodHelperText, countWords } = useUtilsHook();
-  const [mediaQuery, setMediaQuery] = React.useState<boolean>(false);
-  useLayoutEffect(() => {
-    const mediaQuery = window.matchMedia('(min-width: 600px)');
-    setMediaQuery(mediaQuery.matches);
-    mediaQuery.addEventListener('change', (e) => {
-      setMediaQuery(e.matches);
-    });
-    return () => {
-      mediaQuery.removeEventListener('change', (e) => {
-        setMediaQuery(e.matches);
-      });
-    }
-  },[]);
-
+  const { mediaQuery } = useMediaQueryData();
   useEffect(() => {
     if(watch('startDate') === undefined ){
       if(offer?.startDate) 
@@ -56,6 +44,16 @@ const OfferInformationStep: React.FC<OfferInformationStepProps> = (
 
   return (
     <Grid container spacing={2}>
+      {/* //hidden id */}
+      <Grid size={{ xs: 12, md: 6 }} style={{ display: 'none' }}>
+        <ControllerTextFieldComponent
+          label="ID"
+          name="id"
+          control={control}
+          value={offer?.id.toString() ?? '0'}
+          formState={formState}
+        />
+      </Grid>
       <Grid size={{ xs: 12, md: 6 }}>
         <ControllerTextFieldComponent
           label="Título"
@@ -133,23 +131,32 @@ const OfferInformationStep: React.FC<OfferInformationStepProps> = (
           />
       </Grid>
       <Grid size={{ xs: 12, md: 6 }}>
-        <ControllerTextFieldComponent
+        <ControllerSelectFieldComponent
           label="Tipo de Contrato"
           name="contractType"
           control={control}
           value={offer?.contractType ?? ''}
           formState={formState}
           placeholder="Indefinido, Temporal, Prácticas..."
+          options={[
+            {value: 'Indefinido', label: 'INDEFINIDO', id: 'INDEFINIDO'} as ControllerSelectFieldOptions,
+            {value: 'Temporal', label: 'TEMPORAL', id: 'TEMPORAL'} as ControllerSelectFieldOptions,
+            {value: 'Prácticas', label: 'PRACTICAS', id: 'PRACTICAS'} as ControllerSelectFieldOptions,
+          ]}
         />
       </Grid>
       <Grid size={{ xs: 12, md: 6 }}>
-        <ControllerTextFieldComponent
+        <ControllerSelectFieldComponent
           label="Jornada"
           name="workDay"
           control={control}
           value={offer?.workDay ?? ''}
           formState={formState}
           placeholder="Completa, Parcial."
+          options={[
+            {value: 'Completa', label: 'COMPLETA', id: 'COMPLETA'} as ControllerSelectFieldOptions,
+            {value: 'Parcial', label: 'PARCIAL', id: 'PARCIAL'} as ControllerSelectFieldOptions,
+          ]}
         />
       </Grid>
       <Grid size={{ xs: 12 }}>

@@ -59,6 +59,7 @@ const DetailsOfferResumeComponent: React.FC<OfferInformationComponentProps> = (
             alt={offer.company.name}
             width={!mediaQuery ? 50 : 100}
             height={!mediaQuery ? 50 : 100}
+            style={{ borderRadius: '50%' }}
           />
         </Grid>
       </Grid>

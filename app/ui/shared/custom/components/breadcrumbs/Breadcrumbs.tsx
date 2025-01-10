@@ -18,9 +18,9 @@ export default function BreadcrumbsComponent(
 ) {
   return (
     <div role="presentation" aria-label="breadcrumb" style={{marginLeft: 10}}>
-      <Breadcrumbs aria-label="breadcrumb">
+      <Breadcrumbs aria-label="breadcrumb" sx={{fontSize: '1.2rem', textTransform: 'uppercase'}} separator="›">
         {breadcrumbs.map((breadcrumb: BreadcrumbsProps, index: number) => (
-          <Link underline="hover" color="inherit" href={breadcrumb.href} key={index} aria-current={breadcrumb.active ? 'page' : undefined}>
+          <Link underline="hover" color={breadcrumb.active ? "textPrimary" : "textDisabled"} href={breadcrumb.href} key={index} aria-current={breadcrumb.active ? 'page' : undefined}>
             {breadcrumb.label}
           </Link>
         ))}
