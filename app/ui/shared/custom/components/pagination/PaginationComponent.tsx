@@ -6,7 +6,7 @@ import React from 'react'
 
 type PaginationComponentProps = {
   count: number;
-  totalPages: number;
+  currentPage: number;
   rowsPerPage: number;
   rowsPerPageOptions: number[];
   handleRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -14,18 +14,15 @@ type PaginationComponentProps = {
 
 
 const PaginationComponent: React.FC<PaginationComponentProps> = (
-  { count, rowsPerPage, rowsPerPageOptions, handleRowsPerPageChange }
+  { count,currentPage, rowsPerPage, rowsPerPageOptions, handleRowsPerPageChange }
 ) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  let currentPage = 1;
-  if (searchParams && searchParams.has('page')) {
-    currentPage = Number(searchParams.get('page'));
-  }
 
   const createPageUrl = (page: number | string) => {
     const params = new URLSearchParams(searchParams!);
+    const query = params.get('q');
     if (typeof page === 'string') {
       page = Number(page);
     }
@@ -34,6 +31,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = (
     } else {
       params.set('page', page.toString());
       params.set('limit', rowsPerPage.toString());
+      params.set('q', query ?? '');
     }
     return `${pathname}?${params.toString()}`;
   }

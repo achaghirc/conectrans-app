@@ -11,6 +11,10 @@ type DetailsOfferRequirementsComponentProps = {
 const DetailsOfferRequirementsComponent: React.FC<DetailsOfferRequirementsComponentProps> = ({
   offer
 }) => {
+  const licenseType = offer.licenseType?.map((licence) => licence.name).join(", ") ?? '';
+  const licenseAdr = offer.licenseAdr?.map((licence) => licence.name).join(", ") ?? '';
+  const workRange = offer.workRange?.map((range) => range.name).join(", ") ?? '';
+  const employmentType = offer.employmentType?.map((type) => type.name).join(", ") ?? '';
 
   return (
     <Box
@@ -31,22 +35,22 @@ const DetailsOfferRequirementsComponent: React.FC<DetailsOfferRequirementsCompon
       </Typography>
       <Divider />
       <BoxTextItem title='Tipo de carnet'
-        text={offer.licenseType.map((licence) => licence.name).join(", ")}
+        text={licenseType}
         direction='row'
         justifyContent='space-between'
       />
       <BoxTextItem title='Carnet ADR'
-        text={offer.licenseAdr.map((licence) => licence.name).join(", ")}
+        text={licenseAdr}
         direction='row'
         justifyContent='space-between'
       />
       <BoxTextItem title='Ambito de trabajo'
-        text={offer.workRange.map((range) => range.name).join(", ")}
+        text={workRange}
         direction='row'
         justifyContent='space-between'
       />
       <BoxTextItem title='Tipo de contrato'
-        text={offer.employmentType.map((type) => type.name).join(", ")}
+        text={employmentType}
         direction='row'
         justifyContent='space-between'
       />

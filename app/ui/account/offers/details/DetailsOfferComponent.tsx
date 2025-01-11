@@ -86,7 +86,7 @@ const DetailsOfferComponent: React.FC<DetailsOfferComponentProps> = (
   if (isError) {
     notFound();
   }
-  if (isLoading) {
+  if (isLoading || offerSelected === undefined) {
     return <DetailsOfferSkeleton />
   }
   const location = {

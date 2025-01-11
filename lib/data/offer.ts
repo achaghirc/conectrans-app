@@ -439,11 +439,18 @@ export async function getAllOffersPageable(page?: number, pageSize?: number): Pr
   }
 }
 
+
+/**
+ * @param page 
+ * @param pageSize 
+ * @param data 
+ * @returns 
+ */
 export async function getAllOffersPageableByFilter(page: number = 1, pageSize: number = 10, data: FilterOffersDTO): Promise<OfferSearchResponse> {
   try {
     //Generate where clauses
     const whereClause: Prisma.Sql = generateFilterClausure(data);
-
+    
     const transaction = await prisma.$transaction(async (prisma) => {
       const offers = await prisma.$queryRaw<OfferCustomDTO[]>(Prisma.sql`
         SELECT
@@ -521,13 +528,18 @@ export async function getOffersPage(query: string) {
 //   isFeatured: boolean,
 //   companyLogo: string,
 // }
+let mapUserIdCompany: Map<string, Partial<CompanyDTO>> = new Map();
 async function generateSlimOfferDTO(offers: OfferCustomDTO[]): Promise<OfferDTO[]> {
   try { 
     const offerIds = offers.map((o) => o.id);
     const preferences = await findManyOfferPreferencesByOfferIdIn(offerIds);
     const filterEncoderOption = (offerId: number, type: string) => preferences.filter((pref) => pref.offerId == offerId && pref.type == type);
     const offerResult: OfferDTO[] = await Promise.all(offers.map(async (offer) => {
-      const company: Partial<CompanyDTO> | undefined = await getCompanySlimByUserId(offer.userId);
+      let company: Partial<CompanyDTO> | undefined = mapUserIdCompany.get(offer.userId);
+      if(!company) {
+        company = await getCompanySlimByUserId(offer.userId);
+        if(company) mapUserIdCompany.set(offer.userId, company);
+      }
       const result : OfferDTO = {
         ...offer,
         licenseType: filterEncoderOption(offer.id, EncoderTypeEnum.CARNET).map((lp) => lp.encoderType),
@@ -628,7 +640,7 @@ const generateFilterClausure = (data: FilterOffersDTO) => {
           FROM "OfferPreferences" AS "pref"
           INNER JOIN "EncoderType" AS "et" ON "pref"."encoderTypeId" = "et"."id"
           WHERE "pref"."offerId" = "Offer"."id" 
-          AND "pref"."type" = 'EMPLOYEE_TYPE'
+          AND "pref"."type" = 'CARNET'
           AND "et"."name" = ANY(${data.licenseType}::text[])
         )
       `);

@@ -24,28 +24,28 @@ type OffersGeneralComponentProps = {
   limit: number;
   totalPages: number;
 }
+const initialFilterData: FilterOffersDTO = {
+  contractType: null,
+  country: null,
+  state: null,
+  licenseType: null,
+  adrType: null,
+  workRange: null,
+  isFeatured: null,
+  experience: null,
+  isAnonymous: null,
+  allOffers: null
+}
 
 
 
 const OffersGeneralComponent: React.FC<OffersGeneralComponentProps> = ({
   currentPage,limit, totalPages
 }) => {
-
-  const [rowsPerPage, setRowsPerPage] = useState(limit);
+  const queryClient = useQueryClient();
   const { mediaQuery } = useMediaQueryData();
   const [open, setOpen] = React.useState(false);
-  const [filterData, setFilterData] = React.useState<FilterOffersDTO>({
-    contractType: null,
-    country: null,
-    state: null,
-    licenseType: null,
-    adrType: null,
-    workRange: null,
-    isFeatured: null,
-    experience: null,
-    isAnonymous: null,
-    allOffers: null
-  } as FilterOffersDTO);
+  const [filterData, setFilterData] = React.useState<FilterOffersDTO>(initialFilterData);
   const [isSearching, setIsSearching] = React.useState<boolean>(false);
 
   const toggleDrawer = (open: boolean) => {
@@ -59,27 +59,66 @@ const OffersGeneralComponent: React.FC<OffersGeneralComponentProps> = ({
 
   const onSubmit: SubmitHandler<FilterOffersDTO> = async (data: FilterOffersDTO) => {
     try {
+      setIsSearching(true);
       // const result = await getAllOffersPageableByFilter(currentPage, rowsPerPage, data);
       // setOffers(result.offers);
-      updateFilterData(data);
+      const filterData = {
+        contractType: data.contractType ?? null,
+        country: data.country ?? null,
+        state: data.state ?? null,
+        licenseType: data.licenseType ?? null,
+        adrType: data.adrType ?? null,
+        workRange: data.workRange ?? null,
+        isFeatured: data.isFeatured ?? null,
+        experience: data.experience ?? null,
+        isAnonymous: data.isAnonymous ?? null,
+        allOffers: data.allOffers ?? null
+      }
+      updateFilterData(filterData);
     } catch (error) {
       console.error(error);
-    }
+    } finally {
+      setIsSearching(false);
+    } 
   }
 
-  const {data, isLoading} = useQuery({
+  const {data, isLoading, isFetched, } = useQuery({
     queryKey: ['offers', filterData, currentPage, limit], 
     queryFn: (): Promise<OfferSearchResponse> => getAllOffersPageableByFilter(Number(currentPage), Number(limit), filterData),
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 60, // 24 hours
   });
 
-  const {data: totalOffers} = useQuery({
-    queryKey: ['totalOffers', ''], 
-    queryFn: () => getOffersPage(''),
+  const {data: recomendedOffers, isLoading: isRecomendedLoading, isError: isErrorRecomended} = useQuery({
+    queryKey: ['recomended_offers', initialFilterData, currentPage, limit],
+    queryFn: (): Promise<OfferSearchResponse> => getAllOffersPageableByFilter(currentPage, limit, initialFilterData),
     staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 60, // 24 hours
+    enabled: data == undefined || data.total == 0
   });
+
+  const prefetchNexPage = async () => {
+    if (data && data.total) {
+      if((currentPage + 1) * limit <= (data.total + limit)) {
+        const newPage = currentPage + 1;
+        await queryClient.prefetchQuery({
+          queryKey: ['offers', filterData, newPage, limit], 
+          queryFn: (): Promise<OfferSearchResponse> => getAllOffersPageableByFilter(newPage, limit, filterData)
+        });
+      }
+      console.log(queryClient.getQueriesData({queryKey: ['offers']}));
+    }
+  }
+
+  //Si aún hay páginas por cargar, cargar al menos la siguiente.
+  useEffect(() => {
+    if (isFetched) {
+      const prefetchData = async () => {
+        await prefetchNexPage();
+      };
+      prefetchData();
+    }
+  }, [isFetched]);
+
 
   return (
     <>
@@ -126,16 +165,25 @@ const OffersGeneralComponent: React.FC<OffersGeneralComponentProps> = ({
             {isLoading && data == undefined ? (
               <OffersListSkeleton />
             ) : (
-              <OffersGeneralListComponent offers={data == undefined ? [] : data.offers} />
+              <OffersGeneralListComponent offers={data == undefined ? [] : data.offers} recommendedOffers={recomendedOffers == undefined ? [] : recomendedOffers.offers} />
             )}
           </Box>
         </Grid>
         <Grid size={{xs: 12}}>
-          {!isLoading && data && (
+          {!isLoading && data && data.total > 0 && (
             <PaginationComponent
               count={data.total ?? 10}
-              totalPages={totalOffers ?? 10}
-              rowsPerPage={rowsPerPage}
+              currentPage={currentPage}
+              rowsPerPage={limit}
+              rowsPerPageOptions={[3, 10, 20, 30]}
+              handleRowsPerPageChange={(event) => {}}
+            />
+          )}
+          {(!data || data.total == 0) && recomendedOffers && !isRecomendedLoading && (
+            <PaginationComponent
+              count={recomendedOffers.total ?? 10}
+              currentPage={currentPage}
+              rowsPerPage={limit}
               rowsPerPageOptions={[3, 10, 20, 30]}
               handleRowsPerPageChange={(event) => {}}
             />

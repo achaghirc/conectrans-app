@@ -1,40 +1,72 @@
 'use client';
-import { getApplicationOffersByPersonId } from '@/lib/data/applicationOffers';
-import { Box, Typography } from '@mui/material';
-import { ApplicationOfferDTO } from '@prisma/client';
-import { useQuery } from '@tanstack/react-query';
+import { getApplicationCountByPersonId, getApplicationOffersPageableByPersonId } from '@/lib/data/applicationOffers';
+import { Box, Divider, TablePagination, Typography } from '@mui/material';
+import { ApplicationOfferDTO, OfferDTO } from '@prisma/client';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Session } from 'next-auth';
 import Image from 'next/image';
-import React from 'react'
+import React, { useEffect } from 'react'
 import ButtonCustom from '../../shared/custom/components/button/ButtonCustom';
 import Link from 'next/link';
-import OfferCardComponent from './OfferCardComponent';
 import ApplicationOfferCardComponent from './apply/ApplicationOfferCardComponent';
+import { getOfferSlimCardById } from '@/lib/data/offer';
+import OffersListSkeleton from '../../shared/custom/components/skeleton/OffersListSkeletonComponent';
+import PaginationComponent from '../../shared/custom/components/pagination/PaginationComponent';
 
 type UsersOffersPageProps = {
   session: Session | null; 
+  currentPage: number;
+  limit: number;
 }
 
 const UsersOffersPage: React.FC<UsersOffersPageProps> = (
-  {session}
+  {session, currentPage, limit}
 ) => {
-
+  const queryClient = useQueryClient();
   if (!session) {
     return null;
   }
 
-  const {data, isLoading, isError} = useQuery({
-    queryKey: ['applications_offers', session?.user.id],
-    queryFn: (): Promise<ApplicationOfferDTO[]> => getApplicationOffersByPersonId(session?.user.personId ?? 0)
+  const {data, isLoading, isError, isFetched} = useQuery({
+    queryKey: ['applications_offers', session?.user.personId, currentPage, limit],
+    queryFn: (): Promise<ApplicationOfferDTO[]> => getApplicationOffersPageableByPersonId(session?.user.personId ?? 0, currentPage, limit),
+  });
+  const {data: count, isFetched: countFetched} = useQuery({
+    queryKey: ['application_offers_count', session?.user.personId],
+    queryFn: (): Promise<number> => getApplicationCountByPersonId(session?.user.personId ?? 0),
+    staleTime: 1000 * 60 * 60 // 1 hour
   });
 
+  const prefetchNexPage = async () => {
+    if (count) {
+      if((currentPage + 1) * limit <= (count + limit)) {
+        const newPage = currentPage + 1;
+        await queryClient.prefetchQuery({
+          queryKey: ['applications_offers', session?.user.personId, newPage, limit], 
+          queryFn: (): Promise<ApplicationOfferDTO[]> => getApplicationOffersPageableByPersonId(session?.user.personId ?? 0, newPage, limit)
+        });
+        console.log(queryClient.getQueriesData({queryKey: ['applications_offers']}));
+      }
+    }
+  }
+
+  //Si aún hay páginas por cargar, cargar al menos la siguiente.
+  useEffect(() => {
+    if (isFetched && countFetched) {
+      const prefetchData = async () => {
+        await prefetchNexPage();
+      };
+      prefetchData();
+    }
+  }, [isFetched, countFetched]);
+
+  
   if(isLoading) {
-    return <div>Loading...</div>
+    return <OffersListSkeleton /> 
   }
   if(isError) {
     return <div>Error</div>
   }
-
 
   return (
     <div>
@@ -76,15 +108,22 @@ const UsersOffersPage: React.FC<UsersOffersPageProps> = (
       </> 
       }
       {data?.map((application) => (
-        <Link key={application.id} href={`/offers/${application.offerId}`} style={{textDecoration: 'none'}}>
+        <Link key={application.id} href={`/offers/${application.Offer.id}`} style={{textDecoration: 'none', color: 'inherit' }}>
           <ApplicationOfferCardComponent 
             key={application.id}
             session={session}
             data={application}
           />
+          <Divider variant='inset' sx={{ display: {xs: 'flex', sm: 'none' }}} />
         </Link>
       ))}
-
+      <PaginationComponent 
+        count={count ?? 0}
+        currentPage={currentPage}
+        rowsPerPage={limit}
+        rowsPerPageOptions={[5,10, 20, 30]}
+        handleRowsPerPageChange={() => {}}
+      />
     </div>
   )
 }

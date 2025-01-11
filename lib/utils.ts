@@ -1,4 +1,5 @@
 'use server';
+import { FilterOffersDTO } from "@/app/ui/offers/OffersGeneralComponent";
 import { Decimal } from "@prisma/client/runtime/library";
 
 export const convertDecimalToNumber = async (value: Decimal | null | undefined): Promise<number> => {
@@ -52,3 +53,31 @@ export  const generatePagination = async (currentPage: number, totalPages: numbe
     totalPages,
   ];
 };
+
+export const checkIfIsNumber = async (value: string) => {
+  return !isNaN(Number(value));
+}
+
+export const getNumberFromSearchParam = async (paramValue: string, defNumber?: number) => {
+  if (!paramValue || !checkIfIsNumber(paramValue)) {
+    return defNumber || 1;
+  }
+  return Number(paramValue);
+}
+
+export const getFilterDataFromQuery = async (searchParams: URLSearchParams): Promise<FilterOffersDTO> => {
+  const params = searchParams;
+  const data = {
+    contractType: params.getAll('contractType') ?? [],
+    country: params.get('country') ?? null,
+    state: params.get('state') ?? null,
+    licenseType: params.getAll('licenseType') ?? [],
+    adrType: params.getAll('adrType') ?? [],
+    workRange: params.getAll('workRange') ?? [],
+    experience: params.get('experience') ?? null,
+    isFeatured: params.get('isFeatured') === 'true' ? true : false,
+    isAnonymous: params.get('isAnonymous') === 'true' ? true : false,
+    allOffers: params.get('allOffers') === 'true' ? true : false
+  };
+  return data; 
+}

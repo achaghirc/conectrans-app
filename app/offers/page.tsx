@@ -1,30 +1,56 @@
-import { auth } from "@/auth";
-import Navbar from "../ui/shared/navbar";
 import Footer from "../ui/home/footer";
 import { dehydrate, DehydratedState, HydrationBoundary, QueryClient } from '@tanstack/react-query'
 import OffersGeneralListComponent, { FilterOffersDTO } from "../ui/offers/OffersGeneralComponent";
-import { Session } from "next-auth";
-import { getOfferById } from "@/lib/data/offer";
 import { Box } from "@mui/material";
+import { getNumberFromSearchParam } from "@/lib/utils";
+import { OfferSearchResponse } from "@/lib/definitions";
+import { getAllOffersPageableByFilter, getOffersPage } from "@/lib/data/offer";
+import { getCountries } from "@/lib/data/geolocate";
+import { getEncoderTypeData } from "@/lib/data/encoderType";
 
 const queryClient = new QueryClient();
+const initialFilterData: FilterOffersDTO = {
+  contractType: null,
+  country: null,
+  state: null,
+  licenseType: null,
+  adrType: null,
+  workRange: null,
+  isFeatured: null,
+  experience: null,
+  isAnonymous: null,
+  allOffers: null
+}
+async function page({ searchParams } : { searchParams: { page: string, limit: string } }) {
+  const params = await searchParams;
+  const page = await getNumberFromSearchParam(params.page, 1);
+  const limit = await getNumberFromSearchParam(params.limit, 10);
 
-export default async function Page({
-  paramsUrl,
-  searchParams, 
-} : {
-  paramsUrl: {id: string},
-  searchParams?: {
-    query?: string,
-    page?: string,
-    limit?: string,
-  }
-}) {
-  const params = await searchParams || {};
-  const query = params.query || '';
-  const page = params.page || '1';
-  const limit = params.limit || '10';
-  
+
+  await Promise.all([
+    await queryClient.prefetchQuery({
+      queryKey: ['offers', initialFilterData, page, limit], 
+      queryFn: (): Promise<OfferSearchResponse> => getAllOffersPageableByFilter(Number(page), Number(limit), initialFilterData),
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 60, // 24 hours
+    }),
+    await queryClient.prefetchQuery({
+        queryKey: ['recomended_offers', initialFilterData, page, limit],
+        queryFn: (): Promise<OfferSearchResponse> => getAllOffersPageableByFilter(page, limit, initialFilterData),
+        staleTime: 1000 * 60 * 5, // 5 minutes
+    }),
+    await queryClient.prefetchQuery({
+      queryKey: ['countries'],
+      queryFn: () => getCountries(),
+      staleTime: 1000 * 60 * 60 * 24, // 24 hours
+    }),
+    await queryClient.prefetchQuery({
+      queryKey: ['encoders'],
+      queryFn: () => getEncoderTypeData(),
+      staleTime: 1000 * 60 * 60 * 24, // 24 hours
+    })
+  ])
+
   const dehydratedState = dehydrate(queryClient);
   return (
     <Box
@@ -34,7 +60,6 @@ export default async function Page({
         maxHeight: '100vh',
       }}
     >
-
       <HydrationBoundary state={dehydratedState}>
         <OffersGeneralListComponent currentPage={Number(page)} limit={Number(limit)} totalPages={Number(limit)} />
       </HydrationBoundary>
@@ -42,6 +67,7 @@ export default async function Page({
     </Box>
   );
 }
+export default page;
 
 
 // const searchp = await searchParams;

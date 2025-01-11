@@ -19,19 +19,21 @@ export default async function layout({children} : {children: React.ReactNode}) {
 
   const queryClient = new QueryClient();
 
-  queryClient.prefetchQuery({ 
-    queryKey: ['countries'], queryFn: () => getCountries(), 
-    staleTime: 1000 * 60 * 60 * 24 // 24 hours
-  });
-  queryClient.prefetchQuery({ 
-    queryKey: ['encoders'], 
-    queryFn: () => getEncoderTypeData(),
-    staleTime: 1000 * 60 * 60 * 24 // 24 hours
-  });
-
-  const driverProfilePrefectch = new DriverProfilePreFetchService(queryClient);
-  await driverProfilePrefectch.prefetchDriverProfileData(session.user.id);
-  
+  await Promise.all ([
+    await queryClient.prefetchQuery({ 
+      queryKey: ['countries'], queryFn: () => getCountries(), 
+      staleTime: 1000 * 60 * 60 * 24 // 24 hours
+    }),
+    await queryClient.prefetchQuery({ 
+      queryKey: ['encoders'], 
+      queryFn: () => getEncoderTypeData(),
+      staleTime: 1000 * 60 * 60 * 24 // 24 hours
+    }),
+    async () => {
+      const driverProfilePrefectch = new DriverProfilePreFetchService(queryClient);
+      await driverProfilePrefectch.prefetchDriverProfileData(session.user.id);
+    }
+  ])
   const dehydratedState = dehydrate(queryClient);
   return (
     <HydrationBoundary state={dehydratedState}>

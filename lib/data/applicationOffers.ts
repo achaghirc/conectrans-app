@@ -2,16 +2,75 @@
 import prisma from "@/app/lib/prisma/prisma";
 import { ApplicationOffer, ApplicationOfferDTO } from "@prisma/client";
 
-
-export async function getApplicationOffersByPersonId(personId: number) : Promise<ApplicationOfferDTO[]> {
+export async function getApplicationCountByPersonId(personId: number) : Promise<number> {
   try {
+    const applications = await prisma.applicationOffer.count({
+      where: {
+        personId: personId
+      }
+    });
+    return applications;
+  } catch (error: any) {
+    throw new Error('Error getting applications ' + error.message);
+  }
+}
+
+export async function getApplicationOffersPageableByPersonId(personId: number, page?: number, limit?: number) : Promise<ApplicationOfferDTO[]> {
+  try {
+    if (!page ) page = 1;
+    if (!limit) limit = 10;
     const applications = await prisma.applicationOffer.findMany({
+      skip: (page - 1) * limit,
+      take: limit,
       where: {
         personId: personId
       },
-      include:{
-        Offer: true,
-      }
+      select: {
+        id: true,
+        status: true,
+        updatedAt: true,
+        Offer: {
+          select: {
+            id: true,
+            title: true,
+            endDate: true,
+            Location: {
+              select: {
+                state: true,
+                city: true
+              }
+            },
+            OfferPreferences: {
+              select: {
+                EncoderType: {
+                  select: {
+                    name: true,
+                    code: true
+                  }
+                },
+                type: true
+              }
+            },
+            User: {
+              select: {
+                Company: {
+                  select: {
+                    name: true,
+                    Asset: {
+                      select: {
+                        url: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+        }
+      },
+      orderBy: {
+        updatedAt: 'desc'
+      },
     });
     return applications;
   } catch (error: any) {

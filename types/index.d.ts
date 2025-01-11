@@ -99,9 +99,34 @@ declare module '@prisma/client' {
         isFeatured: boolean;
     }
 
-    interface ApplicationOfferDTO extends ApplicationOffer {
+    interface ApplicationOfferDTO extends Partial<ApplicationOffer> {
       id?: number;
-      Offer: Offer;
+      status: string;
+      updatedAt: Date;
+      Offer: {
+        id: number;
+        title: string;
+        endDate: Date;
+        Location: {
+          state: string;
+          city: string;
+        };
+        OfferPreferences: {
+          EncoderType: {
+            name: string | null;
+            code: string | null;
+          };
+          type: string | null;
+        }[];
+        User: {
+          Company: {
+            name: string | null;
+            Asset: {
+              url: string | null;
+            } | null;
+          } | null;
+        } | null;
+      };
 
     }
 }

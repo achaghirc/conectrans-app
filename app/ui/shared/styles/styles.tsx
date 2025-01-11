@@ -17,9 +17,28 @@ export const MenuProperties : Partial<MenuProps>= {
   },
 }
 
+export const cardMobileStyles = {
+  display: {xs: 'flex', sm: 'none'},
+  height: '100%',
+  flexDirection: 'row',
+  m: { xs: 'none', md: 2 },
+  borderRadius: 5,
+  cursor: 'pointer',
+  '&:first-child': {
+    marginTop: { xs: 0, md: 0 },
+  },
+  '&:before': {
+    //Divider line
+    content: '""',
+  },
+  '&:last-child': {
+    marginBottom: 4,
+  },
+}
+
 export const paperStyles = {
-  display: 'flex',
-  height: { xs: 170, md: '100%' },
+  display: {xs: 'none', sm: 'flex'},
+  height: { xs: 100, md: '100%' },
   flexDirection: 'row',
   m: { xs: 'none', md: 2 },
   borderRadius: 5,
