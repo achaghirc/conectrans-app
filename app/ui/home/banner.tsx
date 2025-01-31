@@ -1,14 +1,25 @@
 'use client';
 import React from 'react'
-import Logo from '../../../public/Banner_3.png'
 import BigLogo from '../../../public/Banner_5.png'
 import Image from 'next/image'
 import { Button, Paper, Typography } from "@mui/material";
 import { ButtonContainer, TextContainer } from '../shared/custom/bannerContainer';
 import useMediaQueryData from '../shared/hooks/useMediaQueryData';
+import { useRouter } from 'next/navigation';
 
 export default function Banner() {
   const {mediaQuery} = useMediaQueryData();
+  const router = useRouter();
+
+  const handleRedirect = (licenseType: string) => {
+    const url = new URLSearchParams();
+    url.append('page', '1');
+    url.append('limit', '10');
+    url.append('licenseType', licenseType);
+
+    router.push(`offers?${url.toString()}`);
+  }
+
   return (
     <div>
       <Paper 
@@ -43,7 +54,7 @@ export default function Banner() {
               position: 'relative', top: '0%', left: '0%',
               fontWeight: 'bold', textAlign: 'left'}}
             >
-              OFERTAVIAL
+              CONDUPRO
             </Typography>
           </TextContainer>
           <TextContainer>
@@ -54,14 +65,14 @@ export default function Banner() {
               position: 'relative', top: '0%', left: '0%',
               fontWeight: 'bold', textAlign: 'left'}}
             >
-              CONECTAMOS OFERTAS, CONDUCTORES Y TRANSPORTE
+              ACERCAMOS OFERTAS Y CONDUCTORES PROFESIONALES
             </Typography>
             <Typography variant="h4" 
               component={"h5"} 
               gutterBottom 
               sx={{ display: { xs: 'block', sm: 'none'}, textAlign: 'left', fontSize: '1.5rem'}}
             >
-              CONECTAMOS OFERTAS, CONDUCTORES Y TRANSPORTE
+              ACERCAMOS OFERTAS Y CONDUCTORES PROFESIONALES
             </Typography>
 
             <Typography 
@@ -75,7 +86,7 @@ export default function Banner() {
                   whiteSpace: 'pre-line' 
                 }}
               >
-              OfertaVial es la plataforma ideal para encontrar y publicar todo tipo 
+              Condupro es la plataforma ideal para encontrar y publicar todo tipo 
               de ofertas del sector de la mobilidad profesional.
             </Typography>
           </TextContainer>
@@ -85,6 +96,7 @@ export default function Banner() {
               color="primary" 
               size="medium" 
               sx={{ display: {xs: 'block', sm: 'block'} }}
+              onClick={() => handleRedirect('C,C+E')}
             >
               <Typography 
                 variant="h6" component="p" 
@@ -99,6 +111,7 @@ export default function Banner() {
               color="secondary"
               size="large"
               sx={{ display: {xs: 'none', sm: 'block'}, }}
+              onClick={() => handleRedirect('D1,D')}
             > 
               <Typography 
                 variant="h6" component="p" 
@@ -118,6 +131,7 @@ export default function Banner() {
                 variant="h6" component="p" 
                 sx={{ display: {xs: 'none', sm: 'block'} }}
                 color='white'
+                onClick={() => handleRedirect('B')}
               >
                 Transporte de vehiculo ligero
               </Typography>

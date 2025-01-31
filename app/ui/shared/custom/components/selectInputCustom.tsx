@@ -38,7 +38,7 @@ export const SelectFormInput = ({
 		}else {
 			setProvinces(items)
 		}
-	}, [])
+	}, [name, items])
 	return (
 		<FormControl fullWidth error={handleZodError(errors, 'country')} required>
 			<InputLabel>{label}</InputLabel>

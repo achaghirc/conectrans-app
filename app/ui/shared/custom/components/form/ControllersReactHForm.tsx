@@ -133,7 +133,7 @@ export const ControllerSelectMultiFieldComponent: React.FC<ControllerSelectField
           {options && options.map((option) => (
             <MenuItem key={option.id} value={option.label}>
               <Checkbox checked={option.id ? field.value.includes(option.label) : false} />
-              <ListItemText primary={option.value} />
+              <ListItemText primary={option.label} />
             </MenuItem>
           ))}
         </Select>
@@ -161,7 +161,7 @@ export const ControllerSelectFieldComponent: React.FC<ControllerSelectFieldCompo
           select={!isLoading}
           onChange={(event) => {
             field.onChange(event);
-            extraChangeFunction && extraChangeFunction(event);
+            extraChangeFunction?.(event);
           }}
           error={formState?.errors && handleZodError(formState, name)}
           helperText={formState?.errors && handleZodHelperText(formState, name)}

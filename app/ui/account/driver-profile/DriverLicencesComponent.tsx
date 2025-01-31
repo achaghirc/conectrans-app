@@ -60,7 +60,7 @@ const DriverLicencesComponent: React.FC<DriverLicencesComponentProps> = (
       severity = 'error';
     }
 
-    saveAction && saveAction(); 
+    saveAction?.(); 
     setLoading(false);
     setChangedData(false);
     setSnackbarProps({

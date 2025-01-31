@@ -35,7 +35,7 @@ const useUserData = (session: Session) => {
     };
     
     return result;
-  }, [session]);
+  }, [session, userData]);
 
 
     useEffect(() => {
@@ -46,7 +46,7 @@ const useUserData = (session: Session) => {
         if (user)
           setUserData(user);
       }
-    }, [session, getUserData]);
+    }, [session, getUserData, router]);
 
     return {userData}
 }

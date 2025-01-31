@@ -343,7 +343,7 @@ async function saveDriverProfile(formData: SignUpCandidateFormData, personId: nu
     }
   });
   // Create new driver employment preferences
-  let driverEmploymentPreferecesList = []; 
+  const driverEmploymentPreferecesList = []; 
   for (const range of workRangesByCodeIn) {
     const driverEmploymentPrefereces = {
       driverProfileId: newDriverProfile.id,
@@ -364,7 +364,7 @@ async function saveDriverProfile(formData: SignUpCandidateFormData, personId: nu
     }
   });
   // Create new driver employment preferences
-  let driverEmploymentTypesList = [];
+  const driverEmploymentTypesList = [];
   for (const type of employmentsTypesByCodeIn) {
     const driverEmploymentTypes = {
       driverProfileId: newDriverProfile.id,
@@ -469,12 +469,12 @@ export async function createSubscriptionPlan(planId: number, userId: string): Pr
   const endDate = new Date(startDate.setMonth(startDate.getMonth() + 6));
 
   const subscription = {
-    startDate: startDate,
-    endDate: endDate,
     stripeSubscriptionId: 'sub_' + randomUUID(),
     status: 'active',
     createdAt: new Date(),
     updatedAt: new Date(),
+    remainingOffers: plan.maxOffers,
+    usedOffers: 0,
     User: {
       connect: { id: userId }
     },

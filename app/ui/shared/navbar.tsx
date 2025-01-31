@@ -11,20 +11,31 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 
 import { Button, Drawer } from '@mui/material';
 //es-lint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import DrawerCustom from './drawer';
 import { SessionProvider } from 'next-auth/react';
 import { Session } from 'next-auth';
 import ConectransLogo from './logo/conectransLogo';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 
 type NavbarProps = {
   session: Session | null;
+  bgLogoColor?: string;
 }
 
-export default function Navbar({session}: NavbarProps) {
+export default function Navbar({session, bgLogoColor}: NavbarProps) {
+  const pathname = usePathname()
+  const colors = {
+    logoColor: 'white',
+    textColor: 'black',
+    iconColor: 'action'
+  }
+  if (pathname === '/' || pathname === '/home') {
+    colors.logoColor = '#0B2C38';
+    colors.textColor = 'white';
+    colors.iconColor = 'white';
+  }
   const [state, setState] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -64,7 +75,7 @@ export default function Navbar({session}: NavbarProps) {
             sx={{ mr: 2, display: { xs: 'none', md: 'flex' } }}
           >
             <Link href='/'>
-              <ConectransLogo width={'100px'} height={'auto'} fill='white' />
+              <ConectransLogo width={'100px'} height={'auto'} fill={colors.logoColor} textColor={colors.textColor} />
             </Link>
               {/* <Image priority src={Logo} alt='Logo conectrans' width={130}/> */}
           </IconButton>
@@ -76,7 +87,7 @@ export default function Navbar({session}: NavbarProps) {
             sx={{ mr: 2, display: { xs: 'flex', md: 'none' } }}
           >
             <Link href='/'>
-              <ConectransLogo width={'100px'} height={'auto'} fill='white' />
+              <ConectransLogo width={'100px'} height={'auto'} fill={colors.logoColor} textColor={colors.textColor} />
             </Link>
               {/* <Image priority src={Logo} alt='Logo conectrans' width={130}/> */}
           </IconButton>
@@ -85,15 +96,14 @@ export default function Navbar({session}: NavbarProps) {
               display: { xs: 'none', md: 'flex' }  
           }}>
             <Link href='/offers?page=1&limit=10'>
-              <Button color="inherit" variant='outlined'>
+              <Button sx={{ color: colors.textColor }} variant='outlined'>
                 Blog
               </Button>
             </Link>
             <Link href='/offers?page=1&limit=10'>
               <Button 
                 variant="outlined" 
-                color="primary"
-                sx={{ ml: 2 }}
+                sx={{ ml: 2, color: colors.textColor }}
               >
                 Ofertas
               </Button>
@@ -106,7 +116,7 @@ export default function Navbar({session}: NavbarProps) {
                 aria-expanded={open ? 'true' : undefined}
                 onClick={handleDrawer(true)}
             >
-                <AccountCircle />
+                <AccountCircle sx={{ color: colors.iconColor }} />
             </IconButton>
             <Drawer
                 anchor='right'
@@ -124,7 +134,7 @@ export default function Navbar({session}: NavbarProps) {
               display: { xs: 'flex', md: 'none' },
           }}>
               <IconButton 
-                  sx={{ ml: 3 }}
+                  sx={{ ml: 3, color: colors.iconColor }}
                   id="basic-button"
                   aria-controls={open ? 'basic-menu' : undefined}
                   aria-haspopup="true"

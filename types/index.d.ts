@@ -11,9 +11,15 @@ import { Company as PrismaCompany,
   Offer,
   OfferPreferences,
   ApplicationOffer,
+  Person,
+  Experience,
+  Languages,
+  Transaction,
+  PlanPreferences,
    } from "@prisma/client";
 
 import { CompanyDTO as CompanyDefinitionsDTO } from '@lib/definitions';
+import { EncoderTypeDTO } from "@/lib/definitions";
 
 declare module '@prisma/client' {
     interface CompanyDTO extends PrismaCompany {
@@ -30,8 +36,67 @@ declare module '@prisma/client' {
     }
 
     interface SubscriptionDTO extends PrismaSubscription {
-        Plan: PlanDTO;
+        Plan: {
+          id: number;
+          title: string;
+          description: string;
+          price: number | null;
+          priceMonthly: number | null;
+          priceBianual: number | null;
+          priceYearly: number | null;
+          PlanPreferences: {
+            id: number;
+            planId: number;
+            preferencePlanId: number;
+          }[]
+      };
+      Transaction?: {
+        stripe_transaction_id: string;
+        stripe_payment_method?: string;
+        status: string;
+        amount: number;
+      }[];
     }
+
+    interface TransactionDTO extends Transaction {
+        stripe_transaction_id: string;
+        stripe_payment_method?: string;
+        amount: number;
+        paidOffers: number;
+        Plan: {
+          id: number;
+          title: string;
+        };
+        Subscription: {
+          remainingOffers: number;
+          usedOffers: number;
+        };  
+    }
+
+    interface SubscriptionSlimDTO extends PrismaSubscription {
+        Plan: {
+            id: number;
+            title: string;
+            price: number;
+            priceMonthly: number;
+            priceBianual: number;
+            priceYearly: number;
+            maxOffers: number;
+            maxOffersBianual: number;
+            maxOffersMonthly: number;
+            maxOffersYearly: number;
+            PlanPreferences: {
+              id: number;
+              planId: number;
+              preferencePlanId: number;
+              preferencePlanEncType: EncoderType;
+            }[]
+        } & Plan;
+        Transaction: {
+          amount: number;
+        }[] & Transaction[];
+    }
+
 
     interface DriverLicenceDTO extends PrismaDriverLicence {
         id?: number;
@@ -59,20 +124,49 @@ declare module '@prisma/client' {
     }
 
     interface PlanDTO extends Plan {
-        description: string;
         price: number;
         priceMonthly?: number;
         priceBianual?: number;
         priceYearly?: number;
-        planPreferences: EncoderType[];
+        PlanPreferences: {
+          id: number;
+          planId: number;
+          preferencePlanId: number;
+          preferencePlanEncType: EncoderType;
+        }[];
     }
 
     interface OfferDTO extends Offer {
-        location: LocationDTO;
+        Location: {
+            Country: {
+              name_es: string;
+              id: number;
+              cod_iso2: string | null;
+            } | null,
+        } & Partial<Location>;
         isAnonymous: boolean;
         isFeatured: boolean;
-        subscription: SubscriptionDTO;
+        Subscription?: {
+          status: string;
+        };
         company?: CompanyDefinitionsDTO;
+        OfferPreferences: {
+          id: number;  
+          offerId?: number;
+          EncoderType: EncoderType;
+          type: string;
+        }[];
+        User: {
+          Company: {
+            name: string;
+            Asset: {
+              url: string;
+            } | null;
+          } | null;
+        },
+        _count?: {
+          ApplicationOffer: number;
+        }
         employmentType?: EncoderType[];
         workRange?: EncoderType[];
         licenseType?: EncoderType[];
@@ -93,16 +187,101 @@ declare module '@prisma/client' {
       id?: number;
       encoderType: EncoderType;
     }
-    interface OfferSlimDTO extends Offer {
-        id?: number;
-        isAnonymous: boolean;
-        isFeatured: boolean;
+    interface OfferSlimDTO extends Partial<Offer> {
+      id?: number;
+      isAnonymous: boolean;
+      isFeatured: boolean;
+      Location: {
+          state: string;
+          city: string;
+      },
+      User: {
+        Company: {
+            name: string;
+            Asset: {
+                url: string;
+            } | null;
+        } | null;
+      },
+      OfferPreferences: {
+          EncoderType: {
+              id: number;
+              type: string;
+              name: string;
+              code: string;
+          };
+          type: string;
+      }[],
+      Subscription: {
+        planId: number;
+        status: string;
+      },
+      _count: {
+        ApplicationOffer: number;
+      }
     }
 
     interface ApplicationOfferDTO extends Partial<ApplicationOffer> {
       id?: number;
       status: string;
       updatedAt: Date;
+      Person?: {
+        User: {
+          email: string;
+        }
+        Location: {
+          state: string;
+          city: string;
+        };
+        PersonLanguages: {
+          id: number;
+          level: string;
+          Languages: Languages;
+        }[],
+        Education: {
+          id: number,
+          title: string,
+          startYear: Date,
+          endYear: Date,
+          center: string | null,
+        }[];
+        Experience: Experience[],
+        DriverProfile: {
+          hasCapCertification: boolean;
+          hasDigitalTachograph: boolean;
+          DriverWorkRangePreferences: {
+            id: number;
+            workScope: {
+              id: number;
+              name: string;
+              code: string;
+              type: string;
+            };
+          }[];
+          DriverEmploymentPreferences: {
+            id: number;
+            EncoderType: EncoderTypeDTO;
+          }[];
+          DriverLicence: {
+            id: number;
+            countryId: number;
+            Country: {
+              id: number;
+              name_es: string;
+              cod_iso2: string | null;
+            }
+            LicenceType: EncoderTypeDTO | null;
+          }[];
+        }[],
+        Asset: {
+          url: string | null;
+          secureUrl: string | null;
+          publicId: string | null;
+        } | null;
+        PersonProfileImage: {
+          url: string | null;
+        } | null;
+      } & Person | null;
       Offer: {
         id: number;
         title: string;
@@ -125,7 +304,7 @@ declare module '@prisma/client' {
               url: string | null;
             } | null;
           } | null;
-        } | null;
+        } & User | null;
       };
 
     }

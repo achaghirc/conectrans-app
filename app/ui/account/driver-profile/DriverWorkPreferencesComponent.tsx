@@ -134,7 +134,7 @@ const DriverWorkPreferencesComponent: React.FC<DriverWorkPreferencesComponentPro
 
     setLoading(false);
     setChangedData(false);
-    saveAction && saveAction();
+    saveAction?.();
     setSnackbarProps({...snackbarProps, open: true, message: message, severity: severity});
   }
 

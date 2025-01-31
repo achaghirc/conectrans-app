@@ -30,7 +30,7 @@ const GoogleMaps: React.FC<MapComponentProps> = (
       });
       addSingleMarker({ locations: locations, map: map });
     }
-  }, [ref, locations]);
+  }, [ref, locations, center, zoom]);
 
   return (
     <div 

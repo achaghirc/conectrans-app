@@ -11,9 +11,9 @@ export type ProvincesInputComponentProps = {
   handleInputChange: (e: ChangeEvent<HTMLInputElement> | SelectChangeEvent<string | number>) => void;
 }
 
-const ProvincesInputComponent: React.FC<ProvincesInputComponentProps> = React.memo(
-  ({provincesData, isProvincesLoading, selectedProvince, inputName, style, handleInputChange}
-) => {  
+const ProvincesInputComponent: React.FC<ProvincesInputComponentProps> = React.memo(function ProvincesInputComponent(
+  {provincesData, isProvincesLoading, selectedProvince, inputName, style, handleInputChange}
+) {  
   if (isProvincesLoading) {
     return (
       <Typography variant="body1" align="center">

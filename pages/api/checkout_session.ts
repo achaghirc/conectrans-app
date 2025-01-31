@@ -1,0 +1,59 @@
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2023-10-16',
+});
+
+
+import { PlanDTO } from '@prisma/client';
+import { NextApiRequest, NextApiResponse } from 'next';
+
+
+async function getActiveStripeProducts() { 
+  const products = await stripe.products.list();
+  return products.data.filter((product: any) => product.active);
+}
+
+
+export const checkOutSessionController = async (req: NextApiRequest, res: NextApiResponse) => {
+  if(req.method === 'POST') {
+    const { plan, success_url, cancel_url, email } = req.body;
+    const planProduct: PlanDTO = plan;
+    if (!planProduct) {
+      res.status(400).json({ error: 'Missing required parameter "plan"' });
+      return;
+    }
+    const activeStripeProducts = await getActiveStripeProducts();
+    const product = activeStripeProducts.find((product: any) => product.name === planProduct.title);
+    const customer = await stripe.customers.list({ email: email });
+    if (!customer) {
+      res.status(400).json({ error: 'Customer not found' });
+      return;
+    }
+    
+    try {
+      const session = await stripe.checkout.sessions.create(
+        {
+          payment_method_types: ['card'],
+          customer: customer.data[0].id,
+          line_items: [
+            {
+              price: product.default_price ,
+              quantity: 1,
+            },
+          ],
+          mode: 'payment',
+          success_url: success_url ?? `${process.env.NEXT_PUBLIC_DOMAIN}/`,
+          cancel_url: cancel_url ?? `${process.env.NEXT_PUBLIC_DOMAIN}/payment/checkout?success=false`,
+        });
+
+      res.status(200).json({ id: session.id });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error);
+        console.log('Error:', error.message);
+        res.status(500).json({ statusCode: 500, message: error.message });
+      } else {
+        res.status(500).json({ statusCode: 500, message: 'An unknown error occurred' });
+      }
+    }
+  }
+}

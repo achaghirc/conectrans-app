@@ -1,11 +1,11 @@
 'use client';
-import { getApplicationCountByPersonId, getApplicationOffersPageableByPersonId } from '@/lib/data/applicationOffers';
+import { getApplicationCountByPersonId, getApplicationOffersPageableByFilter,  } from '@/lib/data/applicationOffers';
 import { Box, Divider, TablePagination, Typography } from '@mui/material';
 import { ApplicationOfferDTO, OfferDTO } from '@prisma/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Session } from 'next-auth';
 import Image from 'next/image';
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import ButtonCustom from '../../shared/custom/components/button/ButtonCustom';
 import Link from 'next/link';
 import ApplicationOfferCardComponent from './apply/ApplicationOfferCardComponent';
@@ -26,29 +26,30 @@ const UsersOffersPage: React.FC<UsersOffersPageProps> = (
   if (!session) {
     return null;
   }
+  const personId = session?.user.personId ?? 0;
 
   const {data, isLoading, isError, isFetched} = useQuery({
     queryKey: ['applications_offers', session?.user.personId, currentPage, limit],
-    queryFn: (): Promise<ApplicationOfferDTO[]> => getApplicationOffersPageableByPersonId(session?.user.personId ?? 0, currentPage, limit),
+    queryFn: (): Promise<ApplicationOfferDTO[]> => getApplicationOffersPageableByFilter({personId: personId}, currentPage, limit),
   });
   const {data: count, isFetched: countFetched} = useQuery({
     queryKey: ['application_offers_count', session?.user.personId],
-    queryFn: (): Promise<number> => getApplicationCountByPersonId(session?.user.personId ?? 0),
+    queryFn: (): Promise<number> => getApplicationCountByPersonId(personId),
     staleTime: 1000 * 60 * 60 // 1 hour
   });
 
-  const prefetchNexPage = async () => {
+  const prefetchNexPage = useCallback(async () => {
     if (count) {
       if((currentPage + 1) * limit <= (count + limit)) {
         const newPage = currentPage + 1;
         await queryClient.prefetchQuery({
           queryKey: ['applications_offers', session?.user.personId, newPage, limit], 
-          queryFn: (): Promise<ApplicationOfferDTO[]> => getApplicationOffersPageableByPersonId(session?.user.personId ?? 0, newPage, limit)
+          queryFn: (): Promise<ApplicationOfferDTO[]> => getApplicationOffersPageableByFilter({personId: personId}, newPage, limit)
         });
         console.log(queryClient.getQueriesData({queryKey: ['applications_offers']}));
       }
     }
-  }
+  }, [count, currentPage])
 
   //Si aún hay páginas por cargar, cargar al menos la siguiente.
   useEffect(() => {
@@ -58,7 +59,7 @@ const UsersOffersPage: React.FC<UsersOffersPageProps> = (
       };
       prefetchData();
     }
-  }, [isFetched, countFetched]);
+  }, [isFetched, countFetched, prefetchNexPage]);
 
   
   if(isLoading) {

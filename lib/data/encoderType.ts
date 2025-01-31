@@ -1,6 +1,6 @@
 'use server';
 import prisma from "@/app/lib/prisma/prisma";
-import { EncoderType } from "../definitions";
+import { EncoderType } from "@prisma/client";
 
 
 

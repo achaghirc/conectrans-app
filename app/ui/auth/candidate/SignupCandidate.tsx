@@ -97,7 +97,7 @@ export default function SignupCandidate() {
 			}
 			console.log('Usuario creado correctamente');
 			setSnackbarProps({...snackbarProps, open: true, message: 'Usuario creado correctamente', severity: 'success'});
-			let formDataLogin = new FormData();
+			const formDataLogin = new FormData();
 			formDataLogin.append('email', dataSubmit.email);
 			formDataLogin.append('password', dataSubmit.password);
 			const errorMsg = await authenticate(undefined, formDataLogin);
@@ -185,9 +185,6 @@ export default function SignupCandidate() {
 			case 0: 
 				return <CadidateUserForm 
           control={control}
-          setValue={setValue}
-          formData={formData} 
-          setFormData={handleFormDataChange} 
           errors={ errors } 
         />
 			case 1:
@@ -248,10 +245,11 @@ export default function SignupCandidate() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <SignUpForm>
             <StepperComponent 
-              children={getStepContent(activeStep)}
               activeStep={activeStep} 
               steps={steps}
-            />
+            >
+              {getStepContent(activeStep)}
+            </StepperComponent>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 3}}>
               <ButtonCustom 
                 onClick={() => {
@@ -271,10 +269,11 @@ export default function SignupCandidate() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <SignUpMobileForm>
             <StepperComponent 
-                children={getStepContent(activeStep)}
                 activeStep={activeStep} 
                 steps={steps}
-            />
+            >
+              {getStepContent(activeStep)}
+            </StepperComponent>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 3}}>
                 <ButtonCustom 
                   onClick={() => {

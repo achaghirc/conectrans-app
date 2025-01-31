@@ -33,12 +33,11 @@ const createInitialStateChanges = () => {
 
 
 
-const CompanyPersonContactComponent: React.FC<CompanyPersonContactComponentProps> = React.memo((
+const CompanyPersonContactComponent: React.FC<CompanyPersonContactComponentProps> = React.memo(function CompanyPersonContactComponent(
   {session, setSnackbarProps}
-) => {
+) {
   if (!session) {return;}
   const [loading, setLoading] = React.useState<boolean>(false);
-  const [changedFormData, setChangedFormData] = React.useState(createInitialStateChanges());
   const [formState, setFormState] = React.useState<State>({
     message: '',
     errors: []
@@ -68,10 +67,12 @@ const CompanyPersonContactComponent: React.FC<CompanyPersonContactComponentProps
         return;
       }
       const response = await updateContantPerson(data);
-      setSnackbarProps && setSnackbarProps({open: true, message: SUCCESS_MESSAGE_SNACKBAR, severity: 'success'});
+      if (setSnackbarProps) {
+        setSnackbarProps({open: true, message: SUCCESS_MESSAGE_SNACKBAR, severity: 'success'});
+      }
     } catch (error) {
       console.error(error);
-      setSnackbarProps && setSnackbarProps({open: true, message: ERROR_MESSAGE_SNACKBAR, severity: 'error'});
+      setSnackbarProps?.({open: true, message: ERROR_MESSAGE_SNACKBAR, severity: 'error'});
     } finally {
       setLoading(false)
     }

@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useLayoutEffect, useState } from 'react'
-import { EncoderType, ExperienceDTO, State } from '@/lib/definitions'
+import { ExperienceDTO, State } from '@/lib/definitions'
 import Grid from '@mui/material/Grid2';
 import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, FormHelperText, SelectChangeEvent, styled, TextField, Typography } from '@mui/material';
 import { DateMobilePickerComponent, DatePickerComponent } from '../custom/components/datePickerCustom';
@@ -8,6 +8,7 @@ import { AddCircleOutline } from '@mui/icons-material';
 import { ZodIssue } from 'zod';
 import { validateExperience } from '@/lib/validations/experienceValidate';
 import useUtilsHook from '../hooks/useUtils';
+import { EncoderType } from '@prisma/client';
 
 
 const CustomDialog =  styled(Dialog)(({ theme }) => ({

@@ -16,13 +16,15 @@ export async function getAllPlans(): Promise<PlanDTO[] | undefined> {
                 price: 'asc'
             },
             include: {
-                PlanPreferences: true
+                PlanPreferences: {
+                    include: {
+                      preferencePlanEncType: true
+                    }
+                }
             }
         });
         const plansWithPreferences = await Promise.all(plans.map(async (plan) => {
-            const planPreferenceIds = plan.PlanPreferences.map((preference:PlanPreference) => preference.preferencePlanId);
-            const planPreferences: EncoderType[] | undefined = await getEncoderTypeByIdsIn(planPreferenceIds);   
-            return buildPlanDTO(plan, planPreferences);
+            return buildPlanDTO(plan);
         }));
         return plansWithPreferences;
     }catch(e) {
@@ -37,14 +39,16 @@ export async function getPlanById(id: number): Promise<PlanDTO | undefined> {
                 id: id,
             },
             include: {
-                PlanPreferences: true
+                PlanPreferences: {
+                    include: {
+                      preferencePlanEncType: true
+                    }
+                }
             }
         });
         if (!plan) return undefined;
-        const planPreferenceIds = plan.PlanPreferences.map((preference:PlanPreference) => preference.preferencePlanId);
-        const planPreferences: EncoderType[] | undefined = await getEncoderTypeByIdsIn(planPreferenceIds); 
       
-        return await buildPlanDTO(plan, planPreferences);
+        return await buildPlanDTO(plan);
     } catch(e) {
         console.log(e);
     }
@@ -58,13 +62,13 @@ export async function getPlanByTitle(title: string): Promise<PlanDTO | undefined
             },
         });
         if (!plan) return undefined;
-        return await buildPlanDTO(plan, []);
+        return await buildPlanDTO(plan);
     } catch(e) {
         console.log(e);
     }
 }
 
-export async function buildPlanDTO(plan: Plan, planPreferences: EncoderType[] | undefined): Promise<PlanDTO> {
+export async function buildPlanDTO(plan: Plan): Promise<PlanDTO> {
   const price = await convertDecimalToNumber(plan.price);
   const priceMonthly = await convertDecimalToNumber(plan.priceMonthly);
   const priceBianual = await convertDecimalToNumber(plan.priceBianual);
@@ -75,7 +79,6 @@ export async function buildPlanDTO(plan: Plan, planPreferences: EncoderType[] | 
     priceMonthly: priceMonthly,
     priceBianual: priceBianual,
     priceYearly: priceYearly,
-    planPreferences: planPreferences ?? []
   } as PlanDTO;    
 
 }

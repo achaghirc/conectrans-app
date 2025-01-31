@@ -1,4 +1,4 @@
-import BoxIconTextInformation from '@/app/ui/shared/custom/components/text/BoxIconTextInformation';
+import BoxIconTextInformation from '@/app/ui/shared/custom/components/box/BoxIconTextInformation';
 import { LocationOnOutlined } from '@mui/icons-material';
 import { Box, Paper, Typography } from '@mui/material';
 import { OfferDTO } from '@prisma/client';
@@ -6,6 +6,7 @@ import React from 'react'
 import Grid from '@mui/material/Grid2';
 import Image from 'next/image';
 import useMediaQueryData from '@/app/ui/shared/hooks/useMediaQueryData';
+import { DEFAULT_COMPANY_LOGO_URI } from '@/lib/constants';
 
 type OfferInformationComponentProps = {
   offer: OfferDTO;
@@ -37,12 +38,12 @@ const DetailsOfferResumeComponent: React.FC<OfferInformationComponentProps> = (
               {offer.title}
             </Typography>
             <Typography variant="body1" component="p" fontWeight={200} fontSize={18} mt={-1} ml={0}>
-              {offer.company.name}
+              {offer.User.Company?.name}
             </Typography>
           </Box>
           <BoxIconTextInformation
             icon={<LocationOnOutlined sx={{ fontSize: 20 }} />}
-            text={`${offer.location.city}, ${offer.location.state}, ${offer.location.countryName}`}
+            text={`${offer.Location.city}, ${offer.Location.state}, ${offer.Location.Country?.name_es}`}
             fontSize={16}
             fontWeight={700}
           />
@@ -55,8 +56,8 @@ const DetailsOfferResumeComponent: React.FC<OfferInformationComponentProps> = (
         </Grid>
         <Grid size={{ xs: 2 }} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
           <Image 
-            src={offer.company.assetUrl} 
-            alt={offer.company.name}
+            src={offer.User.Company?.Asset?.url ?? DEFAULT_COMPANY_LOGO_URI} 
+            alt={offer.User.Company?.name ?? ''}
             width={!mediaQuery ? 50 : 100}
             height={!mediaQuery ? 50 : 100}
             style={{ borderRadius: '50%' }}

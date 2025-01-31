@@ -334,24 +334,47 @@ model Plan {
   allowEditOffer  Boolean           @default(false)
   accessLimited   Boolean           @default(true)
   price           Decimal           @default(0)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
   PlanPreferences PlanPreferences[]
+  Transaction     Transaction[]
   Subscription    Subscription[]
 }
 
 model Subscription {
-  id                   Int      @id @default(autoincrement())
-  userId               String
-  planId               Int
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime
-  endDate              DateTime
-  startDate            DateTime
-  status               String   @default("pending") @db.VarChar
-  stripeSubscriptionId String?
-  Offer                Offer[]
-  Plan                 Plan     @relation(fields: [planId], references: [id])
-  User                 User     @relation(fields: [userId], references: [id])
+  id              Int @id @default(autoincrement())
+  userId          String
+  planId          Int
+  remainingOffers Int
+  usedOffers      Int
+  status          String   @db.VarChar
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  User            User     @relation(fields: [userId], references: [id])
+  Plan            Plan     @relation(fields: [planId], references: [id])
+  Transaction     Transaction[]
+  Offer           Offer[]
 
   @@index([userId], map: "subscription_userid_idx")
-  @@index([userId, planId], map: "subscription_userid_planid_idx")
+}
+
+model Transaction {
+  id                        Int      @id @default(autoincrement())
+  stripe_transaction_id     String 
+  stripe_payment_intent_id  String?
+  stripe_customer_id        String?
+  stripe_payment_method_id  String?
+  stripe_refound_id         String?
+  subscriptionId            Int 
+  planId                    Int
+  amount                    Decimal
+  currency                  String
+  status                    String
+  paidOffers                Int
+  createdAt                 DateTime
+  updatedAt                 DateTime
+  invoiceId                 String?
+  Plan                      Plan  @relation(fields: [planId], references: [id])
+  Subscription              Subscription  @relation(fields: [subscriptionId], references: [id])
+
 }

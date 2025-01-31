@@ -9,16 +9,16 @@ import SubscriptionCardSkeleton from '@/app/ui/shared/custom/components/skeleton
 import { useQuery } from '@tanstack/react-query';
 import { PlanDTO } from '@prisma/client';
 import { Control, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
-interface ResumeFormProps {
+interface PlanSelectionFormProps {
   control: Control<Partial<SignUpCompanyFormData>>;
   register: UseFormRegister<Partial<SignUpCompanyFormData>>;
   watch: UseFormWatch<Partial<SignUpCompanyFormData>>;
   setValue: UseFormSetValue<Partial<SignUpCompanyFormData>>;
 };
 
-export default function ResumeForm({ 
+export default function PlanSelectionForm({ 
   setValue
-}: ResumeFormProps) {
+}: PlanSelectionFormProps) {
   const [selectedPlan, setSelectedPlan] = useState<PlanDTO | null>(null);
 
   const { data: plans = [], isLoading, isError } = useQuery({
@@ -29,6 +29,7 @@ export default function ResumeForm({
   const onSelectPlan = (plan: PlanDTO) => {
     setSelectedPlan(plan);
     setValue('subscriptionPlan.planId', plan.id);
+    setValue('subscriptionPlan.Plan', plan);
   }
 
   if(isError) {

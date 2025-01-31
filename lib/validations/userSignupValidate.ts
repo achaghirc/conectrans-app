@@ -17,7 +17,7 @@ const FormUserAuthSchema = z.object({
     password: z.string().min(8, 'Contraseña no válida, debe tener al menos 8 caracteres'),
     confirmPassword: z.string().min(8, 'Contraseña no válida, debe tener al menos 8 caracteres')
 });
-let date18YearsAgo = new Date();
+const date18YearsAgo = new Date();
 date18YearsAgo.setFullYear(date18YearsAgo.getFullYear() - 18);
 const FormUserSchema = z.object({
   name: z.string().min(1, 'El nombre es obligatorio'),

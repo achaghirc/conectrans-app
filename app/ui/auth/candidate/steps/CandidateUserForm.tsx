@@ -5,21 +5,17 @@ import { PasswordType, SignUpCandidateFormData, State, ValidationCIFNIFResult } 
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, InputAdornment, TextField } from '@mui/material'
 import Grid from '@mui/material/Grid2';
-import React, { ChangeEvent, useState } from 'react'
+import React, { useState } from 'react'
 import { Control, UseFormSetValue } from 'react-hook-form';
 
 type CadidateUserFormProps = {
   control: Control<Partial<SignUpCandidateFormData>>;
-  setValue: UseFormSetValue<Partial<SignUpCandidateFormData>>;
-  formData: SignUpCandidateFormData;
-  setFormData: (data: any) => void;
   errors: State;
 }
 
 export default function CadidateUserForm({
-  control, setValue, formData, errors, setFormData
+  control, errors
 }: CadidateUserFormProps) {
-  const { handleZodError, handleZodHelperText } = useUtilsHook();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -28,11 +24,6 @@ export default function CadidateUserForm({
     if (type === 'confirmPassword') setShowConfirmPassword(!showConfirmPassword);
   };
   
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    let { name, value } = e.target;
-    setFormData({ ...formData, [name]: value } );
-  };
-
   const inputPropShowPassword = (type: PasswordType) => {
     return (
       <InputAdornment position="end">

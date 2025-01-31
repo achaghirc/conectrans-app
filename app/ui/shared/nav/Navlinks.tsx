@@ -21,11 +21,10 @@ const links: NavLinksType[] = [
   { name: 'Subscripciones', href: '/account-company/subscriptions', icon: PaymentOutlined, roles: ['ADMIN', 'COMPANY'] },
 ];
 
-export default function NavLinks({ session, role, onClick }: NavlinksProps) {
+export default function NavLinks({ role, onClick }: NavlinksProps) {
   const [authorizedLinks, setAuthorizedLinks] = useState<NavLinksType[]>([]);
   const pathname = usePathname();
   const router = useRouter();
-  const queryClient = useQueryClient();
 	useEffect(() => {
 			const authorizedLinks = links.filter((link) => link.roles.includes(role));
 			console.log(role)
@@ -33,7 +32,7 @@ export default function NavLinks({ session, role, onClick }: NavlinksProps) {
 	},[role]);
 
   const handleOnClick = (route: string) => {
-    onClick && onClick();
+    onClick?.();
     router.push(route);
   }
 

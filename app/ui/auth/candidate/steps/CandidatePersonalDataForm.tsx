@@ -49,22 +49,17 @@ export default function CandidatePersonalDataForm({
   });
 
 	const handleInputContactInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		let { name, value } = e.target;
+		const { name } = e.target;
+    let value = e.target.value;
 		if (name === 'cifnif' && value.length == 0) {
       if (value.length == 0) setCifError(null);
       value = value.toUpperCase();
     }
 		setFormData({contactInfo: {...formData.contactInfo, [name]: value }});
 	}
-
-	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-		const { name, value } = e.target;
-		setFormData({ ...formData, [name]: value });
-	}
-
 	const handleSelectChange = async (e: SelectChangeEvent<string>) => {
 		const { name, value } = e.target;
-		let contactInfo = formData.contactInfo;
+		const contactInfo = formData.contactInfo;
 		//Get provinces of the selected country
 		if(name === 'contactInfo.country' && countries) {
 			const country = countries.find((country) => country.id === parseInt(value));

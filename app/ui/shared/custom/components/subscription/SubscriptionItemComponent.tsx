@@ -1,13 +1,16 @@
-import { Avatar, Box, Typography } from "@mui/material";
+import { PAYMENT_WARN_MESSAGE } from "@/lib/constants";
+import { InfoOutlined } from "@mui/icons-material";
+import { Avatar, Box, Tooltip, Typography } from "@mui/material";
 
 export type SubscriptionItemComponentProps = {
   icon: React.ReactNode;
   title: string;
   text: string;
   principal?: boolean;
+  warning?: boolean;
 }
 
-const  SubscriptionItemComponent: React.FC<SubscriptionItemComponentProps> = ({icon, title, text, principal}) => {
+const  SubscriptionItemComponent: React.FC<SubscriptionItemComponentProps> = ({icon, title, text, principal, warning}) => {
   return (
     <Box
       sx={{
@@ -39,7 +42,14 @@ const  SubscriptionItemComponent: React.FC<SubscriptionItemComponentProps> = ({i
         }}
       >
         <Typography variant="caption" component={"h2"} fontWeight={200}>{title}</Typography>
-        <Typography variant="h6" component={"h3"} fontWeight={700}>{text}</Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 1}}>
+          <Typography variant="h6" component={"h3"} fontWeight={700}>{text}</Typography>
+          {warning && (
+            <Tooltip title={PAYMENT_WARN_MESSAGE}>
+              <InfoOutlined color="warning"/>
+            </Tooltip>
+          )}
+        </Box>
       </Box>
     </Box>
   )

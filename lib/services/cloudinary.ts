@@ -1,5 +1,5 @@
 'use server';
-import { v2 as cloudinary, DeleteAssetRelation, UploadApiResponse } from 'cloudinary';
+import { v2 as cloudinary, ConfigAndUrlOptions, DeleteAssetRelation, TransformationOptions, UploadApiResponse } from 'cloudinary';
 import { CloudinaryRemoveResponse } from '../definitions';
 
 /**
@@ -39,4 +39,9 @@ export async function uploadFileToCloud(image: File, userEmail: string) {
 export async function removeFileFromCloud(identifier: string, format: string) {
     const response: CloudinaryRemoveResponse = await cloudinary.uploader.destroy(identifier);
     return response;
+}
+
+export async function downloadFileFromCloud(identifier: string, format: TransformationOptions | ConfigAndUrlOptions) {
+  const response = await cloudinary.url(identifier, {format: format});
+  return response;
 }

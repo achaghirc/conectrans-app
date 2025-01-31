@@ -1,5 +1,4 @@
-import SettingButtonMenu from '@/app/ui/shared/custom/components/button/SettingButtonMenu'
-import BoxIconTextInformation from '@/app/ui/shared/custom/components/text/BoxIconTextInformation'
+import BoxIconTextInformation from '@/app/ui/shared/custom/components/box/BoxIconTextInformation'
 import useMediaQueryData from '@/app/ui/shared/hooks/useMediaQueryData'
 import { cardMobileStyles, paperStyles } from '@/app/ui/shared/styles/styles'
 import { BusinessOutlined, EventBusyOutlined, TextSnippetOutlined } from '@mui/icons-material'
@@ -10,8 +9,7 @@ import React from 'react'
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
 import { Session } from 'next-auth'
-import { OfferCardSkeleton, OfferCardSkeletonMobile } from '@/app/ui/shared/custom/components/skeleton/OffersListSkeletonComponent'
-import { notFound } from 'next/navigation'
+import { DEFAULT_COMPANY_LOGO_URI } from '@/lib/constants'
 type ApplicationOfferCardComponentProps = {
   session: Session | null;
   data: ApplicationOfferDTO;
@@ -75,7 +73,7 @@ const ApplicationOfferCardComponent: React.FC<ApplicationOfferCardComponentProps
       <Box sx={cardMobileStyles}>
         <Box sx={{ p: {xs: 1, md: 2}, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Image
-            src={data.Offer.User?.Company?.Asset?.url ?? './images/default-company.png'} 
+            src={data.Offer.User?.Company?.Asset?.url ?? DEFAULT_COMPANY_LOGO_URI} 
             alt={data.Offer.User?.Company?.name ?? ''}
             width={60}
             height={60}
@@ -109,7 +107,7 @@ const ApplicationOfferCardComponent: React.FC<ApplicationOfferCardComponentProps
       <Paper elevation={2} sx={paperStyles}>
         <Box sx={{ p: {xs: 1, md: 2}, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Image
-            src={data.Offer.User?.Company?.Asset?.url ?? './images/default-company.png'} 
+            src={data.Offer.User?.Company?.Asset?.url ?? DEFAULT_COMPANY_LOGO_URI} 
             alt={data.Offer.User?.Company?.name ?? ''}
             width={mediaQuery ? 100 : 60}
             height={mediaQuery ? 100 : 60}

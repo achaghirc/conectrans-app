@@ -1,4 +1,4 @@
-import { DriverEmploymentPreferences, DriverEmploymentPreferencesDTO, DriverLicenceDTO, DriverWorkRangePreferences, DriverWorkRangePreferencesDTO, OfferCustomDTO, OfferDTO } from "@prisma/client";
+import { DriverEmploymentPreferences, DriverEmploymentPreferencesDTO, DriverLicenceDTO, DriverWorkRangePreferences, DriverWorkRangePreferencesDTO, OfferCustomDTO, OfferDTO, PlanDTO } from "@prisma/client";
 import { Dayjs } from "dayjs";
 import { ZodIssue } from "zod";
 
@@ -122,11 +122,11 @@ export type Role = {
     updatedAt?: Date;
 }
 
-export type EncoderType = {
+export type EncoderTypeDTO = {
     id: number;
     name: string;
     code: string;
-    type: string;
+    type?: string;
 }
 
 export type Plan = {
@@ -141,7 +141,7 @@ export type Plan = {
     maxOffers: number;
     allowEditOffer: boolean;
     accessLimited: boolean;
-    planPreferences: EncoderType[];
+    planPreferences: EncoderTypeDTO[];
 }
 
 export type PlanPreference = {
@@ -187,6 +187,7 @@ export type Subscriptions = {
     id: number;
     userId: string;
     planId: number;
+    Plan?: PlanDTO;
     startDate: Date;
     endDate: Date;
     stipeSubscriptionId: string;
@@ -362,4 +363,29 @@ export type MapComponentProps = {
 export type OfferSearchResponse = {
   offers: OfferDTO[];
   total: number;
+}
+
+//FILTERS
+
+export type ApplicationOfferFilter = {
+  personId: number;
+  status: string;
+  offerId: number;
+}
+
+export type FilterOffersDTO = {
+  id?: string | undefined;
+  userId?: string | undefined;
+  country: string | undefined;
+  state: string | undefined;
+  contractType: string[] | undefined;
+  workRange: string[] | undefined;
+  experience: string | undefined;
+  licenseType: string[] | undefined;
+  adrType: string[] | undefined;
+  isFeatured: boolean | undefined;
+  isAnonymous: boolean | undefined;
+  allOffers: boolean | undefined;
+  endDate?: Date | undefined;
+  active?: boolean | undefined; // If is active or historical based on the end date
 }

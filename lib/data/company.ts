@@ -7,6 +7,7 @@ import { Location } from "@prisma/client";
 import { getActitivieByCode } from "./activity";
 import { takeNumberFromString } from "../utils";
 import { getAssetById } from "./asset";
+import { DEFAULT_COMPANY_LOGO_URI } from "../constants";
 
 
 export async function getCompanyByUserId(userId: string): Promise<CompanyDTO | undefined> {
@@ -40,7 +41,7 @@ export async function getCompanyByUserId(userId: string): Promise<CompanyDTO | u
         }
         const location : LocationDTO | undefined = await getLocationById(company.locationId!);
         const companyDTO: CompanyDTO = {...company, 
-                assetUrl: company.Asset != null? company.Asset.url : 'https://res.cloudinary.com/dgmgqhoui/image/upload/w_1000,c_fill,ar_1:1,g_auto,r_max,bo_5px_solid_red,b_rgb:262c35/v1734182399/default-logo-company_i11ozb.png',
+                assetUrl: company.Asset != null? company.Asset.url : DEFAULT_COMPANY_LOGO_URI,
                 contactPersonName: company.ContactPerson!.name,
                 contactPersonLastname: company.ContactPerson!.lastname,
                 contactPersonPhone: company.ContactPerson!.phone,
@@ -86,7 +87,7 @@ export async function getCompanyById(companyId: number): Promise<CompanyDTO | un
     const location : LocationDTO | undefined = await getLocationById(company.locationId!);
     return {
       ...company,
-      assetUrl: company.Asset != null? company.Asset.url : 'https://res.cloudinary.com/dgmgqhoui/image/upload/w_1000,c_fill,ar_1:1,g_auto,r_max,bo_5px_solid_red,b_rgb:262c35/v1734182399/default-logo-company_i11ozb.png',
+      assetUrl: company.Asset != null? company.Asset.url : DEFAULT_COMPANY_LOGO_URI,
       locationStreet: company.Location!.street,
       locationNumber: company.Location!.number,
       locationCity: company.Location!.city,
