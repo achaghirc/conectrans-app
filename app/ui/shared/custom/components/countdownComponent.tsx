@@ -46,7 +46,7 @@ const CountdownComponent:React.FC<CountdownComponentProps> = (
   }, [endDate]);
 
   if (!timeRemaining) {
-    return <div>Time's up!</div>;
+    return <div>Time`&apos;`s up!</div>;
   }
 
   const { days, hours, minutes, seconds } = timeRemaining;

@@ -40,7 +40,7 @@ const ModalCheckPassComponent: React.FC<ModalCheckPassComponentProps> = (
   }
 
   const handleSubmit = () => {
-    let userDataCopy = userData;
+    const userDataCopy = userData;
     userDataCopy.confirmPassword = pass;
 
     onSave(userDataCopy);

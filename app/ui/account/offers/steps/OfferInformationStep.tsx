@@ -10,6 +10,7 @@ import { Box, Typography } from "@mui/material";
 import useUtilsHook from "@/app/ui/shared/hooks/useUtils";
 import { MAX_WORDS_DESCRIPTION_500 } from "@/lib/constants";
 import useMediaQueryData from "@/app/ui/shared/hooks/useMediaQueryData";
+import { never } from "zod";
 
 type OfferInformationStepProps = {
   control: Control<Partial<Offer>>;
@@ -30,15 +31,15 @@ const OfferInformationStep: React.FC<OfferInformationStepProps> = (
   useEffect(() => {
     if(watch('startDate') === undefined ){
       if(offer?.startDate) 
-        setValue('startDate', dayjs(offer.startDate).toDate());
+        setValue('startDate', dayjs(offer.startDate).toDate() as unknown as never );
       else 
-        setValue('startDate', dayjs(new Date()).toDate());
+        setValue('startDate', dayjs(new Date()).toDate() as unknown as never );
     }
     if (watch('endDate') === undefined) {
       if(offer?.endDate) 
-        setValue('endDate', dayjs(offer.endDate).toDate());
+        setValue('endDate', dayjs(offer.endDate).toDate() as unknown as never );
       else 
-        setValue('endDate', dayjs(new Date()).toDate());
+        setValue('endDate', dayjs(new Date()).toDate() as unknown as never );
     }
   }, [])
 
@@ -78,7 +79,7 @@ const OfferInformationStep: React.FC<OfferInformationStepProps> = (
             label="Fecha de inicio"
             name="startDate"
             value={watch('startDate') ? dayjs(watch('startDate')) : dayjs(new Date())}
-            setValue={(value) => setValue('startDate', value ? value.toDate() : undefined)}
+            setValue={(value) => setValue('startDate', value ? value.toDate() as unknown as never : undefined as unknown as never)}
             errors={formState}
           />
         ) : (
@@ -86,7 +87,7 @@ const OfferInformationStep: React.FC<OfferInformationStepProps> = (
             label="Fecha de inicio"
             name="startDate"
             value={watch('startDate') ? dayjs(watch('startDate')) : dayjs(new Date())}
-            setValue={(value) => setValue('startDate', value ? value.toDate() : undefined)}
+            setValue={(value) => setValue('startDate', value ? value.toDate()as unknown as never : undefined as unknown as never)}
             errors={formState}
           />
         )}
@@ -97,7 +98,7 @@ const OfferInformationStep: React.FC<OfferInformationStepProps> = (
             label="Fecha límite"
             name="endDate"
             value={watch('endDate') ? dayjs(watch('endDate')) : dayjs(new Date())}
-            setValue={(value) => setValue('endDate', value ? value.toDate() : undefined)}
+            setValue={(value) => setValue('endDate', value ? value.toDate() as unknown as never : undefined as unknown as never)}
             errors={formState}
           />
         ) : (
@@ -105,7 +106,7 @@ const OfferInformationStep: React.FC<OfferInformationStepProps> = (
             label="Fecha límite"
             name="endDate"
             value={watch('endDate') ? dayjs(watch('endDate')) : dayjs(new Date())}
-            setValue={(value) => setValue('endDate', value ? value.toDate() : undefined)}
+            setValue={(value) => setValue('endDate', value ? value.toDate() as unknown as never : undefined as unknown as never)}
             errors={formState}
           />
         )}
@@ -125,9 +126,9 @@ const OfferInformationStep: React.FC<OfferInformationStepProps> = (
           label='Tipo de empleo'
           name='employmentType'
           control={control}
-          value={offer?.employmentType.map(employmentType => employmentType.name) ?? []}
+          value={offer?.OfferPreferences.filter((pref) => pref.type == 'EMPLOYEE_TYPE').map(employmentType => employmentType.EncoderType.name) ?? []}
           formState={formState}
-          options={encoders?.filter(encoder => encoder.type === 'EMPLOYEE_TYPE').map(encoder => ({value: encoder.code, label: encoder.name, id: encoder.id.toString()})) ?? []}
+          options={encoders?.filter(encoder => encoder.type === 'EMPLOYEE_TYPE').map(encoder => ({value: encoder.name, label: encoder.name, id: encoder.id.toString()})) ?? []}
           />
       </Grid>
       <Grid size={{ xs: 12, md: 6 }}>

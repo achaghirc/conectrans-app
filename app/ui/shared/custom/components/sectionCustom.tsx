@@ -1,10 +1,8 @@
-import React, { ReactElement } from 'react';
-import { Box, Typography, Button, Card, CardContent, CardActions, CardMedia } from "@mui/material";
-import Grid from '@mui/material/Grid2';
+import React from 'react';
+import { Typography, Button, Card, CardContent, CardActions, CardMedia } from "@mui/material";
 import { styled } from '@mui/material/styles';
-import BusinessMan from '../../../public/BusinessMan.png';
-import BusinessTable from '../../../public/BusinessTable.png';
 import Image, { StaticImageData } from 'next/image';
+import ButtonCustom from './button/ButtonCustom';
 
 type CardSectionPropsType = {
     title: string;
@@ -30,6 +28,10 @@ const SectionCard = styled(Card)(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     marginBottom: "20px", // Separación entre las secciones en pantallas pequeñas
   },
+  [theme.breakpoints.up('md')]: {
+    width: "70%",
+    height: "auto",
+  }
 }));
 
 // Estilos del botón
@@ -46,9 +48,15 @@ const ImageCustom = styled(Image)(({ theme, width, height }) => ({
 	height:height,
 	[theme.breakpoints.down('sm')]: {
 		marginBottom: "20px", // Separación entre las secciones en pantallas pequeñas
-		width: (Number(width) - 100),
-		height: (Number(height) - 100),
+		width: width ?? 125,
+	  height: height ?? 150,
+    // width: (Number(width) - 100),
+		// height: (Number(height) - 100),
 	},
+  [theme.breakpoints.up('md')]: {
+    width: width ?? 150,
+    height: height ?? 150,
+  },
 }));
 
 
@@ -70,13 +78,14 @@ export const CardSectionCustom = ({
 					variant="h4" 
 					component="h2" 
 					gutterBottom 
-					sx={{ fontSize: {xs: '1.5rem', md: '2.125rem'}, fontWeight: 'bold'}}
+					sx={{ fontSize: {xs: '1.5rem', md: '1.725rem'}, fontWeight: 'bold'}}
 				>
 						{title}
 				</Typography>
 				<Typography 
-					variant="body2" 
-					sx={{ fontSize: {xs: '0.8rem', md: '1.125rem'} }}
+					variant="body2"
+          component={'p'} 
+					sx={{ fontSize: {xs: '0.8rem', md: '1 rem'} }}
 				>
 						{description}
 				</Typography>
@@ -84,17 +93,21 @@ export const CardSectionCustom = ({
 			<CardMedia sx={{ textAlign: 'center'}}>
 				<ImageCustom
 					src={image} 
-					width={imageWidth ?? 300}
-					height={imageHeight ?? 350}
+					width={imageWidth}
+					height={imageHeight}
 					alt="Banner Home Conectrans" 
 					quality={100}
 					priority
 					/>
 			</CardMedia>
 			<CardActions sx={{ margin: '0 auto'}}>
-					<ActionButton variant="contained" color="primary" onClick={() => console.log(actionUrl)}>
-							{actionText}
-					</ActionButton>
+        <ButtonCustom 
+          title='Comenzar'
+          onClick={() => console.log(actionUrl)}
+          variant={actionUrl === '/company' ? 'outlined' : 'contained'}
+          color='primary'
+          loading={false}
+        />
 			</CardActions>
 		</SectionCard>
   )

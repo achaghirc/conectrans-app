@@ -168,7 +168,9 @@ const generatePlans = (): Plan[] => {
         maxOffers: 0,
         allowEditOffer: false,
         accessLimited: true,
-        planPreferences: []
+        planPreferences: [],
+        createdAt: new Date(),
+        updatedAt: new Date()
     };
     const planBasic = {
         id: 2,
@@ -196,7 +198,9 @@ const generatePlans = (): Plan[] => {
         maxOffers: 3,
         allowEditOffer: false,
         accessLimited: false,
-        planPreferences: []
+        planPreferences: [],
+        createdAt: new Date(),
+        updatedAt: new Date()
     };
     const planPremium = {
         id: 4,
@@ -210,7 +214,9 @@ const generatePlans = (): Plan[] => {
         maxOffers: 12,
         allowEditOffer: true,
         accessLimited: false,
-        planPreferences: []
+        planPreferences: [],
+        createdAt: new Date(),
+        updatedAt: new Date()
     };
 
     return [planFree, planBasic, planStandard, planPremium];

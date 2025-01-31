@@ -1,51 +1,38 @@
 'use client';
-import { getAllOffersPageable, getAllOffersPageableByFilter, getOffersPage } from '@/lib/data/offer';
-import { Box, Divider, FormControlLabel, FormGroup, IconButton, SwipeableDrawer, Switch, SxProps, Theme, Tooltip, Typography } from '@mui/material';
+import { getAllOffersPageableByFilter } from '@/lib/data/offer';
+import { Box, Divider, FormControlLabel, FormGroup, IconButton, SwipeableDrawer, SxProps, Theme, Tooltip, Typography } from '@mui/material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { ChangeEvent, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import OffersListSkeleton from '../shared/custom/components/skeleton/OffersListSkeletonComponent';
 import OffersGeneralListComponent from './OffersGeneralListComponent';
 import BreadcrumbsComponent from '../shared/custom/components/breadcrumbs/Breadcrumbs';
 import Grid from '@mui/material/Grid2';
 import { FilterAltOutlined, RemoveCircleOutline } from '@mui/icons-material';
 import { ControllerSelectFieldComponent, ControllerSelectMultiFieldComponent, ControllerTextFieldComponent } from '../shared/custom/components/form/ControllersReactHForm';
-import { Control, SubmitHandler, useForm, UseFormRegister, UseFormReset, UseFormResetField, UseFormSetValue } from 'react-hook-form';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import ButtonCustom from '../shared/custom/components/button/ButtonCustom';
 import useMediaQueryData from '../shared/hooks/useMediaQueryData';
 import { getCountries, getProvincesByCountryId } from '@/lib/data/geolocate';
 import { getEncoderTypeData } from '@/lib/data/encoderType';
-import { EncoderType, OfferDTO } from '@prisma/client';
+import { EncoderType } from '@prisma/client';
 import PaginationComponent from '../shared/custom/components/pagination/PaginationComponent';
-import { OfferSearchResponse } from '@/lib/definitions';
-import { register } from 'module';
+import { FilterOffersDTO, OfferSearchResponse } from '@/lib/definitions';
+import { CustomSwitch } from '../shared/custom/components/switch/CustomSwitch';
 
 type OffersGeneralComponentProps = {
   currentPage: number;
   limit: number;
-  totalPages: number;
+  initialFilterData: Partial<FilterOffersDTO>;
 }
-const initialFilterData: FilterOffersDTO = {
-  contractType: null,
-  country: null,
-  state: null,
-  licenseType: null,
-  adrType: null,
-  workRange: null,
-  isFeatured: null,
-  experience: null,
-  isAnonymous: null,
-  allOffers: null
-}
-
 
 
 const OffersGeneralComponent: React.FC<OffersGeneralComponentProps> = ({
-  currentPage,limit, totalPages
+  currentPage,limit, initialFilterData
 }) => {
   const queryClient = useQueryClient();
   const { mediaQuery } = useMediaQueryData();
   const [open, setOpen] = React.useState(false);
-  const [filterData, setFilterData] = React.useState<FilterOffersDTO>(initialFilterData);
+  const [filterData, setFilterData] = React.useState<Partial<FilterOffersDTO>>(initialFilterData);
   const [isSearching, setIsSearching] = React.useState<boolean>(false);
 
   const toggleDrawer = (open: boolean) => {
@@ -63,18 +50,20 @@ const OffersGeneralComponent: React.FC<OffersGeneralComponentProps> = ({
       // const result = await getAllOffersPageableByFilter(currentPage, rowsPerPage, data);
       // setOffers(result.offers);
       const filterData = {
-        contractType: data.contractType ?? null,
-        country: data.country ?? null,
-        state: data.state ?? null,
-        licenseType: data.licenseType ?? null,
-        adrType: data.adrType ?? null,
-        workRange: data.workRange ?? null,
-        isFeatured: data.isFeatured ?? null,
-        experience: data.experience ?? null,
-        isAnonymous: data.isAnonymous ?? null,
-        allOffers: data.allOffers ?? null
+        contractType: data.contractType ?? undefined,
+        country: data.country ?? undefined,
+        state: data.state ?? undefined,
+        licenseType: data.licenseType ?? undefined,
+        adrType: data.adrType ?? undefined,
+        workRange: data.workRange ?? undefined,
+        isFeatured: data.isFeatured ?? undefined,
+        experience: data.experience ?? undefined,
+        isAnonymous: data.isAnonymous ?? undefined,
+        allOffers: data.allOffers ?? undefined,
+        active: true
       }
       updateFilterData(filterData);
+      setOpen(false);
     } catch (error) {
       console.error(error);
     } finally {
@@ -90,10 +79,10 @@ const OffersGeneralComponent: React.FC<OffersGeneralComponentProps> = ({
   });
 
   const {data: recomendedOffers, isLoading: isRecomendedLoading, isError: isErrorRecomended} = useQuery({
-    queryKey: ['recomended_offers', initialFilterData, currentPage, limit],
-    queryFn: (): Promise<OfferSearchResponse> => getAllOffersPageableByFilter(currentPage, limit, initialFilterData),
+    queryKey: ['recomended_offers', currentPage, limit],
+    queryFn: (): Promise<OfferSearchResponse> => getAllOffersPageableByFilter(currentPage, limit, {allOffers: true, active: true}),
     staleTime: 1000 * 60 * 5, // 5 minutes
-    enabled: data == undefined || data.total == 0
+    // enabled: data == undefined || data.total == 0
   });
 
   const prefetchNexPage = async () => {
@@ -117,7 +106,7 @@ const OffersGeneralComponent: React.FC<OffersGeneralComponentProps> = ({
       };
       prefetchData();
     }
-  }, [isFetched]);
+  }, [isFetched, prefetchNexPage]);
 
 
   return (
@@ -142,8 +131,9 @@ const OffersGeneralComponent: React.FC<OffersGeneralComponentProps> = ({
         <Grid size={{xs: 12, md: 4}}>
           {mediaQuery && (
             <FilterComponent 
-              onSubmitHandler={onSubmit} 
               loading={isLoading}
+              filterData={filterData}
+              onSubmitHandler={onSubmit} 
             />
           )}
         </Grid>
@@ -196,8 +186,9 @@ const OffersGeneralComponent: React.FC<OffersGeneralComponentProps> = ({
         toggleDrawer={toggleDrawer}
       >
         <FilterComponent 
-          onSubmitHandler={onSubmit} 
           loading={isLoading}
+          filterData={filterData}
+          onSubmitHandler={onSubmit} 
         />
       </SwipableDrawerComponent> 
     </>
@@ -206,22 +197,9 @@ const OffersGeneralComponent: React.FC<OffersGeneralComponentProps> = ({
 
 export default OffersGeneralComponent
 
-export type FilterOffersDTO = {
-  id?: string | null;
-  country: string | null;
-  state: string | null;
-  contractType: string[] | null;
-  workRange: string[] | null;
-  experience: string | null;
-  licenseType: string[] | null;
-  adrType: string[] | null;
-  isFeatured: boolean | null;
-  isAnonymous: boolean | null;
-  allOffers: boolean | null;
-}
-
 type FilterComponentProps = {
   loading: boolean;
+  filterData?: Partial<FilterOffersDTO>;
   onSubmitHandler: SubmitHandler<FilterOffersDTO>;
 }
 
@@ -237,7 +215,7 @@ const filterStyle: SxProps<Theme> | undefined = {
 }
 
 const FilterComponent: React.FC<FilterComponentProps> = ({
-  loading, onSubmitHandler
+  loading, filterData, onSubmitHandler
 }) => {
   const queryClient = useQueryClient();
   const [selectedCountry, setSelectedCountry] = React.useState<string>('');
@@ -249,7 +227,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     setValue,
     handleSubmit,
   } = useForm<FilterOffersDTO>({
-    defaultValues: {
+    defaultValues: filterData as FilterOffersDTO ?? {
       country: '',
       state: '',
       contractType: [],
@@ -362,9 +340,9 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         </Box>
         <Divider variant='middle' />
         <Box>
-          <FormGroup sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', gap: 1}}>
+          <FormGroup sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', p: {xs: 0, lg: 2}}} >
             <FormControlLabel 
-                control={<Switch 
+                control={<CustomSwitch 
                   {...register('allOffers')}
                   checked={allOffers ?? false}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>, value: boolean) => handleToggle('allOffers', value)}
@@ -374,7 +352,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
                 labelPlacement='start' 
             />
             <FormControlLabel 
-                control={<Switch  
+                control={<CustomSwitch  
                   {...register('isFeatured')}
                   checked={isFeatured ?? false}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>, value: boolean) => handleToggle('isFeatured', value)}
@@ -383,7 +361,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
                 labelPlacement='start' 
             />
             <FormControlLabel 
-              control={<Switch 
+              control={<CustomSwitch 
                 {...register('isAnonymous')}
                 checked={isAnonymous ?? false}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>, value: boolean) => handleToggle('isAnonymous', value)}
@@ -467,7 +445,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
               control={control}
               name="licenseType"
               label="Carnet de conducir"
-              value={''}
+              value={watch('licenseType')}
               options={filterEncodersByType('CARNET')?.map((encoder) => ({label: encoder.name, value: encoder.name, id: encoder.id.toString()})) ?? []}
               sx={filterStyle}
             />

@@ -143,7 +143,7 @@ async function getAllUsers(): Promise<UserDTO[] | string> {
     }
 }
 
-async function getUserById(id: string): Promise<UserDTO | string> {
+export async function getUserById(id: string): Promise<UserDTO | string> {
     try {
         const user = await prisma.user.findUnique({
             where: {
@@ -169,7 +169,7 @@ async function getUserById(id: string): Promise<UserDTO | string> {
 //Unused
 export async function getUserDataSideNav(id: string): Promise<NavbarSessionData> {
     try {
-        const responseUser : UserDTO | String = await getUserById(id);
+        const responseUser : UserDTO | string = await getUserById(id);
         if (typeof responseUser === 'string') {
             return {} as NavbarSessionData;
         }
@@ -216,7 +216,7 @@ export async function getUserDataSideNav(id: string): Promise<NavbarSessionData>
 
 export async function getCompanyUserAccountData(id: string): Promise<CompanyUserAccountDTO | undefined> {
     try {
-        const responseUser : UserDTO | String = await getUserById(id);
+        const responseUser : UserDTO | string = await getUserById(id);
         if (typeof responseUser === 'string') {
             return undefined;
         }

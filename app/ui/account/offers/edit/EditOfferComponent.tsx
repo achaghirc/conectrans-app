@@ -80,7 +80,7 @@ const EditOfferComponent:React.FC<EditOfferComponentProps> = ({
           severity: 'success'
         })
         await queryClient.invalidateQueries({queryKey: ['offer', offer.id]});
-        onSuccess && onSuccess(data);
+        onSuccess?.(data);
         setOpen(false);
         setLoading(false);
       }
@@ -264,10 +264,11 @@ const EditOfferComponent:React.FC<EditOfferComponentProps> = ({
             Emplea este modal para editar tu oferta. Tenga en cuenta que, dependiendo de su plan de suscripción, es posible que no pueda editar la oferta una vez creada.
           </DialogContentText>
           <StepperFormComponent
-            children={getStepContent(activeStep)}
             activeStep={activeStep}
             steps={steps}
-          />
+          >
+            {getStepContent(activeStep)}
+          </StepperFormComponent>
         </DialogContent>
         <DialogActions>
           <ButtonCustom 

@@ -345,7 +345,7 @@ const SummaryAssetFile: React.FC<{assetFile: AssetSlimDTO | undefined, isLoading
 }
 
 
-const SummayAssetFileSkeleton: React.FC<{}> = () =>  {
+const SummayAssetFileSkeleton: React.FC = () =>  {
   return (
     <Box 
       sx={{

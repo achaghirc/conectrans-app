@@ -3,7 +3,7 @@
 import { Box, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { Session } from 'next-auth'
-import React, { Suspense } from 'react'
+import React, { Suspense, useState } from 'react'
 import ProfileComponent from '../../shared/account/ProfileComponent';
 import AccordionComponent from '../../shared/custom/components/accordion/AccordionComponent';
 import { useQuery } from '@tanstack/react-query';
@@ -24,16 +24,14 @@ const CompanyPersonContactComponent = React.lazy(() => import('./CompanyPersonCo
 const AccountCompany: React.FC<AccountCompanyProps> = (
   {session}
 ) => {
-  const router = useRouter();
   if (!session) {
-    router.push('/auth/login');
     return;
   }
 
   const handleCloseSnackbar = () => {
     setSnackbarProps({...snackbarProps, open: false})
   }  
-  const [snackbarProps, setSnackbarProps] = React.useState<SnackbarCustomProps>({
+  const [snackbarProps, setSnackbarProps] = useState<SnackbarCustomProps>({
     open: false, 
     handleClose: handleCloseSnackbar,
     message: '',

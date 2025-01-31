@@ -89,7 +89,7 @@ export async function authenticate(
         return { message: 'Logged in successfully', type: 'Success', success: true };
     } catch (error: any) {
         if(error instanceof AuthError) {
-            let authErr: AuthenticateMessage = {
+            const authErr: AuthenticateMessage = {
               success: false,
             } as AuthenticateMessage;
             switch (error.name) {

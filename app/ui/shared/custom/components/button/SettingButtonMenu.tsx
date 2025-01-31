@@ -23,6 +23,7 @@ const SettingButtonMenu: React.FC<SettingButtonMenuProps> = ({
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
     setAnchorEl(event.currentTarget);
   };
   const handleClose = (e: MouseEvent | TouchEvent | any) => {
@@ -31,17 +32,13 @@ const SettingButtonMenu: React.FC<SettingButtonMenuProps> = ({
   };
 
   return (
-    <Box>
+    <Box onClick={(e) => e.stopPropagation()} onMouseOver={(e) => handleMenu(e)}>  
       <IconButton 
         size="large"
         aria-label="settings of current offer"
         aria-controls="menu-settings-offer"
         aria-haspopup="true"
-        onClick={(e) => {
-          e.stopPropagation();
-          console.log('click icon button');
-          handleMenu(e);
-        }}
+        onClick={(e) => handleMenu(e)}
         color="inherit"
       >
 

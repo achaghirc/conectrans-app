@@ -1,5 +1,5 @@
 'use client';
-import React, { ChangeEvent, useEffect, useReducer } from 'react'
+import React, { ChangeEvent, useEffect, useState } from 'react'
 import { checkPasswordUser, updateUserHandler } from '@/lib/data/user'
 import { AccountForm, State } from '@/lib/definitions';
 import { Box, IconButton, InputAdornment, TextField, Typography } from '@mui/material'
@@ -21,32 +21,30 @@ export type AccountProps = {
     setSnackbarProps: (snackbarProps: Partial<SnackbarCustomProps>) => void;
 }
 
-const AccountDataComponent: React.FC<AccountProps> = React.memo((
+const AccountDataComponent: React.FC<AccountProps> = React.memo(function AccountDataComponent(
   {session, setSnackbarProps}
-) => {
-	const router = useRouter();
+) {
   if (!session) {
-    router.push('/auth/login');
     return;
   }
   //Errors en el formulario
-  const [formState, setFormState] = React.useState<State>({
+  const [formState, setFormState] = useState<State>({
     message: '',
     errors: []
   });
   const { handleZodError, handleZodHelperText } = useUtilsHook();
   const { userData } = useUserData(session);
-  const [user, setUser] = React.useState<UserDTO>(userData);
-  const [showPassword, setShowPassword] = React.useState<boolean>(false);
+  const [user, setUser] = useState<UserDTO>(userData);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
-  const [openModal, setOpenModal] = React.useState<boolean>(false);
-  const [loading, setLoading] = React.useState<boolean>(false);
+  const [openModal, setOpenModal] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleClose = (value: boolean) => {
     setOpenModal(value);
   }
 
-  const [changedForm, setChangedForm] = React.useState<AccountForm>({
+  const [changedForm, setChangedForm] = useState<AccountForm>({
     email: false,
     password: false,
   })

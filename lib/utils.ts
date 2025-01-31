@@ -1,6 +1,6 @@
 'use server';
-import { FilterOffersDTO } from "@/app/ui/offers/OffersGeneralComponent";
 import { Decimal } from "@prisma/client/runtime/library";
+import { FilterOffersDTO } from "./definitions";
 
 export const convertDecimalToNumber = async (value: Decimal | null | undefined): Promise<number> => {
   return await Promise.resolve(value ? value.toNumber() : 0);
@@ -69,12 +69,12 @@ export const getFilterDataFromQuery = async (searchParams: URLSearchParams): Pro
   const params = searchParams;
   const data = {
     contractType: params.getAll('contractType') ?? [],
-    country: params.get('country') ?? null,
-    state: params.get('state') ?? null,
+    country: params.get('country') ?? undefined,
+    state: params.get('state') ?? undefined,
     licenseType: params.getAll('licenseType') ?? [],
     adrType: params.getAll('adrType') ?? [],
     workRange: params.getAll('workRange') ?? [],
-    experience: params.get('experience') ?? null,
+    experience: params.get('experience') ?? undefined,
     isFeatured: params.get('isFeatured') === 'true' ? true : false,
     isAnonymous: params.get('isAnonymous') === 'true' ? true : false,
     allOffers: params.get('allOffers') === 'true' ? true : false

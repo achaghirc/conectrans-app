@@ -42,9 +42,9 @@ export async function getCountryById(id: number): Promise<Country | undefined> {
 
 export async function getProvincesByCountryId(id: number): Promise<Province[] | undefined> {
     try {
-        let country: Country | undefined = await getCountryById(id);
+        const country: Country | undefined = await getCountryById(id);
         if (!country) return undefined;
-        let provinces: Province[] = await prisma.province.findMany({
+        const provinces: Province[] = await prisma.province.findMany({
             where: {
                 country_id: country.id,
             },

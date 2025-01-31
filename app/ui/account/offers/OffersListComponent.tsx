@@ -78,7 +78,7 @@ const OffersListComponent: React.FC<OffersListComponentProps> = (
     if(!offers || offers.length == 0) return;
     const paginatedOffers = offers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     setPagginatedOffers(paginatedOffers);
-  }, [])
+  }, [offers, page])
 
   return (
     <>
@@ -96,10 +96,16 @@ const OffersListComponent: React.FC<OffersListComponentProps> = (
           <Link 
             key={offer.id} 
             href={`/account-company/offers/${offer.id}`} 
-            passHref
             style={{ textDecoration: 'none', color: 'inherit'}}
             >
-            <OfferCardComponent key={offer.id} offer={offer} handleEdit={handleEdit} handleDelete={handleDelete} />
+            <div
+              onClick={(e) => {
+                //Prevent the event from bubbling up the DOM tree, preventing any parent handlers from being notified of the event.
+                e.stopPropagation();
+              }}
+            >
+              <OfferCardComponent key={offer.id} session={session} offer={offer} handleEdit={handleEdit} handleDelete={handleDelete} />
+            </div>
           </Link>
         ))} 
       </Box>

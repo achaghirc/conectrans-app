@@ -1,17 +1,17 @@
 'use server';
 import prisma from "@/app/lib/prisma/prisma";
-import { Company, EncoderType, LocationDTO, Offer, OfferDTO, OfferPreferences, OfferPreferencesDTO, OfferSlimDTO, Prisma, PrismaClient, Subscription, SubscriptionDTO } from "@prisma/client";
+import { Company, EncoderType, Location, LocationDTO, Offer, OfferDTO, OfferPreferences, OfferPreferencesDTO, OfferSlimDTO, Prisma, PrismaClient, Subscription, SubscriptionDTO, Transaction } from "@prisma/client";
 import { createLocation, getLocationByFilter, getLocationById, LocationFilter } from "./location";
-import { getSubscriptionByUserIdAndActive } from "./subscriptions";
+import { getSubscriptionByUserIdAndActive, updateSubscriptionAfterNewOffer } from "./subscriptions";
 import { getEncoderTypeByNameIn } from "./encoderType";
 import { PrismaClientUnknownRequestError } from "@prisma/client/runtime/library";
 import { getCompanyByUserId, getCompanySlimByUserId } from "./company";
 import { stringYESNOToBoolean } from "../utils";
 import { EncoderTypeEnum } from "../enums";
 import { findManyOfferPreferencesByOfferIdIn } from "./offerPreferences";
-import { FilterOffersDTO } from "@/app/ui/offers/OffersGeneralComponent";
-import { CompanyDTO, OfferSearchResponse } from "../definitions";
+import { CompanyDTO, FilterOffersDTO, OfferSearchResponse } from "../definitions";
 import { OfferCustomDTO } from "@prisma/client";
+import { url } from "inspector";
 
 type Response = {
   status: 'OK' | 'KO' | 'WARN';
@@ -29,13 +29,13 @@ export async function createOffer(data: OfferDTO, userId: string): Promise<Respo
 
         const [locationSaved, subscriptionResult] = await Promise.all([
           createLocation({
-            ...data.location,
-            countryId: parseInt(data.location.countryId.toString()),
+            ...data.Location,
+            countryId: parseInt(data.Location.countryId?.toString() ?? '64'),
             latitude: 0,
             longitude: 0,
             createdAt: new Date(),
             updatedAt: new Date(),
-          }),
+          } as Location),
           getSubscriptionByUserIdAndActive(userId)
         ]);
 
@@ -54,7 +54,7 @@ export async function createOffer(data: OfferDTO, userId: string): Promise<Respo
         const digitalTachograph = data.digitalTachograph as unknown as string;
         const isAnonymous = data.isAnonymous as unknown as string;
     
-        const offerObject: OfferSlimDTO = {
+        const offerObject = {
           title: data.title,
           subtitle: data.subtitle,
           description: data.description,
@@ -82,7 +82,10 @@ export async function createOffer(data: OfferDTO, userId: string): Promise<Respo
           response.message = 'No se ha podido crear la oferta';
           return response;
         }
-        await createOfferPreferences(data, offer.id, prisma as PrismaClient);
+        await Promise.all([
+          createOfferPreferences(data, offer.id, prisma as PrismaClient),
+          updateSubscriptionAfterNewOffer(subscriptionResult.id)
+        ])
         
         return response;
       } catch (error) {
@@ -99,6 +102,10 @@ export async function createOffer(data: OfferDTO, userId: string): Promise<Respo
           message: 'Error al crear la oferta, por favor inténtalo de nuevo.'
         } as Response;
       }
+    } ,
+    {
+      maxWait: 5000, // default: 2000
+      timeout: 10000, // default: 5000);
     });
     return transaction;
 }
@@ -216,14 +223,15 @@ export async function editOffer(data: OfferDTO): Promise<OfferDTO | null> {
     const transaction = prisma.$transaction(async (prisma) => {
       const offerId: number = parseInt(data.id as unknown as string);
       
-      const locationData: LocationDTO = {
-        ...data.location,
-        countryId: parseInt(data.location.countryId.toString()),
+      const locationData = {
+        ...data.Location,
+        number: data.Location.number ?? '',
+        countryId: parseInt(data.Location.countryId!.toString()),
         latitude: 0,
         longitude: 0,
         updatedAt: new Date(),
         createdAt: new Date(),
-      }
+      } as Location
       const location = await createLocation(locationData);
       if (!location) {
         return null;
@@ -248,7 +256,35 @@ export async function editOffer(data: OfferDTO): Promise<OfferDTO | null> {
             workDay: data.workDay,
             isAnonymous: data.isAnonymous,
             isFeatured: data.isFeatured,
+          },
+        include: {
+          OfferPreferences: {
+            select: {
+              id: true,
+              EncoderType: {
+                select: {
+                  id: true,
+                  name: true,
+                  code: true,
+                  type: true
+                }
+              },
+              type: true,
+              offerId: true
+            }
+          },
+          Location: {
+            select: {
+              Country: {
+                select: {
+                  id: true,
+                  name_es: true,
+                  cod_iso2: true
+                }
+              }
+            }
           }
+        }
       });
       if (!updatedOffer) {
         return updatedOffer;
@@ -273,9 +309,15 @@ export async function editOffer(data: OfferDTO): Promise<OfferDTO | null> {
         workRange: filterEncoderOption(EncoderTypeEnum.WORK_SCOPE).map((wrp) => wrp.encoderType),
         licenseType: filterEncoderOption(EncoderTypeEnum.CARNET).map((lp) => lp.encoderType),
         licenseAdr: filterEncoderOption(EncoderTypeEnum.CARNET_ADR).map((lp) => lp.encoderType),
-        location: location,
-        company: companyResult,
-        subscription: subscriptionResult,
+        User: {
+          Company: {
+            name: companyResult.name,
+            Asset: {
+              url: companyResult.assetUrl
+            }
+          },
+        },
+        Subscription: subscriptionResult,
       } as OfferDTO;
     },
     {
@@ -290,15 +332,186 @@ export async function editOffer(data: OfferDTO): Promise<OfferDTO | null> {
   }
 }
 
+
 //GET
+export async function getOffersByUserPageable(page: number, limit: number, filter: Partial<FilterOffersDTO>): Promise<{ offers: OfferDTO[], total: number }> {
+
+  try {
+    const active = filter != undefined ? filter.active : true;
+    const userId = filter.userId;
+    if (!userId) {
+      return { offers: [], total: 0 };
+    }
+    let where = {};
+    if(active) {
+      where = {
+        userId: userId,
+        endDate: {
+          gte: new Date()
+        }
+      }
+    } else {
+      where = {
+        userId: userId,
+        endDate: {
+          lt: new Date()
+        }
+      }
+    }
+
+    const offers = await prisma.offer.findMany({
+      where: where,
+      include: {
+        Location: {
+          select: {
+            Country: {
+              select: {
+                id: true,
+                name_es: true,
+                cod_iso2: true
+              }
+            },
+          countryId: true,
+          street:true,
+          number: true,
+          zip: true,
+          state: true,
+          city: true
+          }
+        },
+        OfferPreferences: {
+          select: {
+            id: true,
+            offerId: true,
+            EncoderType: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+                type: true
+              }
+            },
+            type: true
+          }
+        },
+        User: {
+          select: {
+            Company: {
+              select: {
+              name: true,
+              Asset: {
+                select: {
+                  url: true
+                }
+              }
+            }
+          }
+          }
+        },
+        Subscription: {
+          select: {
+            status: true
+          }
+        },
+        _count: {
+          select: {
+            ApplicationOffer: true
+          }
+        }
+        },
+        orderBy: [
+          {
+            isFeatured: 'desc'
+          },
+          {
+            createdAt: 'desc'
+          }
+        ],
+      skip: (page - 1) * limit,
+      take: limit
+    });
+
+    if (!offers) {
+      return { offers: [], total: 0 };
+    }
+
+    // const offerResult: OfferDTO[] = await offerSlimDTOToOfferDTO(offers);
+
+    return { offers: offers, total: offers.length };
+  } catch (error) {
+    console.log(error);
+    return { offers: [], total: 0 };
+  }
+
+}
+
+// const offerSlimDTOToOfferDTO = async (offers: OfferSlimDTO[]): Promise<OfferDTO[]> => {
+//   try {
+    
+//     await Promise.all(offers.map(async (offer) => {
+//       const filterEncoderOption = (type: string) => offer.OfferPreferences.filter((pref) => pref.type == type);
+//       const offer: OfferDTO = {
+//         ...offer,
+//         employmentType: filterEncoderOption(EncoderTypeEnum.EMPLOYEE_TYPE).map((ep) => ep.EncoderType),
+//         workRange: filterEncoderOption(EncoderTypeEnum.WORK_SCOPE).map((wrp) => wrp.EncoderType),
+//         licenseType: filterEncoderOption(EncoderTypeEnum.CARNET).map((lp) => lp.EncoderType),
+//         licenseAdr: filterEncoderOption(EncoderTypeEnum.CARNET_ADR).map((lp) => lp.EncoderType),
+//         experience: filterEncoderOption(EncoderTypeEnum.EXPERIENCE).map((lp) => lp.EncoderType).at(0) ?? {} as EncoderType,
+//         location: location,
+//         company: company,
+//         subscription: subscription,
+    
+//     }));
+//   }
+// }
+
 export async function getOffersByUserId(userId: string): Promise<OfferDTO[]> {
   try {
     const offers = await prisma.offer.findMany({
       where: {
-      userId: userId
+        userId: userId
       },
       include: {
-      Location: true
+        Location: {
+          include: {
+            Country: 
+            {
+              select: {
+                id: true,
+                name_es: true,
+                cod_iso2: true
+              }
+            }
+          }
+        },
+        OfferPreferences: {
+          select: {
+            id: true,
+            EncoderType: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+                type: true
+              }
+            },
+            type: true
+          }
+        },
+        User: {
+          select: {
+            Company: {
+              select: {
+              name: true,
+              Asset: {
+                select: {
+                url: true
+                }
+              }
+            }
+          }
+          }
+        }
       },
       orderBy: [
       {
@@ -313,32 +526,7 @@ export async function getOffersByUserId(userId: string): Promise<OfferDTO[]> {
     if(!offers) {
       return [];
     }
-    const offerIds = offers.map((o) => o.id);
-
-    const preferences = await findManyOfferPreferencesByOfferIdIn(offerIds);
-    const company = await getCompanyByUserId(userId);
-    const subscription = await getSubscriptionByUserIdAndActive(userId);
-
-    const filterEncoderOption = (offerId: number, type: string) => preferences.filter((pref) => pref.offerId == offerId && pref.type == type);
-
-    const offerResult: OfferDTO[] = await Promise.all(offers.map(async (offer) => {
-      if (!subscription) {
-        return {} as OfferDTO;
-      }
-      const location = await getLocationById(offer.locationId) ?? {} as LocationDTO;
-      return {
-        ...offer,
-        employmentType: filterEncoderOption(offer.id, EncoderTypeEnum.EMPLOYEE_TYPE).map((ep) => ep.encoderType),
-        workRange: filterEncoderOption(offer.id, EncoderTypeEnum.WORK_SCOPE).map((wrp) => wrp.encoderType),
-        licenseType: filterEncoderOption(offer.id, EncoderTypeEnum.CARNET).map((lp) => lp.encoderType),
-        licenseAdr: filterEncoderOption(offer.id, EncoderTypeEnum.CARNET_ADR).map((lp) => lp.encoderType),
-        experience: filterEncoderOption(offer.id, EncoderTypeEnum.EXPERIENCE).map((lp) => lp.encoderType).at(0) ?? {} as EncoderType,
-        location: location,
-        company: company,
-        subscription: subscription,
-      };
-    }));
-    return offerResult.filter((o) => o.id !== undefined);
+    return offers.filter((o) => o.id !== undefined);
   } catch (error) {
     console.log(error);
     return [];
@@ -351,8 +539,52 @@ export async function getOfferById(offerId: number): Promise<OfferDTO | null> {
       where: {
         id: offerId
       },
-      include: {
-        Location: true
+      include: {
+        Location: {
+          include: {
+            Country: 
+            {
+              select: {
+                id: true,
+                name_es: true,
+                cod_iso2: true
+              }
+            }
+          }
+        },
+        OfferPreferences: {
+          select: {
+            id: true,
+            EncoderType: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+                type: true
+              }
+            },
+            type: true
+          }
+        },
+        Subscription: {
+          select: {
+            status: true
+          }
+        },
+        User: {
+          select: {
+            Company: {
+              select: {
+              name: true,
+              Asset: {
+                select: {
+                url: true
+                }
+              }
+            }
+          }
+          }
+        }
       }
     });
 
@@ -360,8 +592,7 @@ export async function getOfferById(offerId: number): Promise<OfferDTO | null> {
       return null;
     }
 
-    const offerResult = await generateOffers([offer]);
-    return offerResult[0];
+    return offer;
   } catch (error) {
     console.log(error);
     return null;
@@ -380,7 +611,6 @@ export async function getOfferSlimCardById(offerId: number): Promise<OfferDTO | 
         "Offer"."isFeatured" as "isFeatured",
         "Offer"."isAnonymous" as "isAnonymous",
         "Offer"."createdAt" as "createdAt",
-        "sub"."planId" as "planId",
         "sub"."status" as "subStatus"
       FROM "Offer"
       INNER JOIN "Location" AS "loc" ON "Offer"."locationId" = "loc"."id"
@@ -409,44 +639,13 @@ async function getEncodersByNames(allNames: string[]){
   return encoders;
 }
 
-export async function getAllOffersPageable(page?: number, pageSize?: number): Promise<{ offers: OfferDTO[], total: number }> {
-  try {
-    if(!page) page = 1;
-    if (!pageSize) pageSize = 10;
-    const [offers, total] = await prisma.$transaction([
-      prisma.offer.findMany({
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        include: {
-          Location: true
-        },
-        orderBy: {
-          createdAt: "desc"
-        }
-      }),
-      prisma.offer.count()
-    ]);
-
-    if (!offers) {
-      return { offers: [], total: 0 };
-    }
-    const offerResult  = await generateOffers(offers);
-
-    return { offers: offerResult.filter((o) => o.id !== undefined), total };
-  } catch (error) {
-    console.log(error);
-    return { offers: [], total: 0 };
-  }
-}
-
-
 /**
  * @param page 
  * @param pageSize 
  * @param data 
  * @returns 
  */
-export async function getAllOffersPageableByFilter(page: number = 1, pageSize: number = 10, data: FilterOffersDTO): Promise<OfferSearchResponse> {
+export async function getAllOffersPageableByFilter(page: number = 1, pageSize: number = 10, data: Partial<FilterOffersDTO>): Promise<OfferSearchResponse> {
   try {
     //Generate where clauses
     const whereClause: Prisma.Sql = generateFilterClausure(data);
@@ -462,7 +661,6 @@ export async function getAllOffersPageableByFilter(page: number = 1, pageSize: n
           "Offer"."isFeatured" as "isFeatured",
           "Offer"."isAnonymous" as "isAnonymous",
           "Offer"."createdAt" as "createdAt",
-          "sub"."planId" as "planId",
           "sub"."status" as "subStatus"
         FROM "Offer"
         INNER JOIN "Location" AS "loc" ON "Offer"."locationId" = "loc"."id"
@@ -494,18 +692,7 @@ export async function getAllOffersPageableByFilter(page: number = 1, pageSize: n
 
 export async function getOffersPage(query: string) {
   try {
-    const filter: FilterOffersDTO = {
-      contractType: null,
-      country: null,
-      state: null,
-      licenseType: null,
-      adrType: null,
-      workRange: null,
-      isFeatured: null,
-      experience: null,
-      isAnonymous: null,
-      allOffers: null
-    }
+    const filter: Partial<FilterOffersDTO> = {};
     const whereClause = generateFilterClausure(filter)
     const count = await prisma.$queryRaw<number>(Prisma.sql`
       SELECT COUNT(*) 
@@ -528,7 +715,7 @@ export async function getOffersPage(query: string) {
 //   isFeatured: boolean,
 //   companyLogo: string,
 // }
-let mapUserIdCompany: Map<string, Partial<CompanyDTO>> = new Map();
+const mapUserIdCompany: Map<string, Partial<CompanyDTO>> = new Map();
 async function generateSlimOfferDTO(offers: OfferCustomDTO[]): Promise<OfferDTO[]> {
   try { 
     const offerIds = offers.map((o) => o.id);
@@ -545,18 +732,35 @@ async function generateSlimOfferDTO(offers: OfferCustomDTO[]): Promise<OfferDTO[
         licenseType: filterEncoderOption(offer.id, EncoderTypeEnum.CARNET).map((lp) => lp.encoderType),
         endDate: offer.endDate,
         isFeatured: offer.isFeatured,
-        company: {
-          name: company?.name ?? '',
-          assetUrl: company?.assetUrl ?? '',
-        } as CompanyDTO,
-        subscription: {
-          planId: offer.planId,
+        User: {
+          Company: {
+            name: company?.name ?? '',
+            Asset: {
+              url: company?.assetUrl ?? ''
+            }
+          }
+        },
+        Subscription: {
           status: offer.subStatus ?? ''
         } as SubscriptionDTO,
-        location: {
-          state: offer.locationState
-        } as LocationDTO
-      };
+        OfferPreferences: preferences.filter((pref) => pref.offerId == offer.id).map((pref) => {
+          return {
+            id: pref.id ?? 0,
+            offerId: pref.offerId,
+            EncoderType: {
+              id: pref.encoderType.id ?? 0,
+              name: pref.encoderType.name,
+              code: pref.encoderType.code,
+              type: pref.encoderType.type
+            },
+            type: pref.type
+          };
+        }),
+        Location: {
+          state: offer.locationState,
+          Country: null,
+        }
+      }
       return result;
     }));
     return offerResult;
@@ -567,36 +771,32 @@ async function generateSlimOfferDTO(offers: OfferCustomDTO[]): Promise<OfferDTO[
 }
 
 
-
-
-async function generateOffers(offers: Offer[]): Promise<OfferDTO[]> {
-  const offerIds = offers.map((o) => o.id);
-  const preferences = await findManyOfferPreferencesByOfferIdIn(offerIds);
-
-  const filterEncoderOption = (offerId: number, type: string) => preferences.filter((pref) => pref.offerId == offerId && pref.type == type);
-
-  const offerResult: OfferDTO[] = await Promise.all(offers.map(async (offer) => {
-    const location = await getLocationById(offer.locationId) ?? {} as LocationDTO;
-    const company = await getCompanyByUserId(offer.userId);
-    const subscription = await getSubscriptionByUserIdAndActive(offer.userId);
-
-    return {
-      ...offer,
-      employmentType: filterEncoderOption(offer.id, EncoderTypeEnum.EMPLOYEE_TYPE).map((ep) => ep.encoderType),
-      workRange: filterEncoderOption(offer.id, EncoderTypeEnum.WORK_SCOPE).map((wrp) => wrp.encoderType),
-      licenseType: filterEncoderOption(offer.id, EncoderTypeEnum.CARNET).map((lp) => lp.encoderType),
-      licenseAdr: filterEncoderOption(offer.id, EncoderTypeEnum.CARNET_ADR).map((lp) => lp.encoderType),
-      experience: filterEncoderOption(offer.id, EncoderTypeEnum.EXPERIENCE).map((lp) => lp.encoderType).at(0) ?? {} as EncoderType,
-      location: location,
-      company: company,
-      subscription: subscription ?? {} as any,
-    };
-  }));
-
-  return offerResult;
+export async function countOffersAfterTransactionCreated(transactionId: number): Promise<number> {
+  const transaction = await prisma.transaction.findFirst({
+    where: {
+      id: transactionId
+    },
+    select: {
+      subscriptionId: true,
+      createdAt: true
+    }
+  });
+  if (!transaction) {
+    return 0;
+  }
+  const count = await prisma.offer.count({
+    where: {
+      subscriptionId: transaction.subscriptionId,
+      createdAt: {
+        gte: transaction.createdAt
+      }
+    }
+  })
+  return count;
 }
 
-const generateFilterClausure = (data: FilterOffersDTO) => {
+
+const generateFilterClausure = (data: Partial<FilterOffersDTO>) => {
   const filter = {
     ...data, 
     contractType: !data.contractType || data.contractType.length === 0 ? 'null' : data.contractType,
@@ -611,6 +811,19 @@ const generateFilterClausure = (data: FilterOffersDTO) => {
   if (filter.id != null) {
     whereClauses.push(Prisma.sql`"Offer"."id" = ${filter.id}::int`);
   } else {
+    if(filter.userId != null) {
+      whereClauses.push(Prisma.sql`"Offer"."userId" = ${filter.userId}::text`);
+    }
+    if(filter.endDate != null) {
+      whereClauses.push(Prisma.sql`"Offer"."endDate" <= ${filter.endDate}::date`);
+    }
+    if (filter.active != undefined){
+      if (filter.active) {
+        whereClauses.push(Prisma.sql`"Offer"."endDate" >= CURRENT_DATE`);
+      } else {
+        whereClauses.push(Prisma.sql`"Offer"."endDate" < CURRENT_DATE`);
+      }
+    }
     // Condición opcional para contractType
     if (data.contractType != null && data.contractType.length > 0) {
       whereClauses.push(Prisma.sql`

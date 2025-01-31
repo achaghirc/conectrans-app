@@ -28,7 +28,6 @@ type AccountUserProps = {
 }
 
 const AccountUserComponent: React.FC<AccountUserProps> = ({session}) => {
-  const { handleZodError, handleZodHelperText} = useUtilsHook();
   const router = useRouter();
   if (!session) {return;}
 

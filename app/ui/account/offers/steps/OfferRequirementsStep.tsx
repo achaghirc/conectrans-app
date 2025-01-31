@@ -17,6 +17,8 @@ type OfferRequirementsStepProps = {
 const OfferRequirementsStep: React.FC<OfferRequirementsStepProps> = (
   { control, formState, encoders, offer, setValue }
 ) => {
+  const preferencesEncoders = offer?.OfferPreferences.map((pref) => pref.EncoderType) ?? [];
+  const experiences = preferencesEncoders.filter((enc) => enc.type == 'EXPERIENCE');
   return (
     <Box
       sx={{ 
@@ -30,7 +32,7 @@ const OfferRequirementsStep: React.FC<OfferRequirementsStepProps> = (
             label='Carnet necesario (multiple)'
             name='licenseType'
             control={control}
-            value={offer?.licenseType?.map(license => license.name) ?? []}
+            value={preferencesEncoders.filter((enc) => enc.type == 'CARNET')?.map(license => license.name) ?? []}
             formState={formState}
             options={encoders?.filter(encoder => encoder.type === 'CARNET').map(encoder => ({value: encoder.code, label: encoder.name, id: encoder.id.toString()})) ?? []}
             />
@@ -40,7 +42,7 @@ const OfferRequirementsStep: React.FC<OfferRequirementsStepProps> = (
             label='Carnet ADR necesario'
             name='licenseAdr'
             control={control}
-            value={offer?.licenseAdr?.map(license => license.name) ?? []}
+            value={preferencesEncoders.filter((enc) => enc.type == 'CARNET_ADR').map(license => license.name) ?? []}
             formState={formState}
             options={encoders?.filter(encoder => encoder.type === 'CARNET_ADR').map(encoder => ({value: encoder.code, label: encoder.name, id: encoder.id.toString()})) ?? []}
             />
@@ -50,7 +52,7 @@ const OfferRequirementsStep: React.FC<OfferRequirementsStepProps> = (
             label='Ámbito de trabajo'
             name='workRange'
             control={control}
-            value={offer?.workRange?.map(workRange => workRange.name) ?? []}
+            value={preferencesEncoders.filter((enc) => enc.type == 'WORK_SCOPE').map(workRange => workRange.name) ?? []}
             formState={formState}
             options={encoders?.filter(encoder => encoder.type === 'WORK_SCOPE').map(encoder => ({value: encoder.code, label: encoder.name, id: encoder.id.toString()})) ?? []}
             />
@@ -86,7 +88,7 @@ const OfferRequirementsStep: React.FC<OfferRequirementsStepProps> = (
             label='Experiencia mínima'
             name='experience'
             control={control}
-            value={offer?.experience!.name ?? ''}
+            value={experiences.length && experiences.length > 0 ?  experiences[0].name : ''}
             formState={formState}
             options={encoders?.filter(encoder => encoder.type === 'EXPERIENCE').map(encoder => ({value: encoder.name, label: encoder.name, id: encoder.id.toString()})) ?? []}
           /> 

@@ -18,7 +18,6 @@ export type NavbarSessionData = {
 }
 
 export type NavlinksProps = {
-    session: Session | null;
     role: string;
     onClick?: () => void;
 }

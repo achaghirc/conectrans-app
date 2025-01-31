@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { SignUpForm, SignUpMobileForm } from '../../shared/auth/SignupComponents'
 import ContactForm from './steps/ContactForm';
 import PersonContactForm from './steps/PersonContactForm';
-import ResumenForm from './steps/ResumeForm';
+import ResumenForm from './steps/PlanSelectionForm';
 import CompanyForm from './steps/CompanyForm';
 import { CloudinaryUploadResponse, SignUpCompanyFormData, State, Subscriptions } from '@/lib/definitions';
 import { authenticate } from '@/lib/actions';
@@ -19,12 +19,16 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import ButtonCustom from '../../shared/custom/components/button/ButtonCustom';
 import { Box, Button } from '@mui/material';
 import StepperFormComponent from '../../shared/custom/components/steppers/StepperFormComponent';
+import PaymentComponentForm from './steps/PaymentComponentForm';
+import { loadStripe } from '@stripe/stripe-js';
+import { StripeSession } from '@/lib/stripe/session';
+import { createTransaction } from '@/lib/data/transactions';
 
-const steps = ['Datos de Empresa', 'Datos de Contacto', 'Persona de Contacto', 'Plan de Suscripción'];
+const steps = ['Datos de Empresa', 'Datos de Contacto', 'Persona de Contacto', 'Plan de Suscripción', 'Pago'];
 
 const initialDataSingup: SignUpCompanyFormData = {
   company: {
-    email: 'amine1@gmail.com',
+    email: 'aminechaghir1999@gmail.com',
     password: 'contraseña',
     confirmPassword: 'contraseña',
     socialName: 'Social Name',
@@ -55,6 +59,10 @@ const initialDataSingup: SignUpCompanyFormData = {
   subscriptionPlan: {} as Subscriptions
 }
 
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
+);
+
 export default function Signup() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -77,6 +85,7 @@ export default function Signup() {
   const onSubmit: SubmitHandler<Partial<SignUpCompanyFormData>> = async(data) => {
     setLoading(true);
     const dataSubmit = {...data, company: {...data.company, logo: null}} as SignUpCompanyFormData;
+
     try {
       const cloudinaryResponse: CloudinaryUploadResponse | null = data.company?.logo !== null ? await uploadFileToCloud(data.company!.logo, data.company!.email) : null;
       const user = await companySignUp(dataSubmit, cloudinaryResponse);
@@ -85,15 +94,16 @@ export default function Signup() {
         return;
       }
       //Llama a la función para crear el plan de suscripción de la empresa, es asincrona y no bloquea la ejecución
-      await createSubscriptionPlan(dataSubmit.subscriptionPlan.planId, user.id);
+      // await createSubscriptionPlan(dataSubmit.subscriptionPlan.planId, user.id);
       console.log('Empresa creada correctamente');
-      let formDataLogin = new FormData();
+      const formDataLogin = new FormData();
       formDataLogin.append('email', data.company!.email);
       formDataLogin.append('password', data.company!.password);
       const errorMsg = await authenticate(undefined, formDataLogin);
       if(errorMsg?.success) {
         console.log('Usuario autenticado correctamente');
-				router.push('/');
+        await handleCreateCustomer();
+        await handleCheckout();
 				return;
 			}
 			if(errorMsg) {
@@ -107,6 +117,64 @@ export default function Signup() {
       setLoading(false);
     }
   }
+  
+  const handleCreateCustomer = async () => {
+    const userEmail = watch('company.email');
+    const response = await fetch('/api/create_customer', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        email: userEmail,
+        name : watch('company.socialName'),
+        address: {
+          street: watch('contactInfo.streetAddress'),
+          city: watch('contactInfo.locality'),
+          postal_code: watch('contactInfo.zip'),
+          state: watch('contactInfo.province'),
+          country: watch('contactInfo.country'),
+        }
+      }),
+    });
+    const customerId = await response.json();
+    if (!customerId) {
+      console.log('Error al crear el cliente');
+      return;
+    }
+    return customerId;
+  }
+
+    const handleCheckout = async () => {  
+      const stripe = await stripePromise;
+      if (!stripe) { 
+        return;
+      }
+      const userEmail = watch('company.email');
+      const plan = watch('subscriptionPlan.Plan');
+      if(!plan) {
+        return;
+      }
+      const response = await fetch('/api/checkout_session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ plan: plan, email: userEmail }),
+      });
+      const session: StripeSession = await response.json();
+      // When the customer clicks on the button, create a current transaction and redirect them to Checkout.
+      const [transaction, result] = await Promise.all([
+        await createTransaction(session, plan, userEmail),
+        stripe.redirectToCheckout({
+          sessionId: session.id,
+        }),
+      ]);
+      
+      if (result.error) {
+        console.log(result.error.message);
+      }
+    }
 
   const handleSamePassword = ():ZodIssue | undefined => {
     if (formData.company.password !== formData.company.confirmPassword) {  
@@ -154,6 +222,9 @@ export default function Signup() {
         setActiveStep((prevStep) => prevStep + 1);
       }
     }
+    if( activeStep === 3) {
+      setActiveStep((prevStep) => prevStep + 1);
+    }
   }
   
   const handleBack = () => {
@@ -197,6 +268,13 @@ export default function Signup() {
           watch={watch}
           setValue={setValue}
         />;
+      case 4: 
+        return <PaymentComponentForm
+          control={control}
+          register={register}
+          watch={watch}
+          setValue={setValue}
+        />; 
       default:
         return null;
     }
@@ -206,10 +284,11 @@ export default function Signup() {
       return (
         <ButtonCustom
           onClick={handleSubmit(onSubmit)}
-          title='Finalizar'
+          title='Pagar y Finalizar'
           loading={loading}
           disable={false}
           type='submit'
+          variant='contained'
           color='primary'
         />
       )
@@ -231,10 +310,11 @@ export default function Signup() {
       <form onSubmit={handleSubmit(onSubmit)}>
         <SignUpForm>
           <StepperFormComponent
-            children={getStepContent(activeStep)}
             activeStep={activeStep}
             steps={steps}
-          />
+          >
+            {getStepContent(activeStep)}
+          </StepperFormComponent>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 3}}>
             <ButtonCustom 
               onClick={() => {
@@ -255,10 +335,11 @@ export default function Signup() {
         <SignUpMobileForm>
           <ArrowBack onClick={() => router.back()}/>
           <StepperFormComponent 
-            children={getStepContent(activeStep)} 
             activeStep={activeStep} 
             steps={steps}
-          />
+          >
+            {getStepContent(activeStep)}
+          </StepperFormComponent>
           <Box sx={{ display: 'flex', justifyContent: 'space-evenly', mt: 3 }}>
             <ButtonCustom 
                 onClick={() => {

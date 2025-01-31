@@ -3,57 +3,66 @@ import Grid from '@mui/material/Grid2'
 import Image from 'next/image';
 import { Box, IconButton, Typography } from '@mui/material';
 import { AddPhotoAlternateOutlined } from '@mui/icons-material';
+import { DEFAULT_COMPANY_LOGO_URI } from '@/lib/constants';
+import useMediaQueryData from '../hooks/useMediaQueryData';
 
 export type ProfileProps = {
   assetUrl?: string | null;
   title: string;
   subtitle: string;
+  direction?: 'row' | 'column';
+  justify?: 'flex-start' | 'center' | 'flex-end';
+  editable?: boolean;
 }
-const ProfileComponent: React.FC<ProfileProps> = ({assetUrl, title, subtitle}) =>  {
+const ProfileComponent: React.FC<ProfileProps> = ({assetUrl, title, subtitle, direction, justify, editable}) =>  {
+  const { mediaQuery } = useMediaQueryData();
   return (
     <Box component={'div'}
       sx={{
         display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignContent: 'center',
+        flexDirection: direction ?? 'column',
+        justifyContent: justify ?? 'center',
         alignItems: 'center',
-        gap: 1,
-        mt: {xs: 2, sm: 5},
+        width: '100%',
+        height: '100%',
+        gap: 1
       }}
     >
       <Box
         sx={{
-          display: 'block',
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
           position: 'relative',
-          width: 150,
-          height: 150,
-          backgroundSize: 'cover',
+          width: mediaQuery ? 150 : 100,
+          height: mediaQuery ? 150 : 100,
         }}
       >
         <Image
-          src={assetUrl ?? 'https://res.cloudinary.com/dgmgqhoui/image/upload/w_1000,c_fill,ar_1:1,g_auto,r_max,bo_5px_solid_red,b_rgb:262c35/v1734182399/default-logo-company_i11ozb.png'} 
+          src={assetUrl ?? DEFAULT_COMPANY_LOGO_URI } 
           alt="Profile Picture"
-          width={150}
-          height={150}
+          width={mediaQuery ? 150 : 100}
+          height={mediaQuery ? 150 : 100}
           style={{
             borderRadius: '50%',
             objectFit: 'cover',
           }}
         />
-        <IconButton
-          size="small"
-          sx={{
-            position: 'absolute',
-            bottom: 0,
-            right: -18,
-            backgroundColor: 'white',
-            boxShadow: 2,
-            '&:hover': { backgroundColor: 'lightgray' },
-          }}
-        >
-          <AddPhotoAlternateOutlined fontSize="small" />
-        </IconButton>
+        {editable ? (
+          <IconButton
+            size="small"
+            sx={{
+              position: 'absolute',
+              bottom: direction === 'row' ? 10 : 0,
+              right: direction === 'row' ? 0 : -18,
+              backgroundColor: 'white',
+              boxShadow: 2,
+              '&:hover': { backgroundColor: 'lightgray' },
+            }}
+            >
+            <AddPhotoAlternateOutlined fontSize="small" />
+          </IconButton>
+        ): null}
       </Box>
       <Box>
         <Typography
@@ -61,6 +70,7 @@ const ProfileComponent: React.FC<ProfileProps> = ({assetUrl, title, subtitle}) =
           component={'h1'} 
           fontWeight={'bold'} 
           textAlign={'center'}
+          fontSize={mediaQuery ? 36 : 20}
         >
           {title}
         </Typography>

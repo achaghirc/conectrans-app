@@ -1,4 +1,5 @@
-import { Button, CircularProgress } from '@mui/material'
+import { AccountBalanceOutlined } from '@mui/icons-material';
+import { Button, CircularProgress, SxProps } from '@mui/material'
 import React from 'react'
 
 type ButtonCustomProps = {
@@ -8,20 +9,25 @@ type ButtonCustomProps = {
   disable?: boolean;
   color: 'primary' | 'secondary';
   type?: 'button' | 'submit';
+  variant?: 'outlined' | 'contained';
+  sx?: SxProps;
+  startIcon?: React.ReactNode;
 }
 
 const ButtonCustom = (
-  {title, loading, color, disable, type, onClick}
+  {title, loading, color, disable, type, variant, sx, startIcon, onClick}
   : ButtonCustomProps
 ) => {
   return (
     <Button 
+      startIcon={startIcon}
       endIcon={loading ? <CircularProgress size={20} /> : null}
-      variant='outlined' 
+      variant={variant ?? 'outlined'}
       color={color}
       onClick={onClick} 
       disabled={disable}
       type={type ?? 'button'}
+      sx={sx}
     >
       {title}
     </Button>

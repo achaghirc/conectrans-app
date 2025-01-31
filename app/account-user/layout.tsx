@@ -1,6 +1,6 @@
 import React from 'react'
 import { auth } from '@/auth';
-import Sidenav from '../ui/shared/nav/Sidenav';
+import Sidenav from '../ui/shared/nav/SideNav';
 import { Session } from 'next-auth';
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
 import { getCountries } from '@/lib/data/geolocate';

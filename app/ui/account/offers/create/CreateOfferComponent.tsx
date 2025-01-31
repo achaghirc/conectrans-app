@@ -9,7 +9,7 @@ import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, D
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
 import { getEncoderTypeData } from '@/lib/data/encoderType'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import ButtonCustom from '../../../shared/custom/components/button/ButtonCustom'
 import StepperFormComponent from '../../../shared/custom/components/steppers/StepperFormComponent'
 import OfferInformationStep from '../steps/OfferInformationStep'
@@ -38,7 +38,7 @@ const CreateOfferComponent:React.FC<CreateOfferComponentProps> = ({
 }) => {
   const [loading, setLoading] = React.useState<boolean>(false);
   const [activeStep, setActiveStep] = React.useState(0);
-  
+  const queryClient = useQueryClient();
   const { mediaQuery } = useMediaQueryData();
   
   const { data: encoders, isLoading: isLoadingEncoders, isError: isErrorEncoders} = useQuery({ 
@@ -65,6 +65,7 @@ const CreateOfferComponent:React.FC<CreateOfferComponentProps> = ({
       const state = await validateStep(data, validateOfferLocation);
       setFormState(state);
       if (state.errors && state.errors.length > 0) {
+        setLoading(false);
         return;
       }
     }
@@ -77,6 +78,14 @@ const CreateOfferComponent:React.FC<CreateOfferComponentProps> = ({
         })
         setOpen(false);
         setLoading(false);
+        await Promise.all([
+          await queryClient.invalidateQueries({
+            queryKey: ['offers_active']
+          }),
+          await queryClient.invalidateQueries({
+            queryKey: ['offers_historical']
+          }),
+        ]);
     }catch (error) {
       setSnackbarProps({
         open: true,
@@ -207,10 +216,11 @@ const CreateOfferComponent:React.FC<CreateOfferComponentProps> = ({
             Emplea este modal para crear una nueva oferta. Tenga en cuenta que, dependiendo de su plan de suscripción, es posible que no pueda editar la oferta una vez creada.
           </DialogContentText>
           <StepperFormComponent
-            children={getStepContent(activeStep)}
             activeStep={activeStep}
             steps={steps}
-          />
+          >
+            {getStepContent(activeStep)}
+          </StepperFormComponent>
         </DialogContent>
         <DialogActions>
           <ButtonCustom 

@@ -167,12 +167,12 @@ const UserPersonDataComponent: React.FC<UserPersonDataComponentProps> = (
     if(personResult.status === 'rejected' || locationResult.status === 'rejected'){
       console.error('Error saving person or location data or person data');
       setLoading(false);
-      setSnackbarProps && setSnackbarProps({open: true, message: 'Se ha producido un error al guardar los datos', severity: 'error'});
+      setSnackbarProps?.({open: true, message: 'Se ha producido un error al guardar los datos', severity: 'error'});
       return;
     }
     if(personResult.status === 'fulfilled' && locationResult.status === 'fulfilled'){
       console.log('Datos guardados correctamente');
-      setSnackbarProps && setSnackbarProps({open: true, message: 'Datos guardados correctamente', severity: 'success'});
+      setSnackbarProps?.({open: true, message: 'Datos guardados correctamente', severity: 'success'});
       setLoading(false);
     }
   }

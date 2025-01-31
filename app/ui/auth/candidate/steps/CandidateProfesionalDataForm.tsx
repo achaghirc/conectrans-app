@@ -1,10 +1,9 @@
 import React, { ChangeEvent, useLayoutEffect, useState } from 'react'
 import Grid from '@mui/material/Grid2';
-import { Box, Button, Checkbox, Divider, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Icon, IconButton, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
-import { Country, EducationDTO, EncoderType, PersonLanguageDTO, SignUpCandidateFormData, ExperienceDTO, State, Licence, CandidateLicence } from '@/lib/definitions';
+import { Box, Button, Divider, FormControl, FormHelperText, IconButton, SelectChangeEvent, Typography } from '@mui/material';
+import { Country, EducationDTO, PersonLanguageDTO, SignUpCandidateFormData, ExperienceDTO, State, Licence } from '@/lib/definitions';
 import { AddCircleOutlineOutlined, FilePresentOutlined, RemoveCircleOutline } from '@mui/icons-material';
 import ExperienceComponent from '@/app/ui/shared/auth/ExperienceComponent';
-import { MenuProperties } from '@/app/ui/shared/styles/styles';
 import TableExperiencesComponent from '@/app/ui/shared/custom/components/table/TableExperiencesComponent';
 import TableEducationComponent from '@/app/ui/shared/custom/components/table/TableEducationComponent';
 import AddEducationComponent from '@/app/ui/shared/auth/AddEducationComponent';
@@ -12,11 +11,10 @@ import { useQuery } from '@tanstack/react-query';
 import { getLanguages } from '@/lib/data/languaje';
 import LanguagesComponentSignUp from '@/app/ui/shared/auth/LanguageComponentSignup';
 import useUtilsHook from '@/app/ui/shared/hooks/useUtils';
-import { ControllerDateTimePickerComponent, ControllerSelectFieldComponent, ControllerSelectMultiFieldComponent } from '@/app/ui/shared/custom/components/form/ControllersReactHForm';
-import { Control, SubmitHandler, useForm, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
+import { ControllerSelectFieldComponent, ControllerSelectMultiFieldComponent } from '@/app/ui/shared/custom/components/form/ControllersReactHForm';
+import { Control, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { getEncoderTypeData } from '@/lib/data/encoderType';
-import TableLicenceComponent from '@/app/ui/shared/custom/components/table/TableLicenceComponent';
-import { set } from 'zod';
+import { EncoderType } from '@prisma/client';
 
 type CadidateUserFormProps = {
   control: Control<Partial<SignUpCandidateFormData>>;
@@ -124,7 +122,7 @@ export default function CandidateProfesionalDataForm({
   }
 
   const handleDeleteEducation = (education: EducationDTO) => {
-    let educations = watch('educations');
+    const educations = watch('educations');
     if (!educations) return;
     const newEducations = educations.filter((edu) => edu !== education);
     setValue('educations', newEducations);

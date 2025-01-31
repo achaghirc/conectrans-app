@@ -1,4 +1,4 @@
-import { Box, Divider, Typography } from "@mui/material";
+import { Avatar, Box, Divider, Typography } from "@mui/material";
 
 type BoxTextItemProps = {
   title: string;
@@ -17,3 +17,5 @@ const BoxTextItem: React.FC<BoxTextItemProps> = ({ title, text, direction, justi
   )
 }
 export default BoxTextItem;
+
+

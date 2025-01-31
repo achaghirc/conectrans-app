@@ -44,9 +44,7 @@ const createInitialStateChanges = () => ({
 const CompanyDataComponent: React.FC<CompanyDataProps> = (
   {session, setSnackbarProps}
 ) => {
-  const router = useRouter();
   if(!session) {
-    router.push('/');
     return;
   }
   const queryClient = useQueryClient();

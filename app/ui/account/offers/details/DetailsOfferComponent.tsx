@@ -16,7 +16,7 @@ import DetailsOfferSkeleton from '@/app/ui/shared/custom/components/skeleton/Det
 import EditOfferComponent from '../edit/EditOfferComponent';
 import SnackbarCustom, { SnackbarCustomProps } from '@/app/ui/shared/custom/components/snackbarCustom';
 import UserApplyOffer from '../apply/UserApplyOffer';
-import { existsApplicationOfferByPerson } from '@/lib/data/applicationOffers';
+import { existsApplicationOfferByPerson, getApplicationOffersPageableByFilter, getApplicationsOfferUserByFilter } from '@/lib/data/applicationOffers';
 
 const DEFAULT_CENTER = { lat: 38.956600744288735, lng: -5.878132026448462 };
 const DEFAULT_ZOOM = 11; // You can change this according to your needs, or you can also recive this as a prop to make map component more reusable.
@@ -73,12 +73,11 @@ const DetailsOfferComponent: React.FC<DetailsOfferComponentProps> = (
   });
 
   useQuery({
-    queryKey: ['existsApplicationOfferByPerson', session?.user.personId,  Number(offerId)],
-    queryFn: (): Promise<Boolean | undefined > => existsApplicationOfferByPerson(session?.user.personId ?? 0, Number(offerId)),
+    queryKey: ['offer_candidates', Number(offerId)],
+    queryFn: () => getApplicationsOfferUserByFilter({offerId: Number(offerId)}, Number(1), 10),
     staleTime: 1000 * 60 * 60 * 24 * 7,
-    enabled: session?.user.personId !== undefined,
-    notifyOnChangeProps: [],
   });
+
   const handleEditSuccess = (offer: OfferDTO) => { 
     // setOfferSelected(offer);
   }
@@ -90,8 +89,8 @@ const DetailsOfferComponent: React.FC<DetailsOfferComponentProps> = (
     return <DetailsOfferSkeleton />
   }
   const location = {
-    lat: offerSelected?.location.latitude ?? DEFAULT_CENTER.lat,
-    lng: offerSelected?.location.longitude ?? DEFAULT_CENTER.lng,
+    lat: offerSelected?.Location.latitude ?? DEFAULT_CENTER.lat,
+    lng: offerSelected?.Location.longitude ?? DEFAULT_CENTER.lng,
   }
   return (
     <Box component={'div'}>
@@ -153,7 +152,7 @@ const DetailsOfferComponent: React.FC<DetailsOfferComponentProps> = (
                         borderRadius: 5,
                       }}
                       image="/IGM_Banner2.jpeg"
-                      alt={offerSelected.company.name}
+                      alt={offerSelected.User.Company?.name}
                     />
                   </Card>
                 </Box>

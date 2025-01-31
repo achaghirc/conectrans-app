@@ -23,12 +23,12 @@ export default function Error({error, reset}: ErrorType) {
         backgroundColor: '#F5F5F5'
     }}>
         <Typography variant="h4" component={"h1"}>
-            Se ha producido un error 
+            Se ha producido un error {error.message}
         </Typography>
         <Image src={ComputerError} alt="Error" width={200} height={200} />
         <Button 
             variant='outlined' 
-            onClick={router.back} 
+            onClick={reset} 
             sx={{ backgroundColor: '#0B2C38', borderColor: '#0B2C38', color: 'white'}}
         >
             Volver

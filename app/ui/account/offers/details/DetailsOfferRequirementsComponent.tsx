@@ -1,7 +1,7 @@
 import { Box, Divider, Typography } from '@mui/material';
 import { OfferDTO } from '@prisma/client';
 import React from 'react'
-import BoxTextItem from '@/app/ui/shared/custom/components/text/BoxTextItem';
+import BoxTextItem from '@/app/ui/shared/custom/components/box/BoxTextItem';
 
 
 type DetailsOfferRequirementsComponentProps = {

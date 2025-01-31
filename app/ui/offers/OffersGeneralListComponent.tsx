@@ -3,7 +3,7 @@ import React from 'react'
 import OfferCardComponent from '../account/offers/OfferCardComponent'
 import { OfferDTO } from '@prisma/client';
 import Link from 'next/link';
-import { useQueries, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { getOfferById } from '@/lib/data/offer';
 import Image from 'next/image';
 
@@ -30,7 +30,7 @@ const OffersGeneralListComponent: React.FC<OfferGeneralListComponentProps> = ({
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: {xs: 2, md: 0}, mr: {xs: 1, md: 0}, ml: {xs: 1, md: 0}}}>
       {offers && offers.length == 0 && (
         <>
-          <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignContent: 'center', alignItems: 'center', mt: 10, height: '100%'}}>
+          <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignContent: 'center', alignItems: 'center', mt: {xs: 0, sm: 2,}, mb: 2, height: '100%'}}>
             <Image 
               src="https://res.cloudinary.com/dgmgqhoui/image/upload/v1736531199/caution_no_found_ejl6a3.png" 
               alt="No hay ofertas" 
