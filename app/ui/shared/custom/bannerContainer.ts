@@ -1,3 +1,4 @@
+'use client';
 import { Box} from "@mui/material";
 import { styled } from '@mui/material/styles'
 
@@ -35,22 +36,22 @@ export const BannerContainer = styled(Box)(({ theme }) => ({
     position: 'absolute',
     zIndex: 2,
     [theme.breakpoints.down('sm')]: {
-      top: '70%',
+      top: '60%',
       left: '20%',
       transform: 'translateY(-20%)',
     },
     [theme.breakpoints.down('md') && theme.breakpoints.up('sm')]: {
-      top: '70%',
+      top: '15%',
       right: '25%',
       transform: 'translateY(100%)',
     },
     [theme.breakpoints.down('lg') && theme.breakpoints.up('md') ]: {
-      top: '80%',
-      right: '30%',
+      top: '30%',
+      right: '5%',
       transform: 'translateY(-50%)',
     },
     [theme.breakpoints.up('lg')]: {
-      top: '50%',
+      top: '30%',
       right: '5%',
       transform: 'translateY(-50%)',
     },
