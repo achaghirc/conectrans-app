@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "functions": { 
+    "api/**/*.ts": {
+      "memory": 1024,
+      "maxDuration": 15,
+      "runtime": "nodejs12.x"
+    }
+  }
+}
