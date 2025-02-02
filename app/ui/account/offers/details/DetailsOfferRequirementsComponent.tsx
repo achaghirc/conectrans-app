@@ -11,11 +11,10 @@ type DetailsOfferRequirementsComponentProps = {
 const DetailsOfferRequirementsComponent: React.FC<DetailsOfferRequirementsComponentProps> = ({
   offer
 }) => {
-  const licenseType = offer.licenseType?.map((licence) => licence.name).join(", ") ?? '';
-  const licenseAdr = offer.licenseAdr?.map((licence) => licence.name).join(", ") ?? '';
-  const workRange = offer.workRange?.map((range) => range.name).join(", ") ?? '';
-  const employmentType = offer.employmentType?.map((type) => type.name).join(", ") ?? '';
-
+  const licenseType = React.useMemo(() => offer.OfferPreferences.filter((type) => type.type == 'CARNET').map((pref) => pref.EncoderType.name).join(", ") ?? '', [offer]);
+  const licenseAdr = React.useMemo(() => offer.OfferPreferences.filter((type) => type.type == 'CARNET_ADR').map((pref) => pref.EncoderType.name).join(", ") ?? '', [offer]);
+  const workRange = React.useMemo(() => offer.OfferPreferences.filter((type) => type.type == 'WORK_SCOPE').map((pref) => pref.EncoderType.name).join(", ") ?? '', [offer]);
+  const employmentType = React.useMemo(() => offer.OfferPreferences.filter((type) => type.type == 'EMPLOYEE_TYPE').map((pref) => pref.EncoderType.name).join(", ") ?? '', [offer]);
   return (
     <Box
       sx={{

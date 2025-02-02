@@ -210,7 +210,7 @@ const SubscriptionComponent: React.FC<SubscriptionsPageProps> = ({ session }) =>
           </Typography>
         </Box>
       </Box>
-      <SubscriptionMenuSkeleton />;
+      <SubscriptionMenuSkeleton />
       <Grid container spacing={3} justifyContent="center" mt={3}>
         {
           [...Array(4)].map((_, index) => (
@@ -300,10 +300,24 @@ const SubscriptionComponent: React.FC<SubscriptionsPageProps> = ({ session }) =>
                   <ChatBubbleOutlined color="action"/>
                 </IconButton>
                 <Tooltip placement="top" title={statusText()}>
-                  <IconButton>
+                  <IconButton 
+                    onClick={() => {
+                      if (subscription?.status == SubscriptionStatusEnum.PENDING) {
+                        handleCheckout();
+                      }
+                    }}
+                  >
                     {statusStartIcon()}
                   </IconButton>
                 </Tooltip>
+                <SubscriptionOptionsMenu options={[
+                    {
+                      title: 'Ver transacciones',
+                      icon: <RemoveShoppingCartOutlined color="info" />,
+                      action: handleShowTransactionPayments,
+                    }
+                  ]}
+                />
               </Box>
               <Box sx={{ display: { xs: 'none', sm: 'flex'}, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 1}}>
                 <Button 
@@ -333,11 +347,6 @@ const SubscriptionComponent: React.FC<SubscriptionsPageProps> = ({ session }) =>
                   {statusText()}
                 </Button>
                 <SubscriptionOptionsMenu options={[
-                    {
-                      title: 'Cancelar',
-                      icon: <CloseOutlined color="error" />,
-                      action: handleOpenDeleteDialog,
-                    },
                     {
                       title: 'Ver transacciones',
                       icon: <RemoveShoppingCartOutlined color="info" />,
@@ -462,7 +471,7 @@ const SubscriptionOptionsMenu: React.FC<SubscriptionOptionsMenuProps> = (
         slotProps={{
           paper: {
             style: {
-              maxHeight: 20 * 4.5,
+              maxHeight: 25 * 4.5,
             },
           },
         }}

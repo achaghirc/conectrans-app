@@ -24,17 +24,11 @@ const links: NavLinksType[] = [
 export default function NavLinks({ role, onClick }: NavlinksProps) {
   const [authorizedLinks, setAuthorizedLinks] = useState<NavLinksType[]>([]);
   const pathname = usePathname();
-  const router = useRouter();
 	useEffect(() => {
 			const authorizedLinks = links.filter((link) => link.roles.includes(role));
 			console.log(role)
 			setAuthorizedLinks(authorizedLinks);
 	},[role]);
-
-  const handleOnClick = (route: string) => {
-    onClick?.();
-    router.push(route);
-  }
 
 
   return (
@@ -43,12 +37,9 @@ export default function NavLinks({ role, onClick }: NavlinksProps) {
         const LinkIcon = link.icon;
         const selected = pathname === link.href;
         return (
-          <Fragment key={index}>
+          <Link href={link.href} key={index} style={{ textDecoration: 'none', color: 'inherit' }}>
             <ListItem disablePadding sx={{ mt: 2 }}>
-                <ListItemButton selected={selected} 
-                  onClick={() => {
-                    handleOnClick(link.href)}
-                  }>
+                <ListItemButton selected={selected} onClick={onClick}>
                 <ListItemIcon>
                    <LinkIcon />
                 </ListItemIcon>
@@ -58,7 +49,7 @@ export default function NavLinks({ role, onClick }: NavlinksProps) {
                 </ListItemButton>
             </ListItem>
             <Divider />
-          </Fragment>
+          </Link>
         );
       })}
     </List>

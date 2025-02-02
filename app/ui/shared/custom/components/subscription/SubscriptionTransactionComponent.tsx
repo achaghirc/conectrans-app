@@ -1,6 +1,6 @@
 import { getTransactionsBySubscriptionId } from '@/lib/data/transactions';
 import { CheckCircleOutline, CloseOutlined, CreditCardOffOutlined, FirstPageOutlined, KeyboardArrowLeftOutlined, KeyboardArrowRightOutlined, LastPageOutlined, PaymentsOutlined, RemoveShoppingCartOutlined, WarningOutlined } from '@mui/icons-material';
-import { Box, Dialog, DialogContent, DialogTitle, FormGroup, Icon, IconButton, Paper, SxProps, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, Tooltip, useTheme } from '@mui/material';
+import { Box, Dialog, DialogContent, DialogTitle, FormGroup, Icon, IconButton, MenuItem, Pagination, Paper, Select, SelectChangeEvent, Stack, SxProps, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, Tooltip, useTheme } from '@mui/material';
 import { TransactionDTO } from '@prisma/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { TransactionStatusEnum } from '@/lib/enums';
@@ -200,7 +200,7 @@ const TablePaginatedComponent: React.FC<TablePaginatedComponentProps> = (
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
   const handleChangePage = (
-    event: React.MouseEvent<HTMLButtonElement> | null,
+    event: React.MouseEvent<HTMLButtonElement> | React.ChangeEvent<unknown> | null,
     newPage: number,
   ) => {
     event?.preventDefault();
@@ -208,9 +208,10 @@ const TablePaginatedComponent: React.FC<TablePaginatedComponentProps> = (
   };
 
   const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    event: SelectChangeEvent<number>,
   ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    const targetPageNumber = parseInt(event.target.value.toString(), 10);
+    setRowsPerPage(targetPageNumber);
     setPage(0);
   };
 
@@ -296,7 +297,7 @@ const TablePaginatedComponent: React.FC<TablePaginatedComponentProps> = (
                 key={row.id || index}
                 sx={{
                   borderBottom: index % 2 != 0 ? '1px solid #ffffff' : '1px solid rgb(239, 239, 239)',
-                  backgroundColor: {xs: index % 2 != 0 ? '#FAFAFA' : '#ffffff', sm: 'inherit'},
+                  backgroundColor: {xs: index % 2 != 0 ? '#F1F1F1' : '#ffffff', sm: 'inherit'},
                   '&:last-child td, &:last-child th': { border: 0 },
                   cursor: 'pointer',
                   //Generate Onclick efect
@@ -345,29 +346,28 @@ const TablePaginatedComponent: React.FC<TablePaginatedComponentProps> = (
               </TableRow>
             )}
           </TableBody>
-          <TableFooter sx={{  width: '100%', position: 'relative', right: 0 }}> 
-            <TableRow>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
-                colSpan={3}
-                count={rows.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                slotProps={{
-                  select: {
-                    inputProps: {
-                      'aria-label': 'Items por página',
-                    },
-                    native: true,
-                  },
-                }}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                ActionsComponent={TablePaginationActions}
-                />
-            </TableRow>
-          </TableFooter>
         </Table>
+        <Stack sx={{ p: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }} direction='row' spacing={1}>
+          <Pagination count={Math.floor(rows.length / rowsPerPage)}  page={page} variant='outlined' onChange={handleChangePage} />
+          <Select 
+            value={rowsPerPage}
+            onChange={handleChangeRowsPerPage}
+            variant='outlined'
+            sx={{
+              borderRadius: 10,
+            }}
+            >
+              <MenuItem selected key={5} value={5}>
+                {5}
+              </MenuItem>
+              <MenuItem key={10} value={10}>
+                {10}
+              </MenuItem>
+              <MenuItem key={25} value={25}>
+                {25}
+              </MenuItem>
+          </Select>
+        </Stack>
       </TableContainer>
     </Box>
   );

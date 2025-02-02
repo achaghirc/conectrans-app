@@ -46,7 +46,7 @@ const useUserData = (session: Session) => {
         if (user)
           setUserData(user);
       }
-    }, [session, getUserData, router]);
+    }, [session]);
 
     return {userData}
 }

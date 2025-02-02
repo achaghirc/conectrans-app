@@ -66,13 +66,11 @@ const CompanyOffersPage: React.FC<CompanyOffersPageProps> = (
   const { data, isLoading, isError } = useQuery({
     queryKey: ['offers_active', { userId: session?.user.id, active: true }, page, limit],
     queryFn: () => getOffersByUserPageable(page, limit, { userId: session?.user.id, active: true }),
-    enabled: !!session?.user.id,
     staleTime: 1000 * 60 * 10 // 10 minutes
   });
   const { data: dataHistorical, isLoading: isLoadingHistorical, isError: isErrorHistorical } = useQuery({
     queryKey: ['offers_historical', { userId: session?.user.id, active: true }, page, limit],
     queryFn: () => getOffersByUserPageable( page, limit, { userId: session?.user.id, active: false }),
-    enabled: !!session?.user.id,
     staleTime: 1000 * 60 * 10 // 10 minutes
   });
 
@@ -84,22 +82,6 @@ const CompanyOffersPage: React.FC<CompanyOffersPageProps> = (
     })
     throw new Error('Error al obtener las ofertas');
   }
-
-
-  const filterActiveOffers = (offers: OfferSlimDTO[] | undefined) => {
-    if (!offers) {
-      return [];
-    }
-    return offers.filter((offer) => offer.endDate != undefined && offer.endDate >= new Date());
-  }
-
-  const filterHistoricalOffers = (offers: OfferDTO[] | undefined) => {
-    if (!offers) {
-      return [];
-    }
-    return offers.filter((offer) => offer.endDate != undefined && offer.endDate < new Date());
-  }
-
   return (
     <Box 
       sx={{
