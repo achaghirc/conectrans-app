@@ -20,94 +20,93 @@ type Response = {
 
 //POST
 export async function createOffer(data: OfferDTO, userId: string): Promise<Response> {
-    const transaction = prisma.$transaction(async (prisma) => {
-      try {
-        const response: Response = {
-          status: 'OK',
-          message: 'Oferta creada correctamente'
-        }
+  const response: Response = {
+    status: 'OK',
+    message: 'Oferta creada correctamente'
+  };
+  const transaction = prisma.$transaction(async (prisma) => {
+    try {
 
-        const [locationSaved, subscriptionResult] = await Promise.all([
-          createLocation({
-            ...data.Location,
-            countryId: parseInt(data.Location.countryId?.toString() ?? '64'),
-            latitude: 0,
-            longitude: 0,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          } as Location),
-          getSubscriptionByUserIdAndActive(userId)
-        ]);
-
-        if (!locationSaved) {
-          response.status = 'KO';
-          response.message = 'No se ha podido crear la ubicación';
-          return response;
-        }
-        if (!subscriptionResult) {
-          response.status = 'KO';
-          response.message = 'No se ha podido encontrar la suscripción';
-          return response;
-        }
-    
-        const capCertification = data.capCertification as unknown as string;
-        const digitalTachograph = data.digitalTachograph as unknown as string;
-        const isAnonymous = data.isAnonymous as unknown as string;
-    
-        const offerObject = {
-          title: data.title,
-          subtitle: data.subtitle,
-          description: data.description,
-          startDate: data.startDate,
-          endDate: data.endDate,
-          salary: data.salary,
-          isAnonymous: await stringYESNOToBoolean(isAnonymous),
-          isFeatured: data.isFeatured,
-          contractType: data.contractType,
-          locationId: locationSaved.id,
-          subscriptionId: subscriptionResult.id,
-          userId: userId,
+      const [locationSaved, subscriptionResult] = await Promise.all([
+        createLocation({
+          ...data.Location,
+          countryId: parseInt(data.Location.countryId?.toString() ?? '64'),
+          latitude: 0,
+          longitude: 0,
           createdAt: new Date(),
           updatedAt: new Date(),
-          capCertification: await stringYESNOToBoolean(capCertification),
-          digitalTachograph: await stringYESNOToBoolean(digitalTachograph),
-          workDay: data.workDay.toString(),
-        };
-        const offer = await prisma.offer.create({
-          data: offerObject
-        });
-    
-        if (!offer) {
-          response.status = 'KO';
-          response.message = 'No se ha podido crear la oferta';
-          return response;
-        }
-        await Promise.all([
-          createOfferPreferences(data, offer.id, prisma as PrismaClient),
-          updateSubscriptionAfterNewOffer(subscriptionResult.id)
-        ])
-        
+        } as Location),
+        getSubscriptionByUserIdAndActive(userId)
+      ]);
+
+      if (!locationSaved) {
+        response.status = 'KO';
+        response.message = 'No se ha podido crear la ubicación';
         return response;
-      } catch (error) {
-        if (error instanceof PrismaClientUnknownRequestError) {
-          if (error.message.includes('P0001')) {
-            return {
-              status: 'WARN',
-              message: 'Máximo de ofertas permitidas por la subscripción alcanzadas, por favor actualiza tu plan para poder crear más ofertas.'
-            } as Response;
-          }
-        }
-          return {
-          status: 'KO',
-          message: 'Error al crear la oferta, por favor inténtalo de nuevo.'
-        } as Response;
       }
-    } ,
-    {
-      maxWait: 5000, // default: 2000
-      timeout: 10000, // default: 5000);
-    });
-    return transaction;
+      if (!subscriptionResult) {
+        response.status = 'KO';
+        response.message = 'No se ha podido encontrar la suscripción';
+        return response;
+      }
+  
+      const capCertification = data.capCertification as unknown as string;
+      const digitalTachograph = data.digitalTachograph as unknown as string;
+      const isAnonymous = data.isAnonymous as unknown as string;
+  
+      const offerObject = {
+        title: data.title,
+        subtitle: data.subtitle,
+        description: data.description,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        salary: data.salary,
+        isAnonymous: await stringYESNOToBoolean(isAnonymous),
+        isFeatured: data.isFeatured,
+        contractType: data.contractType,
+        locationId: locationSaved.id,
+        subscriptionId: subscriptionResult.id,
+        userId: userId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        capCertification: await stringYESNOToBoolean(capCertification),
+        digitalTachograph: await stringYESNOToBoolean(digitalTachograph),
+        workDay: data.workDay.toString(),
+      };
+      const offer = await prisma.offer.create({
+        data: offerObject
+      });
+  
+      if (!offer) {
+        response.status = 'KO';
+        response.message = 'No se ha podido crear la oferta';
+        return response;
+      }
+      Promise.all([
+        await createOfferPreferences(data, offer.id, prisma as PrismaClient),
+      ])
+      //A trigger function updates automatically the subscription after a new offer is created decreasing the remaining offers by 1
+      return response;
+    } catch (error) {
+      if (error instanceof PrismaClientUnknownRequestError) {
+        if (error.message.includes('P0001')) {
+          return {
+            status: 'WARN',
+            message: 'Máximo de ofertas permitidas por la subscripción alcanzadas, por favor actualiza tu plan para poder crear más ofertas.'
+          } as Response;
+        }
+      }
+        return {
+        status: 'KO',
+        message: 'Error al crear la oferta, por favor inténtalo de nuevo.'
+      } as Response;
+    }
+  } ,
+  {
+    maxWait: 5000, // default: 2000
+    timeout: 10000, // default: 5000);
+  });
+  return transaction;
 }
 
 function flattenArray(data: any[] | undefined): string[] {

@@ -4,7 +4,7 @@ import { getOffersByUserPageable } from '@/lib/data/offer';
 import { getNumberFromSearchParam } from '@/lib/utils';
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
 import { Session } from 'next-auth';
-import React from 'react'
+import React, { Suspense } from 'react'
 
 interface PageProps {
   params: Promise<{
@@ -28,15 +28,15 @@ export default async function OffersRoutePage({params}: PageProps) {
   const page = await getNumberFromSearchParam(searchParams.page, 1);
   const limit = await getNumberFromSearchParam(searchParams.limit, 10);
   
-  await Promise.all([
-    await queryClient.prefetchQuery({
+  Promise.all([
+    queryClient.prefetchQuery({
       queryKey: ['offers_active', { userId: session?.user.id, active: true }, page, limit],
       queryFn: () => getOffersByUserPageable(page, limit, { userId: session?.user.id, active: true }),
       staleTime: 1000 * 60 * 10 // 10 minutes
     }),
-    await queryClient.prefetchQuery({
+    queryClient.prefetchQuery({
       queryKey: ['offers_historical', { userId: session?.user.id, active: true }, page, limit],
-          queryFn: () => getOffersByUserPageable( page, limit, { userId: session?.user.id, active: false }),
+      queryFn: () => getOffersByUserPageable( page, limit, { userId: session?.user.id, active: false }),
       staleTime: 1000 * 60 * 10 // 10 minutes
     })
   ]);
