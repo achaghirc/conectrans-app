@@ -1,6 +1,4 @@
-import { generatePagination } from '@/lib/utils';
-import { Box, Pagination, TablePagination } from '@mui/material';
-import Link from 'next/link';
+import { Box, Pagination } from '@mui/material';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React from 'react'
 
@@ -42,7 +40,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = (
     router.push(createPageUrl(newPage))
   }
 
-  let countItems = count == 0 ? 0 : rowsPerPage >= count ? 1 : Math.floor(count / rowsPerPage); 
+  const countItems = count == 0 ? 0 : rowsPerPage >= count ? 1 : Math.floor(count / rowsPerPage); 
 
   return (
     <Box display={countItems > 0 ? 'flex' : 'none'} justifyContent='center' m={2}>

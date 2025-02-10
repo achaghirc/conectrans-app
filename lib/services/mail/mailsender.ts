@@ -34,7 +34,7 @@ export const sendApplicationOfferMail = async (row: ApplicationOfferDTO, status:
     return;
   }
 
-  let subject = `Candidatura a la oferta ${offerTitle}`;
+  const subject = `Candidatura a la oferta ${offerTitle}`;
   let messageText = '';
   let messageHtml = '';
   const companyPhone = company.phone ? company.phone : '';

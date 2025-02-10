@@ -111,7 +111,7 @@ const CompanyOfferCandidatesPage: React.FC<CompanyOfferCandidatesPageProps>= ({
       }
       await handleApplicationOfferStatus(candidate.id, status);
       await queryClient.refetchQueries({queryKey: ['offer_candidates', Number(offerId)]});
-      await sendApplicationOfferMail(candidate, status);
+      await sendApplicationOfferMail(candidate, status); 
     } catch (error) {
       console.error('Error changing the status of the candidate:', error);
     } finally {
