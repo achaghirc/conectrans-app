@@ -2,7 +2,7 @@
 import prisma from "@/app/lib/prisma/prisma";
 import { Company, EncoderType, Location, LocationDTO, Offer, OfferDTO, OfferPreferences, OfferPreferencesDTO, OfferSlimDTO, Prisma, PrismaClient, Subscription, SubscriptionDTO, Transaction } from "@prisma/client";
 import { createLocation, getLocationByFilter, getLocationById, LocationFilter } from "./location";
-import { getSubscriptionByUserIdAndActive, updateSubscriptionAfterNewOffer } from "./subscriptions";
+import { getSubscriptionByUserIdAndActive, getSubscriptionIdByUserId } from "./subscriptions";
 import { getEncoderTypeByNameIn } from "./encoderType";
 import { PrismaClientUnknownRequestError } from "@prisma/client/runtime/library";
 import { getCompanyByUserId, getCompanySlimByUserId } from "./company";
@@ -27,7 +27,7 @@ export async function createOffer(data: OfferDTO, userId: string): Promise<Respo
   const transaction = prisma.$transaction(async (prisma) => {
     try {
 
-      const [locationSaved, subscriptionResult] = await Promise.all([
+      const [locationSaved, subscriptionIdResult] = await Promise.all([
         createLocation({
           ...data.Location,
           countryId: parseInt(data.Location.countryId?.toString() ?? '64'),
@@ -36,7 +36,7 @@ export async function createOffer(data: OfferDTO, userId: string): Promise<Respo
           createdAt: new Date(),
           updatedAt: new Date(),
         } as Location),
-        getSubscriptionByUserIdAndActive(userId)
+        getSubscriptionIdByUserId(userId)
       ]);
 
       if (!locationSaved) {
@@ -44,7 +44,7 @@ export async function createOffer(data: OfferDTO, userId: string): Promise<Respo
         response.message = 'No se ha podido crear la ubicación';
         return response;
       }
-      if (!subscriptionResult) {
+      if (!subscriptionIdResult) {
         response.status = 'KO';
         response.message = 'No se ha podido encontrar la suscripción';
         return response;
@@ -52,7 +52,6 @@ export async function createOffer(data: OfferDTO, userId: string): Promise<Respo
   
       const capCertification = data.capCertification as unknown as string;
       const digitalTachograph = data.digitalTachograph as unknown as string;
-      const isAnonymous = data.isAnonymous as unknown as string;
   
       const offerObject = {
         title: data.title,
@@ -61,11 +60,11 @@ export async function createOffer(data: OfferDTO, userId: string): Promise<Respo
         startDate: data.startDate,
         endDate: data.endDate,
         salary: data.salary,
-        isAnonymous: await stringYESNOToBoolean(isAnonymous),
+        isAnonymous: data.isAnonymous,
         isFeatured: data.isFeatured,
         contractType: data.contractType,
         locationId: locationSaved.id,
-        subscriptionId: subscriptionResult.id,
+        subscriptionId: subscriptionIdResult,
         userId: userId,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -90,9 +89,11 @@ export async function createOffer(data: OfferDTO, userId: string): Promise<Respo
     } catch (error) {
       if (error instanceof PrismaClientUnknownRequestError) {
         if (error.message.includes('P0001')) {
+          const errorMessage = error.message;
+          const pgErrorMatch = errorMessage.match(/PostgresError.*?code: "P0001",.*?message: "(.*?)"/);
           return {
             status: 'WARN',
-            message: 'Máximo de ofertas permitidas por la subscripción alcanzadas, por favor actualiza tu plan para poder crear más ofertas.'
+            message: pgErrorMatch ? pgErrorMatch[1] : 'Error al crear la oferta, por favor inténtalo de nuevo.'
           } as Response;
         }
       }
@@ -272,6 +273,7 @@ export async function editOffer(data: OfferDTO): Promise<OfferDTO | null> {
               offerId: true
             }
           },
+          Subscription: true,
           Location: {
             select: {
               Country: {
@@ -291,13 +293,12 @@ export async function editOffer(data: OfferDTO): Promise<OfferDTO | null> {
   
       await updateOfferPreferences(data);
       
-      const [preferencesResult, companyResult, subscriptionResult] = await Promise.all([
+      const [preferencesResult, companyResult] = await Promise.all([
         findManyOfferPreferencesByOfferIdIn([offerId]),
         getCompanyByUserId(updatedOffer.userId),
-        getSubscriptionByUserIdAndActive(updatedOffer.userId)
       ]);
       
-      if (!companyResult || !subscriptionResult || preferencesResult.length === 0) {
+      if (!companyResult || preferencesResult.length === 0) {
         return null;
       }
       const filterEncoderOption = (type: string) => preferencesResult.filter((pref) => pref.offerId == offerId && pref.type == type);
@@ -316,7 +317,6 @@ export async function editOffer(data: OfferDTO): Promise<OfferDTO | null> {
             }
           },
         },
-        Subscription: subscriptionResult,
       } as OfferDTO;
     },
     {

@@ -35,8 +35,8 @@ const BoxAvatarMultiItem: React.FC<BoxAvatarMultiItemProps> = ({ title, items,al
       <Divider orientation='horizontal' flexItem sx={{ mb: 1 }}/>
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'row' }}>
         {items.map((item, index: number) => (
-          <Avatar key={index} sx={{ width: 30, height: 30, backgroundColor: 'primary.main', color: 'white' }}>
-            <Typography variant='subtitle1' fontWeight={400} fontSize={16} color='textPrimary'>{item}</Typography>
+          <Avatar key={index} sx={{ width: 50, height: 50, backgroundColor: 'primary.main', color: 'white' }}>
+            <Typography variant='subtitle1' fontWeight={400} fontSize={16} color='white'>{item}</Typography>
           </Avatar>
         ))}
       </Box>

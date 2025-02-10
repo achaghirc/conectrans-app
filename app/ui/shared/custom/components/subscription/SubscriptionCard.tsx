@@ -35,7 +35,7 @@ const SubscriptionCard = ({ plan,selected, changedPlan, onSelectPlan, handlePayN
             alignItems: 'center',
             height: 40,
             textAlign: 'start', 
-            background: 'linear-gradient(to right,rgb(184, 182, 182),rgb(162, 162, 162),rgb(163, 163, 164))', 
+            background: 'linear-gradient(to right,#04A0AC,#04B1A3,#04A0AC)', 
             color: 'white' 
           }}
         >

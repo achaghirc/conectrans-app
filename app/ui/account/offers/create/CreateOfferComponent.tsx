@@ -4,7 +4,7 @@ import { OfferDTO } from '@prisma/client'
 import { State } from '@/lib/definitions'
 import { Session } from 'next-auth'
 import { SnackbarCustomProps } from '../../../shared/custom/components/snackbarCustom'
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, FormGroup, Switch, Typography } from '@mui/material'
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormControlLabel, FormGroup, Switch, Typography } from '@mui/material'
 
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
@@ -18,6 +18,8 @@ import OfferLocationStep from '../steps/OfferLocationStep'
 import { validateOfferInformation, validateOfferLocation, validateOfferRequirements } from '@/lib/validations/offerValidate'
 import { createOffer } from '@/lib/data/offer'
 import useMediaQueryData from '@/app/ui/shared/hooks/useMediaQueryData'
+import { CustomSwitch } from '@/app/ui/shared/custom/components/switch/CustomSwitch'
+import { Star, StarOutlineOutlined } from '@mui/icons-material'
 dayjs.locale('es')
 
 
@@ -92,6 +94,8 @@ const CreateOfferComponent:React.FC<CreateOfferComponentProps> = ({
         message: 'Error al crear la oferta',
         severity: 'error'
       })
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -195,22 +199,51 @@ const CreateOfferComponent:React.FC<CreateOfferComponentProps> = ({
           }}
         >
         <DialogTitle sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', gap: 2}}>
-          Crear oferta
-          <Box>
-            <FormGroup sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', gap: 1}}>
-              <FormControlLabel 
-                control={<Switch {...register('isFeatured')}/>} 
-                label="Detacada" 
-                labelPlacement='start' 
-              />
-              <FormControlLabel 
-                control={<Switch {...register('isAnonymous')} />} 
-                label="Anónima" 
-                labelPlacement='start' 
-              />
-            </FormGroup>
-          </Box>
+          <Typography fontSize={25} fontWeight={700}>
+            Crear oferta
+          </Typography>
+          <FormGroup sx={{ display: {xs: 'none', sm: 'flex'}, flexDirection: 'row', justifyContent: 'space-around', gap: 1}}>
+            <FormControlLabel 
+              control={<CustomSwitch 
+                name='isFeatured'
+                value={watch('isFeatured') ?? false}
+                checked={watch('isFeatured') ?? false}
+                onChange={(e) => setValue('isFeatured', e.target.checked as unknown as never)}
+              />} 
+              label={'Destacada'} 
+              labelPlacement='end' 
+            />
+            <FormControlLabel 
+              control={<CustomSwitch 
+                name='isAnonymous'
+                value={watch('isAnonymous') ?? false}
+                checked={watch('isAnonymous') ?? false}
+                onChange={(e) => setValue('isAnonymous', e.target.checked as unknown as never)}
+              />}
+              label="Anónima" 
+              labelPlacement='end' 
+            />
+          </FormGroup>
         </DialogTitle>
+        <Box sx={{ display: {xs: 'flex', sm: 'none'}, flexDirection: 'column', gap: 2, pb: 2}}>
+          <Divider variant='fullWidth'/>
+          <FormGroup sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', gap: 1}}>
+            <FormControlLabel 
+              control={<CustomSwitch 
+                {...register('isFeatured')}
+              />}
+              label={'Destacada'} 
+              labelPlacement='end' 
+            />
+            <FormControlLabel 
+              control={<CustomSwitch 
+                {...register('isAnonymous')} 
+              />} 
+              label="Anónima" 
+              labelPlacement='end' 
+            />
+          </FormGroup>
+        </Box>
         <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: '80%'}}>
           <DialogContentText fontSize={12}>
             Emplea este modal para crear una nueva oferta. Tenga en cuenta que, dependiendo de su plan de suscripción, es posible que no pueda editar la oferta una vez creada.

@@ -1,7 +1,7 @@
 import { Switch, styled } from '@mui/material';
 
 // Custom styled switch
-export const CustomSwitch = styled(Switch)(({ theme, checked }) => ({
+export const CustomSwitch = styled(Switch)(({ theme }) => ({
   width: 60,
   height: 34,
   padding: 7,
@@ -10,7 +10,7 @@ export const CustomSwitch = styled(Switch)(({ theme, checked }) => ({
     padding: 0,
     transform: 'translateX(4px)',
     '&.Mui-checked': {
-      color: '#fff',
+      color: theme.palette.primary.main,
       transform: 'translateX(22px)',
       '& + .MuiSwitch-track': {
         opacity: 1,
@@ -19,7 +19,7 @@ export const CustomSwitch = styled(Switch)(({ theme, checked }) => ({
     },
   },
   '& .MuiSwitch-thumb': {
-    backgroundColor: theme.palette.mode === 'dark' ? '#003892' : checked ? '#0B2C38' : '#fafafa',
+    backgroundColor: 'primary',
     width: 28,
     height: 28,
   },

@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Session } from "next-auth";
 import React from "react";
 import TablePaginatedComponent from "../../../shared/custom/components/table/TablePaginatedComponent";
-import { Box, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import { ApplicationOfferDTO } from "@prisma/client";
 import CandidateInformationComponent from "./CandidateInformationComponent";
 import CandidateFileComponent from "./CandidateFileComponent";
@@ -12,6 +12,7 @@ import { downloadFileFromCloud } from "@/lib/services/cloudinary";
 import { useRouter } from "next/navigation";
 import { ApplicationOfferStatusEnum } from "@/lib/enums";
 import CandidateDrawerComponent from "./CandidateDrawerComponent";
+import { sendApplicationOfferMail, sendMail } from "@/lib/services/mail/mailsender";
 
 type CompanyOfferCandidatesPageProps = {
   session: Session | null;
@@ -110,6 +111,7 @@ const CompanyOfferCandidatesPage: React.FC<CompanyOfferCandidatesPageProps>= ({
       }
       await handleApplicationOfferStatus(candidate.id, status);
       await queryClient.refetchQueries({queryKey: ['offer_candidates', Number(offerId)]});
+      await sendApplicationOfferMail(candidate, status);
     } catch (error) {
       console.error('Error changing the status of the candidate:', error);
     } finally {
@@ -141,6 +143,9 @@ const CompanyOfferCandidatesPage: React.FC<CompanyOfferCandidatesPageProps>= ({
           Candidatos a la oferta
         </Typography>
       </Box>
+      <Button onClick={sendMail}>
+        Enviar email
+      </Button>
       {data && (
         <TablePaginatedComponent rows={data} handleShow={handleShow} handleStatusChange={handleStatusChange} /> 
       )}

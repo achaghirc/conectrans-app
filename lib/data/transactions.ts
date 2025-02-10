@@ -158,6 +158,9 @@ export async function updatePaymentTransactionInfo(session: StripeSession): Prom
       }
     });
     const remainingOffers = transaction.Subscription.remainingOffers + transaction.Plan.maxOffers;
+    const principalOffers = transaction.Subscription.principalOffers + transaction.Plan.principalOffers;
+    const anonymousOffers = transaction.Subscription.anonymousOffers + transaction.Plan.anonymousOffers;
+
     const subscription = await prisma.subscription.update({
       where: {
         id: transaction.subscriptionId
@@ -165,6 +168,8 @@ export async function updatePaymentTransactionInfo(session: StripeSession): Prom
       data: {
         status: SubscriptionStatusEnum.ACTIVE,
         remainingOffers: remainingOffers,
+        principalOffers: principalOffers,
+        anonymousOffers: anonymousOffers,
         updatedAt: new Date(),
         planId: transaction.Plan.id,
       }
@@ -242,6 +247,8 @@ export async function updateTransactionAfterRefund(transactionId: number, refund
           data: {
             status: SubscriptionStatusEnum.CANCELLED,
             remainingOffers: 0,
+            principalOffers: 0,
+            anonymousOffers: 0,
             updatedAt: new Date(),
           }
         });

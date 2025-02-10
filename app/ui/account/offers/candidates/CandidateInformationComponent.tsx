@@ -96,7 +96,7 @@ const CandidateInformationComponent: React.FC<CandidateInformationComponentProps
               <ProfileComponent 
                 title={`${selectedCandidate?.Person?.name} ${selectedCandidate?.Person?.lastname}`}
                 subtitle={selectedCandidate?.Person?.User.email ?? ''}
-                assetUrl={selectedCandidate?.Person?.PersonProfileImage?.url ?? ''}
+                assetUrl={selectedCandidate?.Person?.PersonProfileImage?.url ?? 'https://res.cloudinary.com/dgmgqhoui/image/upload/v1734182403/default-logo-user_fj0tu3.png'}
                 direction='column'
                 justify='flex-end'
                 />

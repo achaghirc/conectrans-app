@@ -8,7 +8,7 @@ interface DownloadFileRequest extends NextApiRequest {
   };
 }
 
-export const downloadFile =  async function handler(req: DownloadFileRequest, res: NextApiResponse) {
+const downloadFile =  async function handler(req: DownloadFileRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
@@ -49,3 +49,5 @@ export const downloadFile =  async function handler(req: DownloadFileRequest, re
     res.status(500).json({ error: 'Failed to download the file' });
   }
 }
+
+export default downloadFile;

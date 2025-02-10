@@ -2,7 +2,7 @@ import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 import type { Metadata } from "next";
 import "./globals.css";
 import { Lato } from 'next/font/google';
-import { ThemeProvider } from '@mui/material';
+import { GlobalStyles, ThemeProvider } from '@mui/material';
 import theme from './theme';
 import { ReactQueryClientProvider } from './react-query-provider';
 import NetworkConnectionCheck from './network-connection-check';
@@ -33,6 +33,7 @@ export default function RootLayout({
             options={{ key: 'css' }}
             >
             <ThemeProvider theme={theme} defaultMode='system'>
+            <GlobalStyles styles={{ "*": { scrollbarWidth: "none", msOverflowStyle: "none" }, "*::-webkit-scrollbar": { display: "none" } }} />
               {children}
             </ThemeProvider>
           </AppRouterCacheProvider>

@@ -237,11 +237,11 @@ export default function CandidateProfesionalDataForm({
 						</Typography>
 					</Box>
 					<Divider sx={{ mb: 2 }}/>
-				</Grid>
-				<TableExperiencesComponent 
-          experiences={watch('experiences') ?? []} 
-          deleteExperience={(row) => deleteExperience(row)} 
-        />
+				  <TableExperiencesComponent 
+            experiences={watch('experiences') ?? []} 
+            deleteExperience={(row) => deleteExperience(row)} 
+          />
+        </Grid>
 				<Box 
 					sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' }}
 				>

@@ -173,7 +173,7 @@ const FormLogin = () => {
 		<form onSubmit={handleSubmit(onSubmit)}>
 			<ArrowBack sx={{ display: { sm: 'none' } }} onClick={() => router.back()}/>
 			<Box sx={{ display: 'flex', flexDirection:'column', alignItems: 'center'}}>
-				<Image
+        <Image
 						src={Logo} 
 						alt="Conectrans Logo Black" 
 						width={130} 
@@ -208,7 +208,6 @@ const FormLogin = () => {
           inputAdornment={inputPropShowPassword()}
           control={control}
         />
-				<ForgotPassword open={open} handleClose={handleClose} />
 				<ButtonCustom
 					type="submit"
 					title="Iniciar sesión"
@@ -228,36 +227,31 @@ const FormLogin = () => {
 						</Link>
 				</Box>
 			</Box>
-			<Divider></Divider>
-			<Typography sx={{ textAlign: 'center' }}>
+			<Divider sx={{ mt: 2, mb: 2 }}></Divider>
+			<Typography sx={{ textAlign: 'center', mb: 2 }}>
 				¿Aún no tienes una cuenta?{' '}
 			</Typography>
 			<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-				<Link
-					href="/auth/signup/company"	
-				>
-				<Button
-					fullWidth
-					variant="contained"
-					sx={{ backgroundColor: '#0B2C38', borderColor: '#0B2C38' }}
-					startIcon={<BusinessOutlined />}
-					>
-					Comenzar como empresa
-				</Button>
-				</Link>
-				<Link
-					href="/auth/signup/candidate"	
-				>
+        <Button
+          fullWidth
+          variant="contained"
+          sx={{ backgroundColor: '#0B2C38', borderColor: '#0B2C38' }}
+          startIcon={<BusinessOutlined />}
+          onClick={() => router.push('/auth/signup/company')}
+          >
+          Comenzar como empresa
+        </Button>
 				<Button
 					fullWidth
 					variant="outlined"
 					sx={{ color: '#0B2C38', borderColor: '#0B2C38' }}
 					startIcon={<PeopleOutline />}
+          onClick={() => router.push('/auth/signup/candidate')}
 				>
 					Comenzar como candidato
 				</Button>
-				</Link>
 			</Box>
+      <ForgotPassword open={open} handleClose={handleClose} />
 		</form>
 	)
 }

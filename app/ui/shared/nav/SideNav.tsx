@@ -10,6 +10,7 @@ import { logout } from '@/lib/actions';
 import MobileNavScreen from './MobileNavScreen';
 import { useRouter } from 'next/navigation';
 import ConectransLogo from '../logo/conectransLogo';
+import useLogoColors from '../hooks/useLogoColors';
 
 const drawerWidth = 240;
 
@@ -179,6 +180,7 @@ const NavbarToolbarSkeleton = () => (
 
 function ToolbarComponent({ data }: { data: NavbarSessionData }) {
 	const router = useRouter();
+  const { color } = useLogoColors();
 	return (
     <Box sx={{ 
       display: 'flex', 
@@ -208,7 +210,7 @@ function ToolbarComponent({ data }: { data: NavbarSessionData }) {
           aria-label="menu"
           sx={{ mr: 2, display: { xs: 'none', md: 'flex' } }}
         >
-            <ConectransLogo width={'120px'} height={'auto'} fill='white' />
+            <ConectransLogo width={'140px'} height={'auto'} colors={color} />
             {/* <Image priority src={Logo} alt='Logo conectrans' width={130}/> */}
         </IconButton>
     </Toolbar>

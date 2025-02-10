@@ -13,8 +13,9 @@ import dayjs from "dayjs";
 import 'dayjs/locale/es';
 import { cardMobileStyles, paperStyles } from "../../shared/styles/styles";
 import { DEFAULT_COMPANY_LOGO_URI } from "@/lib/constants";
-import { useSession } from "next-auth/react";
 import { Session } from "next-auth";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 dayjs.locale('es');
 
 type OfferCardComponentProps = {
@@ -27,6 +28,8 @@ type OfferCardComponentProps = {
 const OfferCardComponent: React.FC<OfferCardComponentProps> = (
   {session, offer, handleEdit, handleDelete}
 ) => {
+  const [loading, setLoading] = React.useState<boolean>(false);
+  const router = useRouter();
   const { mediaQuery } = useMediaQueryData();
   const asset = offer.User.Company?.Asset != undefined && offer.User.Company.Asset.url != "" ? offer.User.Company.Asset.url : DEFAULT_COMPANY_LOGO_URI;
   
@@ -39,11 +42,11 @@ const OfferCardComponent: React.FC<OfferCardComponentProps> = (
     }
   }
   const getApplicationOfferCount = () => {
-    const isAdmin = session && session.user?.roleCode == 'COMPANY' && session.user?.id == offer.userId;
-    if(isAdmin) {
+    const isCompanyAdmin = session && session.user?.roleCode == 'COMPANY' && session.user?.id == offer.userId;
+    if(isCompanyAdmin) {
       return (
         <Tooltip
-            title="Número de aplicaciones"
+            title="Número de candidatos"
             placement="top"
           >
           <BoxIconTextInformation
@@ -51,14 +54,29 @@ const OfferCardComponent: React.FC<OfferCardComponentProps> = (
             text={offer._count?.ApplicationOffer.toString() ?? '0'}  
             fontSize={!mediaQuery ? 13 : 16 }
             fontWeight={400}
-            />
+            onClick={() => {
+              try {
+                router.push(`/account-company/offers/${offer.id}/candidates`);
+              } catch (error) {
+                console.log(error);
+              }
+            }}
+          />
         </Tooltip>
       )
     }
   }
 
   return (
-    <>
+    <Box sx={{
+      position: 'relative',
+      ...(loading && {
+        backgroundColor: {xs: 'rgba(184, 184, 184, 0.5)', md: 'transparent'}, // Add a semi-transparent white background
+        pointerEvents: 'none', // Disable all interactions
+      }),
+      pr: {xs: 2, sm: 0},
+      pl: {xs: 2, sm: 0}
+    }}>
     <Box sx={cardMobileStyles}>
       <Box sx={{ p: {xs: 1, md: 2}, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Image
@@ -139,7 +157,7 @@ const OfferCardComponent: React.FC<OfferCardComponentProps> = (
         {handleEdit && handleDelete && (<SettingButtonMenu offer={offer} handleEdit={(o: OfferDTO) => handleEdit(o)} handleDelete={(o: OfferDTO) => handleDelete(o)}/>)}
       </Box>
     </Paper>
-    </>
+    </Box>
   )
 }
 

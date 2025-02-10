@@ -6,6 +6,7 @@ import SnackbarCustom, { SnackbarCustomProps } from '../../shared/custom/compone
 import { Session } from 'next-auth';
 import OfferCardComponent from './OfferCardComponent';
 import Link from 'next/link';
+import PaginationComponent from '../../shared/custom/components/pagination/PaginationComponent';
 
 type OffersListComponentProps = {
   session: Session;
@@ -109,7 +110,25 @@ const OffersListComponent: React.FC<OffersListComponentProps> = (
           </Link>
         ))} 
       </Box>
-      <TablePagination 
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: {xs: 'center', md: 'flex-end'},
+          alignItems: 'center',
+          mt: 2,
+          mb: 2
+        }}
+      >
+        <PaginationComponent
+          count={offers.length}
+          rowsPerPage={rowsPerPage}
+          currentPage={page}
+          handleRowsPerPageChange={() => {}}
+          rowsPerPageOptions={[3,5,10,15,20]}
+        />
+      </Box>
+      
+      {/* <TablePagination 
         align='center'
         component={'div'}
         count={offers.length}
@@ -123,7 +142,7 @@ const OffersListComponent: React.FC<OffersListComponentProps> = (
           bottom: 0,
           right: 0,
         }}
-      />
+      /> */}
       <SnackbarCustom {...snackbarProps}/>
     </>
   )

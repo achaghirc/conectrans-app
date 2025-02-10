@@ -2,16 +2,16 @@
 import ButtonCustom from "@/app/ui/shared/custom/components/button/ButtonCustom";
 import ConectransLogo from "@/app/ui/shared/logo/conectransLogo";
 import { PAYMENT_ERROR_MESSAGE, PAYMENT_ERROR_TITLE, PAYMENT_SUCCESS_MESSAGE, PAYMENT_SUCCESS_TITLE } from "@/lib/constants";
-import { updatePaymentTransactionInfo, updateTransactionData } from "@/lib/data/transactions";
+import { updateTransactionData } from "@/lib/data/transactions";
 import { Box, Paper, Tooltip, Typography } from "@mui/material";
-import { Transaction, TransactionDTO, UserDTO } from "@prisma/client";
+import { Transaction } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import useMediaQueryData from "../shared/hooks/useMediaQueryData";
 import { CheckCircleOutline, ErrorOutline } from "@mui/icons-material";
 import { useCallback, useEffect } from "react";
 import { TransactionStatusEnum } from "@/lib/enums";
 import useLocalStorage from "../shared/hooks/useLocalStorage";
-import { set } from "nprogress";
+import useLogoColors from "../shared/hooks/useLogoColors";
 
 type CheckoutPageProps = {
   success: boolean;
@@ -23,7 +23,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
   const { storedValue, removeValue } = useLocalStorage('transactionId', '');
   const { mediaQuery } = useMediaQueryData();
   const router = useRouter();
-
+  const { color } = useLogoColors();
   const handleContinue = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (success) {
@@ -78,7 +78,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
               <ConectransLogo 
                 width={mediaQuery ? '15%' : '30%'} 
                 height={'auto'} 
-                fill='white' 
+                colors={color}
               />
               <Tooltip title={success ? PAYMENT_SUCCESS_TITLE : PAYMENT_ERROR_TITLE}>
                 {success ? 

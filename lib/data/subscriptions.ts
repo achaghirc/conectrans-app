@@ -5,11 +5,31 @@ import { PlanDTO, SubscriptionDTO } from "@prisma/client";
 import { SubscriptionStatusEnum } from "../enums";
 import { FREE_PACK_TITLE } from "../constants";
 
+
+export async function getSubscriptionIdByUserId(userId: string): Promise<number | undefined> {
+    try {
+        const subscription = await prisma.subscription.findFirst({
+            where: {
+              userId: userId,
+              status: SubscriptionStatusEnum.ACTIVE
+            }, 
+            select: {
+                id: true
+            }
+        });
+        return subscription?.id;
+    } catch(e) {
+        console.log(e);
+    }
+}
+
+
 export async function getSubscriptionByUserIdAndActive(userId: string): Promise<SubscriptionDTO | undefined> {
     try {
         const subscription = await prisma.subscription.findFirst({
             where: {
                 userId: userId,
+                status: SubscriptionStatusEnum.ACTIVE
             },
             include: {
               Plan: {
@@ -102,12 +122,31 @@ export async function hasAlreadyASubscription(userId: string): Promise<boolean |
         console.log(e);
     }
 }
-export async function assignPlanFreeToSubscripcition(subscripctionId: number) : Promise<void> {
+export async function assignPlanFreeToSubscripcition(subscripctionId?: number, userId?: string) : Promise<void> {
   try {
+
+    if (!subscripctionId && userId) {
+      const subscription = await generateTemporalSubscriptionFree(userId);
+      if (!subscription) {
+        return;
+      }
+      await prisma.subscription.create({
+        data: {
+          userId: userId,
+          planId: subscription.Plan.id ?? 22,
+          status: SubscriptionStatusEnum.ACTIVE,
+          remainingOffers: 0,
+          usedOffers: 0,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      });
+    }
     const plan: PlanDTO | undefined = await getPlanByTitle(FREE_PACK_TITLE);
     if (!plan) {
       return;
     }
+    
     await prisma.subscription.update({
       where: {
         id: subscripctionId
@@ -140,6 +179,8 @@ export async function generateTemporalSubscriptionFree(userId: string) : Promise
       status: SubscriptionStatusEnum.TEMPORAL,
       remainingOffers: plan.maxOffers,
       usedOffers: 0,
+      principalOffers: 0,
+      anonymousOffers: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
       Plan: {
@@ -178,6 +219,8 @@ export async function assignPlanToUser(userId: string, planId?: number): Promise
                 status: 'active',
                 remainingOffers: plan.maxOffers,
                 usedOffers: 0,
+                principalOffers: plan.principalOffers,
+                anonymousOffers: plan.anonymousOffers,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -206,27 +249,6 @@ export async function assignPlanToUser(userId: string, planId?: number): Promise
             PlanPreferences: subscription.Plan.PlanPreferences
           } 
         };
-    } catch(e) {
-        console.log(e);
-    }
-}
-
-export async function updateSubscriptionAfterNewOffer(subscripctionId: number) : Promise<void> {
-    try {
-        await prisma.subscription.update({
-            where: {
-                id: subscripctionId
-            },
-            data: {
-                usedOffers: {
-                    increment: 1
-                },
-                remainingOffers: {
-                    decrement: 1
-                },
-                updatedAt: new Date()
-            }
-        });
     } catch(e) {
         console.log(e);
     }

@@ -331,6 +331,8 @@ model Plan {
   priceBianual    Decimal?
   currency        String            @db.VarChar
   maxOffers       Int
+  principalOffers Int               @default(0)
+  anonymousOffers Int               @default(0)
   allowEditOffer  Boolean           @default(false)
   accessLimited   Boolean           @default(true)
   price           Decimal           @default(0)
@@ -348,6 +350,8 @@ model Subscription {
   remainingOffers Int
   usedOffers      Int
   status          String   @db.VarChar
+  principalOffers Int      @default(0) // Number of principal offers that the user can publish
+  anonymousOffers Int      @default(0) // Number of anonimous offers that the user can publish
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   User            User     @relation(fields: [userId], references: [id])

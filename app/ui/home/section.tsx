@@ -17,9 +17,9 @@ export default function SectionCards() {
             title='Conductor' 
             description='Encuentra las mejores ofertas de trabajo en el sector del transporte y conecta con empresas que valoran tus habilidades y experiencia.' 
             actionText='Comenzar'
-            actionUrl='/candidates'
+            actionUrl='/auth/login'
             image={BusinessMan}
-            bgColor='#5B8082'
+            bgColor='#FAFAFA'
             />
         </Grid>
 
@@ -29,9 +29,9 @@ export default function SectionCards() {
 							title='Empresa' 
 							description='Publica tus ofertas de trabajo, conecta con profesionales capacitados para tus proyectos de transporte y expande tu red de contratación.' 
 							actionText='Comenzar'
-							actionUrl='/company'
+              actionUrl='/auth/login'
 							image={BusinessTable}
-							bgColor='#f5f5f5'
+							bgColor='#FAFAFA'
 							/>
         </Grid>
       </Grid>

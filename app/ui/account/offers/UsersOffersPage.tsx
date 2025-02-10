@@ -9,7 +9,6 @@ import React, { useCallback, useEffect } from 'react'
 import ButtonCustom from '../../shared/custom/components/button/ButtonCustom';
 import Link from 'next/link';
 import ApplicationOfferCardComponent from './apply/ApplicationOfferCardComponent';
-import { getOfferSlimCardById } from '@/lib/data/offer';
 import OffersListSkeleton from '../../shared/custom/components/skeleton/OffersListSkeletonComponent';
 import PaginationComponent from '../../shared/custom/components/pagination/PaginationComponent';
 
@@ -85,14 +84,14 @@ const UsersOffersPage: React.FC<UsersOffersPageProps> = (
         </Link>
       </Box>
       {data?.length === 0 &&
-      <>
+      <Box component={'div'} gap={2}>
         <Typography variant="subtitle2" fontWeight={300}>No tienes ninguna candidatura activa actualmente</Typography>
-        <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center">
+        <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" gap={4}>
           <Image 
-            src={'https://res.cloudinary.com/dgmgqhoui/image/upload/v1736350448/search_on_internet-removebg-preview_yfdbrk.png'}
+            src={'https://res.cloudinary.com/dgmgqhoui/image/upload/v1738681088/3d-business-man-with-phone-showing-thumbs-up_ybvvw7.png'}
             alt="No offers"
-            width={400}
-            height={400}
+            width={380}
+            height={380}
             style={{display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center'}}
             />
           <Link  href={'/offers'}
@@ -106,7 +105,7 @@ const UsersOffersPage: React.FC<UsersOffersPageProps> = (
               />
           </Link>
         </Box>
-      </> 
+      </Box> 
       }
       {data?.map((application) => (
         <Link key={application.id} href={`/offers/${application.Offer.id}`} style={{textDecoration: 'none', color: 'inherit' }}>
@@ -118,13 +117,16 @@ const UsersOffersPage: React.FC<UsersOffersPageProps> = (
           <Divider variant='inset' sx={{ display: {xs: 'flex', sm: 'none' }}} />
         </Link>
       ))}
+      <Box component={'div'} sx={{ display: 'flex', position: 'absolute', bottom: 0, right: '35%', p: 2 }}>
+
       <PaginationComponent 
         count={count ?? 0}
         currentPage={currentPage}
         rowsPerPage={limit}
         rowsPerPageOptions={[5,10, 20, 30]}
         handleRowsPerPageChange={() => {}}
-      />
+        />
+      </Box>
     </div>
   )
 }

@@ -9,6 +9,8 @@ import { Session } from 'next-auth';
 import { logout } from '@/lib/actions';
 import { AccountCircleOutlined } from '@mui/icons-material';
 import { Url } from 'next/dist/shared/lib/router/router';
+import ConectransLogo from './logo/conectransLogo';
+import useLogoColors from './hooks/useLogoColors';
 
 type DrawerProps = {
 		session: Session | null;
@@ -21,6 +23,7 @@ export default function DrawerCustom(
 		handleDrawer, handleClose, session
 	} : DrawerProps
 ) {
+  const { color } = useLogoColors();
   const [route, setRoute] = React.useState<Url>('/auth/login');
   const navigate = (): Url => {
     switch(session?.user.roleCode) {
@@ -42,13 +45,8 @@ export default function DrawerCustom(
 
 	return (
     <>
-			<Box sx={{ marginTop: 2 }}>
-					<Image
-						src={Logo}
-						alt="Conectrans Logo Black"
-						width={180}
-						height={100}
-					/>
+			<Box sx={{ m: '10px auto' }}>
+					<ConectransLogo width={'100px'} height={'auto'} colors={color} />
 			</Box>
 			<Divider variant={'middle'} />
 			<Box
@@ -62,16 +60,21 @@ export default function DrawerCustom(
 									Blog
 							</Typography>
 					</MenuItem>
-					<MenuItem onClick={handleClose} sx={{ mt: 1 }}>
-							<Typography variant='body1' sx={{ color: 'black'}}>
-									Ofertas
-							</Typography>
-					</MenuItem>
-					<MenuItem onClick={handleClose} sx={{ mt: 1 }}>
-							<Typography variant='body1' sx={{ color: 'black'}}>
-									Empresa
-							</Typography>
-					</MenuItem>
+					<Link href='/offers?page=1&limit=10' style={{ textDecoration: 'none' }} >
+            <MenuItem sx={{ mt: 1 }}>
+                <Typography variant='body1' sx={{ color: 'black'}}>
+                    Ofertas
+                </Typography>
+            </MenuItem>
+          </Link>
+          <Link href='/about' style={{ textDecoration: 'none' }} >
+            <MenuItem sx={{ mt: 1 }}>
+                <Typography variant='body1' sx={{ color: 'black'}}>
+                    Empresa
+                </Typography>
+            </MenuItem>
+          </Link>
+
 					<MenuItem onClick={handleClose} sx={{ mt: 1 }}>
 							<Typography variant='body1' sx={{ color: 'black'}}>
 									FAQS

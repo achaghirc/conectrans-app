@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, CircularProgress, Tab, Tabs } from '@mui/material';
+import { Box, CircularProgress, Fab, Tab, Tabs } from '@mui/material';
 import { Session } from 'next-auth';
 import React from 'react'
 import { a11yProps, CustomTabPanel } from '../../shared/custom/components/tabPanel/CustomTabPanelComponent';
@@ -110,13 +110,26 @@ const CompanyOffersPage: React.FC<CompanyOffersPageProps> = (
           <OffersListComponent session={session} offers={dataHistorical != undefined ? dataHistorical.offers : []} />
         )}
       </CustomTabPanel>
-      <ButtonAddCustom 
-        actions={[{
-          name: 'Crear oferta',
-          icon: <AddCircleOutline />,
-          onClick: () => setOpenCreateOffer(true)
-        }]}
-      />
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+        }}
+      >
+        <Fab
+          color="primary"
+          onClick={() => setOpenCreateOffer(true)}
+          sx={(theme) => ({
+            position: 'fixed',
+            bottom: theme.spacing(2),
+            right: {xs: theme.spacing(2), sm: theme.spacing('40%')},
+            zIndex: 1000, // Capa de visualización  
+          })}
+          >
+          <AddCircleOutline />
+        </Fab>
+      </Box>
       <CreateOfferComponent 
         session={session} 
         open={openCreateOffer} 

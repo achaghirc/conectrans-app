@@ -1,12 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Typography, Button, Link } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { styled } from '@mui/material/styles';
-import Image from 'next/image';
-import Logo from '../../../public/Conectrans_Logo_White.svg';
 import ConectransLogo from '../shared/logo/conectransLogo';
+import { usePathname } from 'next/navigation';
+import useLogoColors from '../shared/hooks/useLogoColors';
 
 // Estilos para el contenedor del Footer
 const FooterContainer = styled(Box)(({ theme }) => ({
@@ -56,13 +56,22 @@ const FooterButton = styled(Button)(({ theme }) => ({
 }));
 
 export default function Footer() {
+  const pathname = usePathname()
+  const { color, setColor } = useLogoColors();
+
+  useEffect(() => {
+    if(pathname !== '/home' && pathname !== '/' ){ 
+      setColor({...color, conduColor: '#01717A', starColor: 'white' });
+    }
+  }, [pathname]);
+
   return (
     <FooterContainer sx={{ zIndex: 1000}}>
       <Grid container spacing={2} justifyContent="space-between">
         {/* Logo en la esquina izquierda */}
         <Grid size={{xs:12, md:4}}>
           <Box>
-            <ConectransLogo width={180} height={120} fill='#0B2C38' textColor='white'/>
+            <ConectransLogo width={180} height={120} colors={color}/>
           </Box>
         </Grid>
 

@@ -1,81 +1,17 @@
-import { ArrowForwardOutlined, AssignmentIndOutlined, AssignmentOutlined, CheckCircleOutline, CircleOutlined, CloseOutlined, DeleteOutlineOutlined, DetailsOutlined, EditOutlined, FileCopyOutlined, FileDownload, FileDownloadOutlined, FirstPageOutlined, KeyboardArrowLeftOutlined, KeyboardArrowRightOutlined, LastPageOutlined, MedicalInformationOutlined, MenuOutlined, VisibilityOutlined, VisibilityTwoTone } from '@mui/icons-material';
-import { Box, FormGroup, Icon, IconButton, Paper, SxProps, Tab, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, Tooltip, useTheme } from '@mui/material';
+import { ArrowForwardOutlined, CheckCircleOutline, CloseOutlined, FirstPageOutlined, KeyboardArrowLeftOutlined, KeyboardArrowRightOutlined, LastPageOutlined, PendingOutlined } from '@mui/icons-material';
+import { Box, FormGroup, IconButton, Paper, SxProps, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, useTheme } from '@mui/material';
 import { ApplicationOfferDTO } from '@prisma/client';
 import React from 'react'
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
-import ButtonCustom from '../button/ButtonCustom';
-import { ApplicationOfferStatusEnum, OfferStatusEnum } from '@/lib/enums';
+import { ApplicationOfferStatusEnum } from '@/lib/enums';
+import PaginationComponent from '../pagination/PaginationComponent';
 dayjs.locale('es');
-type TablePaginatedActionProps = { 
-  // Define props here
-  count: number;
-  page: number;
-  rowsPerPage: number;
-  onPageChange: (
-    event: React.MouseEvent<HTMLButtonElement>,
-    newPage: number,
-  ) => void;
-}
+
 type TablePaginatedComponentProps = { 
   rows: ApplicationOfferDTO[];
   handleShow: (candidate: ApplicationOfferDTO) => void;
   handleStatusChange: (candidate: ApplicationOfferDTO, status: ApplicationOfferStatusEnum) => void;
-}
-
-function TablePaginationActions(props: TablePaginatedActionProps) {
-  const theme = useTheme();
-  const { count, page, rowsPerPage, onPageChange } = props;
-
-  const handleFirstPageButtonClick = (
-    event: React.MouseEvent<HTMLButtonElement>,
-  ) => {
-    onPageChange(event, 0);
-  };
-
-  const handleBackButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    onPageChange(event, page - 1);
-  };
-
-  const handleNextButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    onPageChange(event, page + 1);
-  };
-
-  const handleLastPageButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    onPageChange(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
-  };
-  return (
-    <Box sx={{ flexShrink: 0, ml: 2.5 }}>
-      <IconButton
-        onClick={handleFirstPageButtonClick}
-        disabled={page === 0}
-        aria-label="first page"
-      >
-        {theme.direction === 'rtl' ? <LastPageOutlined /> : <FirstPageOutlined />}
-      </IconButton>
-      <IconButton
-        onClick={handleBackButtonClick}
-        disabled={page === 0}
-        aria-label="previous page"
-      >
-        {theme.direction === 'rtl' ? <KeyboardArrowRightOutlined /> : <KeyboardArrowLeftOutlined />}
-      </IconButton>
-      <IconButton
-        onClick={handleNextButtonClick}
-        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-        aria-label="next page"
-      >
-        {theme.direction === 'rtl' ? <KeyboardArrowLeftOutlined /> : <KeyboardArrowRightOutlined />}
-      </IconButton>
-      <IconButton
-        onClick={handleLastPageButtonClick}
-        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-        aria-label="last page"
-      >
-        {theme.direction === 'rtl' ? <FirstPageOutlined /> : <LastPageOutlined />}
-      </IconButton>
-    </Box>
-  );
 }
 
 const TablePaginatedComponent: React.FC<TablePaginatedComponentProps> = (
@@ -88,13 +24,6 @@ const TablePaginatedComponent: React.FC<TablePaginatedComponentProps> = (
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
-  const handleChangePage = (
-    event: React.MouseEvent<HTMLButtonElement> | null,
-    newPage: number,
-  ) => {
-    event?.preventDefault();
-    setPage(newPage);
-  };
 
   const handleChangeRowsPerPage = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -129,7 +58,7 @@ const TablePaginatedComponent: React.FC<TablePaginatedComponentProps> = (
             disabled: false
           },
           {
-            title: 'Aceptar',
+            title: 'Continuar',
             onClickStatus: ApplicationOfferStatusEnum.IN_PROCESS,
             icon: <ArrowForwardOutlined color='warning' />,
             disabled: false
@@ -146,9 +75,9 @@ const TablePaginatedComponent: React.FC<TablePaginatedComponentProps> = (
             disabled: false
           },
           {
-            title: 'En Progreso',
+            title: 'Aceptar',
             onClickStatus: ApplicationOfferStatusEnum.ACCEPTED,
-            icon: <CheckCircleOutline color='inherit' />,
+            icon: <PendingOutlined color='warning' />,
             disabled: false
           }
         ]
@@ -268,29 +197,16 @@ const TablePaginatedComponent: React.FC<TablePaginatedComponentProps> = (
               </TableRow>
             )}
           </TableBody>
-          <TableFooter sx={{  width: '100%', position: 'relative', right: 0 }}> 
-            <TableRow>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
-                colSpan={3}
-                count={rows.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                slotProps={{
-                  select: {
-                    inputProps: {
-                      'aria-label': 'Items por página',
-                    },
-                    native: true,
-                  },
-                }}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                ActionsComponent={TablePaginationActions}
-                />
-            </TableRow>
-          </TableFooter>
         </Table>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center', flexDirection: 'row'}}>
+          <PaginationComponent 
+            count={rows.length}
+            currentPage={page}
+            rowsPerPage={rowsPerPage}
+            rowsPerPageOptions={[5, 10, 25]}
+            handleRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Box>
       </TableContainer>
     </Box>
   );

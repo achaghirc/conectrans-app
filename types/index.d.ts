@@ -82,6 +82,8 @@ declare module '@prisma/client' {
             priceBianual: number;
             priceYearly: number;
             maxOffers: number;
+            principalOffers: number;
+            anonymousOffers: number;
             maxOffersBianual: number;
             maxOffersMonthly: number;
             maxOffersYearly: number;
@@ -300,6 +302,8 @@ declare module '@prisma/client' {
         User: {
           Company: {
             name: string | null;
+            phone: string | null;
+            landlinePhone: string | null;
             Asset: {
               url: string | null;
             } | null;
