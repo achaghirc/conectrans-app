@@ -16,9 +16,11 @@ const links: NavLinksType[] = [
   { name: 'Mis Ofertas', href: '/account-user/offers', icon: ContentPasteOutlined, roles: ['USER'] },
   { name: 'Perfil Conductor', href: '/account-user/driver-profile', icon: LocalShippingOutlined, roles: ['USER'] },
   { name: 'Datos Compañía', href: '/account-company/company',icon: BuildCircleOutlined, roles: ['COMPANY'] },
-  { name: 'Datos Personales', href: '/account-company/personal-data', icon: PersonOutlined, roles: [ 'ADMIN'] },
-  { name: 'Ofertas' , href: '/account-company/offers', icon: ContentPasteOutlined, roles: ['ADMIN', 'COMPANY'] },
-  { name: 'Subscripciones', href: '/account-company/subscriptions', icon: PaymentOutlined, roles: ['ADMIN', 'COMPANY'] },
+  { name: 'Ofertas' , href: '/account-company/offers', icon: ContentPasteOutlined, roles: ['COMPANY'] },
+  { name: 'Subscripciones', href: '/account-company/subscriptions', icon: PaymentOutlined, roles: ['COMPANY'] },
+  { name: 'Panel económico', href: '/admin', icon: PsychologyOutlined, roles: ['ADMIN'] },  
+  { name: 'Empresas', href: '/account-company/companies', icon: NetworkPingOutlined, roles: ['ADMIN'] },
+  { name: 'Conductores', href: '/account-company/drivers', icon: LocalShippingOutlined, roles: ['ADMIN'] },
 ];
 
 export default function NavLinks({ role, onClick }: NavlinksProps) {

@@ -80,7 +80,7 @@ export default function Footer() {
           {/* Sección Conectrans */}
           <Grid size={{xs:12, sm:4}}>
             <FooterSections>
-              <Typography variant="h6" gutterBottom>CONECTRANS</Typography>
+              <Typography variant="h6" gutterBottom>CONDUPRO</Typography>
               <Button component={Link} href="/about" color="inherit">
               	<Typography variant="body2" component={'p'}>Para Candidatos</Typography>
               </Button>
@@ -97,7 +97,7 @@ export default function Footer() {
           <Grid size={{xs:12, sm:4}}>
             <FooterSections>
               <Typography variant="h6" gutterBottom>Contacto</Typography>
-              <Typography variant="body2">Email: contacto@conectrans.com</Typography>
+              <Typography variant="body2">Email: info@condupro.es</Typography>
               <Typography variant="body2">Teléfono: +34 123 456 789</Typography>
               <Typography variant="body2">Dirección: Calle Transporte 123, Madrid</Typography>
             </FooterSections>

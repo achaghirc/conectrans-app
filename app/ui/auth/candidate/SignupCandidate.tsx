@@ -53,7 +53,9 @@ const initialStateData: SignUpCandidateFormData = {
   summaryFile: null
 }
 
-export default function SignupCandidate() {
+export default function SignupCandidate(
+  { redirect }: {redirect?: string }
+) {
   const router = useRouter();
   const { mediaQuery } = useMediaQueryData();
 	const [snackbarProps, setSnackbarProps] = useState<SnackbarCustomProps>({} as SnackbarCustomProps);
@@ -103,7 +105,11 @@ export default function SignupCandidate() {
 			const errorMsg = await authenticate(undefined, formDataLogin);
 			if(errorMsg?.success) {
 				console.log('Usuario autenticado correctamente');
-				router.push('/');
+				if (redirect) {
+          router.push(redirect);
+          return;
+        }
+        router.push('/');
 				return;
 			}
 			if(errorMsg) {

@@ -2,10 +2,12 @@
 import { PlanDTO, Transaction, TransactionDTO, UserDTO } from "@prisma/client";
 import { StripeSession } from "../stripe/session";
 import prisma from "@/app/lib/prisma/prisma";
-import { SubscriptionStatusEnum, TransactionStatusEnum } from "../enums";
+import { fromValueTransaction, SubscriptionStatusEnum, TransactionStatusEnum } from "../enums";
 import { getUserByEmail } from "./user";
 import { getSubscriptionByUserId } from "./subscriptions";
 import { convertDecimalToNumber } from "../utils";
+import { FilterTransactionsDTO } from "../definitions";
+import { Prisma } from "@prisma/client";
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16',
 });
@@ -334,3 +336,51 @@ export async function getTransactionsBySubscriptionId(subscriptionId: number): P
       console.log(e);
     }
 }
+
+export async function getTransactionsByFilter(filter: FilterTransactionsDTO) : Promise<TransactionDTO[] | undefined> {
+    try {
+
+      const where: Prisma.TransactionWhereInput = {};
+      if (filter.status) {
+        where.status = filter.status;
+      }
+      if (filter.startDate && filter.endDate) {
+        where.createdAt = {
+          gte: filter.startDate,
+          lte: filter.endDate,
+        }
+      }
+      if (filter.planId) {
+        where.planId = filter.planId;
+      }
+
+      const transactions = await prisma.transaction.findMany({
+        where: where,
+        include: {
+          Plan: {
+            select: {
+              id: true,
+              title: true,
+            }
+          },
+          Subscription: {
+            select: {
+              remainingOffers: true,
+              usedOffers: true,
+            }
+          }
+        }
+      });
+
+      const response = await Promise.all(transactions.map(async (transaction) => {
+        const transactionDTO: TransactionDTO = {
+          ...transaction,
+          amount: await convertDecimalToNumber(transaction.amount) ?? 0,
+        }
+        return transactionDTO;
+      }));
+      return response;
+    } catch(e) {
+      console.log(e);
+    }
+} 

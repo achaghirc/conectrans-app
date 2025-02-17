@@ -32,7 +32,7 @@ export default function DrawerCustom(
       case 'COMPANY':
         return '/account-company/company';
       case 'ADMIN':
-        return '/admin/admin';
+        return '/admin';
       default:
         return '/auth/login';
     }

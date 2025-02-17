@@ -389,3 +389,17 @@ export type FilterOffersDTO = {
   endDate?: Date | undefined;
   active?: boolean | undefined; // If is active or historical based on the end date
 }
+
+export type FilterTransactionsDTO = {
+  status?: string;
+  startDate?: Date;
+  endDate?: Date;
+  planId?: number;
+  planCode?: string;
+  subscriptionId?: number;
+}
+
+export type SubscriptionFilterDTO = {
+  userId?: string;
+  status?: string;
+}

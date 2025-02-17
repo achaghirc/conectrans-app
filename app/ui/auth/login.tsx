@@ -6,7 +6,7 @@ import Image from 'next/image';
 import ForgotPassword from '../icons/forgotPassword';
 import { ArrowBack, BusinessOutlined, LockOutlined, PeopleOutline, Visibility, VisibilityOff } from '@mui/icons-material';
 import { authenticate } from '@/lib/actions';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AuthenticateMessage, State } from '@/lib/definitions';
 import { SignInForm, SignInMobileForm, TextFieldCustom } from '../shared/auth/LoginComponents';
 import ButtonCustom from '../shared/custom/components/button/ButtonCustom';
@@ -52,6 +52,7 @@ export default function LoginModal() {
 
 
 const FormLogin = () => {
+  const redirectParam = useSearchParams()?.get('redirect') ?? '/';
   const [loading, setIsLoading] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
 	const [open, setOpen] = useState(false);
@@ -75,7 +76,6 @@ const FormLogin = () => {
 	};
 
   const onSubmit: SubmitHandler<LoginForm> = async(data) => {
-    console.log(data)
     setIsLoading(true);
     const { email, password } = data;
     const formData = new FormData();
@@ -89,12 +89,16 @@ const FormLogin = () => {
     }
 		try {
 			const response: AuthenticateMessage | undefined = await authenticate(undefined, formData);
-			console.log('Response:', response);
 			if (!response) {
 				return;
 			}
 			if (response.success) {
-				router.push('/');
+				if (redirectParam) {
+          console.log('Redirecting to:', redirectParam);
+          router.push(redirectParam);
+          return;
+        }
+        router.push('/');
 				return;
 			}
       switch (response.type) {
@@ -246,7 +250,7 @@ const FormLogin = () => {
 					variant="outlined"
 					sx={{ color: '#0B2C38', borderColor: '#0B2C38' }}
 					startIcon={<PeopleOutline />}
-          onClick={() => router.push('/auth/signup/candidate')}
+          onClick={() => router.push(`/auth/signup/candidate?redirect=${redirectParam}`)}
 				>
 					Comenzar como candidato
 				</Button>

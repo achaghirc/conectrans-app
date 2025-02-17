@@ -1,9 +1,10 @@
 'use server';
 import prisma from "@/app/lib/prisma/prisma";
 import { getPlanById, getPlanByTitle } from "./plan";
-import { PlanDTO, SubscriptionDTO } from "@prisma/client";
+import { PlanDTO, Prisma, SubscriptionDataDTO, SubscriptionDTO } from "@prisma/client";
 import { SubscriptionStatusEnum } from "../enums";
 import { FREE_PACK_TITLE } from "../constants";
+import { SubscriptionFilterDTO } from "../definitions";
 
 
 export async function getSubscriptionIdByUserId(userId: string): Promise<number | undefined> {
@@ -22,7 +23,6 @@ export async function getSubscriptionIdByUserId(userId: string): Promise<number 
         console.log(e);
     }
 }
-
 
 export async function getSubscriptionByUserIdAndActive(userId: string): Promise<SubscriptionDTO | undefined> {
     try {
@@ -104,11 +104,9 @@ export async function getSubscriptionByUserId(userId: string): Promise<Subscript
         console.log(e);
     }
 }
-
 const convertDecimalToNumber = (value: any) => {
     return value ? Number(value) : 0;
 }
-
 export async function hasAlreadyASubscription(userId: string): Promise<boolean | undefined> {
     try {
         const subscription = await prisma.subscription.findFirst({
@@ -252,4 +250,75 @@ export async function assignPlanToUser(userId: string, planId?: number): Promise
     } catch(e) {
         console.log(e);
     }
+}
+
+export async function getSubscriptionByFilter(filter: SubscriptionFilterDTO): Promise<SubscriptionDataDTO[] | undefined> {
+  try {
+    const where: Prisma.SubscriptionWhereInput = {};
+    if(filter.userId) {
+      where.userId = filter.userId;
+    }
+    if(filter.status) {
+      where.status = filter.status;
+    }
+
+    const subscriptions = await prisma.subscription.findMany({
+      where: where,
+      include: {
+        Plan: {
+          select: {
+            id:true,
+            title: true,
+            price: true,
+          }
+        },
+        Transaction: {
+          select: {
+            stripe_transaction_id: true,
+            stripe_payment_method_id: true,
+            status: true,
+            amount: true
+          }
+        },
+        User: {
+          select: {
+            id: true,
+            email: true,
+            Person: {
+              select: {
+                id: true,
+                name: true,
+                lastname: true
+              }
+            },
+            Company: {
+              select: {
+                id: true,
+                name: true
+             }
+            }
+          }
+        }
+      }
+    });
+
+    return subscriptions.map(subscription => {
+      return {
+        ...subscription,
+        Plan: {
+          ...subscription.Plan,
+          price: convertDecimalToNumber(subscription.Plan.price)
+        },
+        Transaction: subscription.Transaction.map(transaction => {
+          return {
+            ...transaction,
+            amount: convertDecimalToNumber(transaction.amount)
+          }
+        })
+      }
+    });
+  } catch(err) {
+    console.log(err);
+    return undefined;
+  }
 }

@@ -35,7 +35,6 @@ const TablePaginatedComponent: React.FC<TablePaginatedComponentProps> = (
 
   const fileActions = (row: ApplicationOfferDTO) => {
     const status = row.status;
-  
     const actions = [
       {
         condition: status === ApplicationOfferStatusEnum.REJECTED,
