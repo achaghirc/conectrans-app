@@ -3,6 +3,7 @@ import { Typography, Button, Card, CardContent, CardActions, CardMedia } from "@
 import { styled } from '@mui/material/styles';
 import Image, { StaticImageData } from 'next/image';
 import ButtonCustom from './button/ButtonCustom';
+import Link from 'next/link';
 
 type CardSectionPropsType = {
     title: string;
@@ -72,7 +73,7 @@ export const CardSectionCustom = ({
 		imageHeight
 	}: CardSectionPropsType) => {
   return (
-		<SectionCard sx={{ backgroundColor: bgColor, color: color}}>
+		<SectionCard sx={{ backgroundColor: bgColor ?? 'primary', color: color}}>
 			<CardContent>
 				<Typography 
 					variant="h4" 
@@ -101,13 +102,15 @@ export const CardSectionCustom = ({
 					/>
 			</CardMedia>
 			<CardActions sx={{ margin: '0 auto'}}>
-        <ButtonCustom 
-          title='Comenzar'
-          onClick={() => console.log(actionUrl)}
-          variant={actionUrl === '/company' ? 'outlined' : 'contained'}
-          color='primary'
-          loading={false}
-        />
+        <Link href={actionUrl} passHref>
+          <ButtonCustom 
+            title='Comenzar'
+            onClick={() => console.log(actionUrl)}
+            variant={actionUrl === '/company' ? 'outlined' : 'contained'}
+            color='primary'
+            loading={false}
+          />
+        </Link>
 			</CardActions>
 		</SectionCard>
   )

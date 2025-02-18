@@ -13,7 +13,7 @@ async function getActiveStripeProducts() {
 }
 
 
-export const checkOutSessionController = async (req: NextApiRequest, res: NextApiResponse) => {
+const checkOutSessionController = async (req: NextApiRequest, res: NextApiResponse) => {
   if(req.method === 'POST') {
     const { plan, success_url, cancel_url, email } = req.body;
     const planProduct: PlanDTO = plan;
@@ -57,3 +57,5 @@ export const checkOutSessionController = async (req: NextApiRequest, res: NextAp
     }
   }
 }
+
+export default checkOutSessionController;

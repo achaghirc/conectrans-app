@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Grid from "@mui/material/Grid2";
 import SubscriptionCardSkeleton from "../../shared/custom/components/skeleton/SubscriptionCardSkeleton";
-import { AccountBalanceOutlined, BusinessCenterOutlined, CancelOutlined, ChatBubbleOutlined, ChatBubbleTwoTone, ChatOutlined, CheckCircleOutline, CircleOutlined, CloseOutlined, ContactMailOutlined, EditOutlined, MoreVertOutlined, RemoveShoppingCartOutlined, WarningOutlined } from "@mui/icons-material";
+import { AccountBalanceOutlined, BusinessCenterOutlined, CancelOutlined, ChatBubbleOutlined, ChatBubbleTwoTone, ChatOutlined, CheckCircleOutline, CircleOutlined, CloseOutlined, ContactMailOutlined, EditOutlined, MailOutlineOutlined, MoreVertOutlined, PhoneAndroidOutlined, PhoneForwardedOutlined, RemoveShoppingCartOutlined, StarOutlineOutlined, WarningOutlined, WhatsApp } from "@mui/icons-material";
 import dayjs from "dayjs";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import { assignPlanFreeToSubscripcition, getSubscriptionByUserIdAndActive } from "@/lib/data/subscriptions";
@@ -20,10 +20,11 @@ import { StripeSession } from "@/lib/stripe/session";
 import { createTransaction, getTransactionsBySubscriptionId } from "@/lib/data/transactions";
 import React, { useEffect } from "react";
 import SnackbarCustom, { SnackbarCustomProps } from "../../shared/custom/components/snackbarCustom";
-import { PAYMENT_TEMPORAL_MESSAGE, PAYMENT_WARN_MESSAGE } from "@/lib/constants";
+import { PAYMENT_TEMPORAL_MESSAGE, PAYMENT_WARN_MESSAGE, PHONE_NUMBER } from "@/lib/constants";
 import SubscriptionTransactionComponent from "../../shared/custom/components/subscription/SubscriptionTransactionComponent";
 import { set } from "nprogress";
 import useLocalStorage from "../../shared/hooks/useLocalStorage";
+import BoxIconTextInformation from "../../shared/custom/components/box/BoxIconTextInformation";
 dayjs.extend(LocalizedFormat);
 
 export type SubscriptionsPageProps = {
@@ -130,7 +131,7 @@ const SubscriptionComponent: React.FC<SubscriptionsPageProps> = ({ session }) =>
 
   const handlePayNewPlan = async (plan: PlanDTO) => {
     if (plan.title.includes('Gratuito')) {
-      await assignPlanFreeToSubscripcition(subscription?.id ?? 0);
+      await assignPlanFreeToSubscripcition(subscription?.id, session.user.id);
       handleSnackbarSons({open: true, message: 'Plan gratuito asignado correctamente', severity: 'success'});
     } else {
       await handleCheckout(plan);
@@ -233,6 +234,8 @@ const SubscriptionComponent: React.FC<SubscriptionsPageProps> = ({ session }) =>
           backgroundColor: {xs: 'rgba(184, 184, 184, 0.5)', md: 'transparent'}, // Add a semi-transparent white background
           pointerEvents: 'none', // Disable all interactions
         }),
+        pr: {xs: 2, sm: 0},
+        pl: {xs: 2, sm: 0}
       }}
     >
       {subscription?.status !== SubscriptionStatusEnum.ACTIVE && (
@@ -287,16 +290,22 @@ const SubscriptionComponent: React.FC<SubscriptionsPageProps> = ({ session }) =>
             border: '1px solid rgba(0, 0, 0, 0.05)',
             minWidth: '100%',
             minHeight: 200,
-            borderRadius: 3
+            borderRadius: 5,
+            pb: 2
           }}
         > 
           <Grid container spacing={4} sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', padding: 2}}>
             <Grid size={{xs: 6, sm: 6, md: 6}}>
-              <Typography variant="h4" component={"h1"} fontWeight={900}>Subscripción</Typography>
+              <Typography variant="h4" component={"h1"} sx={{ fontSize: { xs: 28, sm: 34}}} fontWeight={900}>Subscripción</Typography>
             </Grid>
             <Grid size={{xs: 6, sm: 6, md: 6}} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Box sx={{ display: { xs: 'flex', sm: 'none'}, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 1}}>
-                <IconButton>
+              <Box sx={{ display: { xs: 'flex', sm: 'none'}, flexDirection: 'row', justifyContent: 'center', alignContent: 'center'}}>
+                <IconButton
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(PHONE_NUMBER);
+                    handleSnackbarSons({open: true, message: 'Número de contacto copiado a portapapeles', severity: 'success'});
+                  }}
+                > 
                   <ChatBubbleOutlined color="action"/>
                 </IconButton>
                 <Tooltip placement="top" title={statusText()}>
@@ -328,7 +337,7 @@ const SubscriptionComponent: React.FC<SubscriptionsPageProps> = ({ session }) =>
                     borderRadius: 5,
                     color: 'ButtonText', fontWeight: 'bold'}}
                 >
-                  Contáctanos
+                  <a style={{ textDecoration: 'none', color: 'inherit'}} href="mailto:nfo@condupro.es">Contáctanos</a>
                 </Button>
                 <Button 
                   startIcon={statusStartIcon()}  
@@ -359,6 +368,7 @@ const SubscriptionComponent: React.FC<SubscriptionsPageProps> = ({ session }) =>
           </Grid>
           <Grid 
             container mt={1} 
+            spacing={2}
             sx={{
               display: 'flex',
               flexDirection: {xs: 'column', sm: 'row'},
@@ -369,7 +379,7 @@ const SubscriptionComponent: React.FC<SubscriptionsPageProps> = ({ session }) =>
               mt: 1,
             }}
           >
-            <Grid size={{ xs: 12, sm: 6, md: 4}}>
+            <Grid size={{ xs: 12, sm: 6, md: 3}}>
               <SubscriptionItemComponent
                 icon={<BusinessCenterOutlined color="action"/>}
                 title={'Pack actual'}
@@ -377,29 +387,70 @@ const SubscriptionComponent: React.FC<SubscriptionsPageProps> = ({ session }) =>
                 principal
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4}}>
+            <Grid size={{ xs: 12, sm: 6, md: 3}}>
               <SubscriptionItemComponent
-                icon={<AccountBalanceOutlined color="action"/>}
-                title={'Ofertas disponibles'}
+                icon={<BusinessCenterOutlined color="action"/>}
+                title={'Ofertas creadas'}
+                text={`${subscription?.status != SubscriptionStatusEnum.ACTIVE ? 0 : subscription?.usedOffers ?? '0'}`}
+                warning={subscription?.status != SubscriptionStatusEnum.ACTIVE}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3}}>
+              <SubscriptionItemComponent
+                icon={<BusinessCenterOutlined color="action"/>}
+                title={'Ofertas restantes'}
                 text={`${subscription?.status != SubscriptionStatusEnum.ACTIVE ? 0 : subscription?.remainingOffers ?? '0'}`}
                 warning={subscription?.status != SubscriptionStatusEnum.ACTIVE}
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4}}>
+            <Grid size={{ xs: 12, sm: 6, md: 3}}>
               <SubscriptionItemComponent
-                icon={<AccountBalanceOutlined color="action"/>}
-                title={'Fecha de inicio'}
-                text={dayjs(subscription?.createdAt).format('LL')}
+                icon={<StarOutlineOutlined color="action"/>}
+                title={'Destacadas restantes'}
+                text={`${subscription?.status != SubscriptionStatusEnum.ACTIVE ? 0 : subscription?.principalOffers ?? '0'}`}
+                warning={subscription?.status != SubscriptionStatusEnum.ACTIVE}
               />
             </Grid>
           </Grid>
         </Box>
         <SubscriptionsPlans activePlanId={subscription?.Plan.id ?? 0} handleChange={handlePlanChange} handlePayNewPlan={handlePayNewPlan}/>
       </Box>
-      <Box sx={{ mt: 3}}>
-        <Typography variant="h6" component={"h2"} textAlign={'center'} color="text.secondary" fontWeight={'bold'}>
-          ¿Dudas? <a href="mailto:aminechaghir1999@gmail.com">Contáctanos</a>
+      <Box sx={{ 
+        mt: 3, 
+        bgcolor: '#FAFAFA', 
+        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+        border: '1px solid rgba(0, 0, 0, 0.05)',
+        borderRadius: 5,
+        p: 2
+        }} >
+        <Typography variant="h6" component={"h2"} textAlign={'start'} color="text.secondary" fontWeight={'bold'}>
+          ¿Tienes dudas, necesitas ayuda o consultas en particular?
         </Typography>
+        <Box sx={{ pt: 2, pb: 2, pr: 5, display: 'flex', justifyContent: 'space-between', flexDirection: {xs: 'column', sm: 'row' }, gap: 2}}>
+          <BoxIconTextInformation
+            icon={<MailOutlineOutlined />}
+            text={<a style={{ textDecoration: 'none', color: 'inherit'}} href="mailto:aminechaghir1999@gmail.com">info@condupro.es</a>}
+            fontSize={18}
+          />
+          <BoxIconTextInformation
+            icon={<PhoneForwardedOutlined />}
+            text={PHONE_NUMBER}
+            fontSize={18}
+            onClick={ async () => {
+              await navigator.clipboard.writeText(PHONE_NUMBER);
+              handleSnackbarSons({open: true, message: 'Copiado a portapapeles', severity: 'success'});
+            }}
+          />
+          <BoxIconTextInformation
+            icon={<WhatsApp />}
+            text={PHONE_NUMBER}
+            fontSize={18}
+            onClick={ async () => {
+              await navigator.clipboard.writeText(PHONE_NUMBER);
+              handleSnackbarSons({open: true, message: 'Copiado a portapapeles', severity: 'success'});
+            }}
+          />
+        </Box>
       </Box>
       <SubscriptionTransactionComponent 
         open={openDialog.transactions}

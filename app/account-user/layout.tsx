@@ -7,6 +7,7 @@ import { getCountries } from '@/lib/data/geolocate';
 import { getEncoderTypeData } from '@/lib/data/encoderType';
 import DriverProfilePreFetchService from '@/lib/services/prefetch/DriverProfilePrefetchService';
 
+const queryClient = new QueryClient();
 export default async function layout({children} : {children: React.ReactNode}) {
   const session: Session | null = await auth();
   if (!session) {
@@ -17,7 +18,6 @@ export default async function layout({children} : {children: React.ReactNode}) {
     return null;
   }
 
-  const queryClient = new QueryClient();
 
   await Promise.all ([
     await queryClient.prefetchQuery({ 

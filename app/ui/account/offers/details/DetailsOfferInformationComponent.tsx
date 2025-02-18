@@ -3,11 +3,11 @@ import BoxTextItem from '@/app/ui/shared/custom/components/box/BoxTextItem';
 import { Box, Button, Divider, Typography } from '@mui/material';
 import { OfferDTO } from '@prisma/client';
 import { Session } from 'next-auth';
-import React from 'react'
+import React, { useEffect } from 'react'
 
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { existsApplicationOfferByPerson } from '@/lib/data/applicationOffers';
 import { CheckCircleOutline } from '@mui/icons-material';
 import Link from 'next/link';
@@ -28,12 +28,20 @@ const DetailsOfferInformationComponent: React.FC<DetailsOfferInformationComponen
   const startDate = dayjs(offer.startDate).format('LL');
   const endDate = dayjs(offer.endDate).format('LL');
 
+  const queryClient = useQueryClient();
+
   const { data: alreadyAppliyed, isLoading } = useQuery({
     queryKey: ['existsApplicationOfferByPerson', session?.user.personId, offer.id],
     queryFn: (): Promise<boolean | undefined > => existsApplicationOfferByPerson(session?.user.personId ?? 0, offer.id),
     enabled: session?.user.personId !== undefined,
     staleTime: 1000 * 60 * 60 * 24 * 7,
   })
+
+  useEffect(() => {
+    queryClient.invalidateQueries({
+      queryKey: ['existsApplicationOfferByPerson', session?.user.personId, offer.id]
+    })
+  }, [session])
 
   const getButtons = () => {
 

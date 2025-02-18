@@ -15,7 +15,8 @@ export default async function page() {
       minHeight: '100vh',
       maxWidth: '100%',
       overflowX: 'hidden',
-      backgroundColor: '#0B2C38'
+      backgroundColor: '#0B2C38',
+      scrollbarWidth: 'none',
     }}>
       <div
         style={{
@@ -72,7 +73,7 @@ export default async function page() {
               }}
             >
               Condupro es la plataforma ideal para encontrar y publicar todo tipo 
-              de ofertas del sector de la movilidad profesional.
+              de ofertas del sector de movilidad profesional.
             </Typography>
           </Box>
         </Grid>

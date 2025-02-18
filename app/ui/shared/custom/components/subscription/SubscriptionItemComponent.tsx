@@ -8,9 +8,10 @@ export type SubscriptionItemComponentProps = {
   text: string;
   principal?: boolean;
   warning?: boolean;
+  fontSize?: number;  
 }
 
-const  SubscriptionItemComponent: React.FC<SubscriptionItemComponentProps> = ({icon, title, text, principal, warning}) => {
+const  SubscriptionItemComponent: React.FC<SubscriptionItemComponentProps> = ({icon, title, text, principal, warning, fontSize}) => {
   return (
     <Box
       sx={{
@@ -43,7 +44,7 @@ const  SubscriptionItemComponent: React.FC<SubscriptionItemComponentProps> = ({i
       >
         <Typography variant="caption" component={"h2"} fontWeight={200}>{title}</Typography>
         <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 1}}>
-          <Typography variant="h6" component={"h3"} fontWeight={700}>{text}</Typography>
+          <Typography variant="h6" component={"h3"} fontWeight={700} fontSize={fontSize ?? 20}>{text}</Typography>
           {warning && (
             <Tooltip title={PAYMENT_WARN_MESSAGE}>
               <InfoOutlined color="warning"/>

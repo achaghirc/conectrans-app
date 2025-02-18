@@ -1,4 +1,5 @@
 import { FilterOffersDTO, State } from '@/lib/definitions';
+import { Decimal } from '@prisma/client/runtime/library';
 
 const useUtilsHook = () => {
   const handleZodError = (errors:State, name: string) => {
@@ -29,11 +30,19 @@ const useUtilsHook = () => {
     return data; 
   }
 
+
+    const formatCurrencyEur = (value: Decimal | number | null | undefined) => {
+      if (!value) return '0,00 €';
+      const numberValue = typeof value === 'number' ? value : Number(value);
+      return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(numberValue);
+    }
+
   return {
     handleZodError,
     handleZodHelperText,
     countWords,
-    getFilterDataFromQuery
+    getFilterDataFromQuery,
+    formatCurrencyEur
   }
 }
 

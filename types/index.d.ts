@@ -35,6 +35,34 @@ declare module '@prisma/client' {
         countryCode: string;
     }
 
+    interface SubscriptionDataDTO extends PrismaSubscription {
+      Plan: {
+        id: number;
+        title: string;
+        price: number;
+      },
+      Transaction: {
+        stripe_transaction_id: string | null;
+        stripe_payment_method_id: string | null;
+        status: string;
+        amount: number;
+      }[];
+      User: {
+        id: string;
+        email: string;
+        Company: {
+          id: number;
+          name: string;
+        } | null;
+        Person: {
+          id: number;
+          name: string;
+          lastname: string;
+        } | null
+      }
+    }
+
+
     interface SubscriptionDTO extends PrismaSubscription {
         Plan: {
           id: number;
@@ -82,6 +110,8 @@ declare module '@prisma/client' {
             priceBianual: number;
             priceYearly: number;
             maxOffers: number;
+            principalOffers: number;
+            anonymousOffers: number;
             maxOffersBianual: number;
             maxOffersMonthly: number;
             maxOffersYearly: number;
@@ -300,6 +330,8 @@ declare module '@prisma/client' {
         User: {
           Company: {
             name: string | null;
+            phone: string | null;
+            landlinePhone: string | null;
             Asset: {
               url: string | null;
             } | null;

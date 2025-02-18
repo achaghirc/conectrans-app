@@ -210,20 +210,22 @@ const AccountUserComponent: React.FC<AccountUserProps> = ({session}) => {
             </AccordionComponent>
           </Suspense>
         </Grid>
-        <Grid size={{ xs: 12 }}>
-          <AccordionComponent title='Preferencias de empleo' 
-            expandedDefault={false} 
-            loading={personIsLoading}
-          >
-            <PersonEmploymentPreferencesComponent
-              hasCar={hasCar}
-              relocateOption={relocateOption}
-              setHasCar={setHasCar}
-              setRelocateOption={setRelocateOption}
-              saveAction={updateEmployeePreferences}
-            />
-          </AccordionComponent>
-        </Grid>
+        {session && session.user.roleCode === 'USER' && (
+          <Grid size={{ xs: 12 }}>
+            <AccordionComponent title='Preferencias de empleo' 
+              expandedDefault={false} 
+              loading={personIsLoading}
+            >
+              <PersonEmploymentPreferencesComponent
+                hasCar={hasCar}
+                relocateOption={relocateOption}
+                setHasCar={setHasCar}
+                setRelocateOption={setRelocateOption}
+                saveAction={updateEmployeePreferences}
+              />
+            </AccordionComponent>
+          </Grid>
+        )}
       </Grid>
       <ModalCheckPassComponent 
         userData={user}

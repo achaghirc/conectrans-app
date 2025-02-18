@@ -1,6 +1,4 @@
-import { generatePagination } from '@/lib/utils';
-import { TablePagination } from '@mui/material';
-import Link from 'next/link';
+import { Box, Pagination } from '@mui/material';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React from 'react'
 
@@ -36,16 +34,18 @@ const PaginationComponent: React.FC<PaginationComponentProps> = (
     return `${pathname}?${params.toString()}`;
   }
 
-  const handlePageChange = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+  const handlePageChange = (event: React.ChangeEvent<unknown> | null, newPage: number) => {
     if (event == null ) return;
     event.preventDefault()
     router.push(createPageUrl(newPage))
   }
 
+  const countItems = count == 0 ? 0 : rowsPerPage >= count ? 1 : Math.floor(count / rowsPerPage); 
 
   return (
-    <div>
-      <TablePagination 
+    <Box display={countItems > 0 ? 'flex' : 'none'} justifyContent='center' m={2}>
+      <Pagination count={countItems}  page={currentPage} variant='outlined' onChange={handlePageChange} />
+      {/* <TablePagination 
         align='center'
         component={'div'}
         count={count}
@@ -54,8 +54,8 @@ const PaginationComponent: React.FC<PaginationComponentProps> = (
         onPageChange={(event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => handlePageChange(event, newPage + 1)}
         rowsPerPage={rowsPerPage}
         onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => handleRowsPerPageChange(event)}
-      />
-    </div>
+      /> */}
+    </Box>
   )
 }
 

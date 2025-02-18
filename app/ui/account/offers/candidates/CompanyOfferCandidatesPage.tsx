@@ -2,9 +2,9 @@
 import { getApplicationOffersPageableByFilter, getApplicationsOfferUserByFilter, handleApplicationOfferStatus } from "@/lib/data/applicationOffers";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Session } from "next-auth";
-import React from "react";
+import React, { useEffect } from "react";
 import TablePaginatedComponent from "../../../shared/custom/components/table/TablePaginatedComponent";
-import { Box, Typography } from "@mui/material";
+import { Box, Button, IconButton, Skeleton, Tooltip, Typography } from "@mui/material";
 import { ApplicationOfferDTO } from "@prisma/client";
 import CandidateInformationComponent from "./CandidateInformationComponent";
 import CandidateFileComponent from "./CandidateFileComponent";
@@ -12,6 +12,14 @@ import { downloadFileFromCloud } from "@/lib/services/cloudinary";
 import { useRouter } from "next/navigation";
 import { ApplicationOfferStatusEnum } from "@/lib/enums";
 import CandidateDrawerComponent from "./CandidateDrawerComponent";
+import { sendApplicationOfferMail, sendMail } from "@/lib/services/mail/mailsender";
+import TableAdminPanel, { TableAdminDataType, TableSkeleton } from "@/app/ui/shared/custom/components/table/TableAdminPanel";
+import { ArrowForwardOutlined, CheckCircleOutline, CloseOutlined, PendingOutlined } from "@mui/icons-material";
+import SnackbarCustom from "@/app/ui/shared/custom/components/snackbarCustom";
+
+import dayjs from 'dayjs';
+dayjs.locale('es');
+
 
 type CompanyOfferCandidatesPageProps = {
   session: Session | null;
@@ -36,27 +44,16 @@ const CompanyOfferCandidatesPage: React.FC<CompanyOfferCandidatesPageProps>= ({
   const [isPdfShow, setPdfShow] = React.useState<boolean>(false);
   const [selectedCandidate, setSelectedCandidate] = React.useState<ApplicationOfferDTO | null>(null);
   
-  const {data, isLoading: isLoadingData, isError} = useQuery({
+  const [tableData, setTableData] = React.useState<Record<string, TableAdminDataType>[]>([]);
+
+  const {data, isLoading: isLoadingData, isError, isFetched} = useQuery({
     queryKey: ['offer_candidates', Number(offerId)],
     queryFn: () => getApplicationsOfferUserByFilter({offerId: Number(offerId)}, Number(1), 10),
   });
 
-  if(isLoadingData) {
-    return (
-      <div>
-        Loading...
-      </div>
-    )
-  }
-
   const handleShow = (candidate: ApplicationOfferDTO) => {
     setSelectedCandidate(candidate);
     setOpen(true);
-  }
-
-  const handlePdfShow = (candidate: ApplicationOfferDTO) => {
-    setSelectedCandidate(candidate);
-    setPdfShow(true);
   }
 
   const handleDownloadPdf = async (url: string, publicId: string | null) => {
@@ -109,6 +106,7 @@ const CompanyOfferCandidatesPage: React.FC<CompanyOfferCandidatesPageProps>= ({
         return;
       }
       await handleApplicationOfferStatus(candidate.id, status);
+      await sendApplicationOfferMail(candidate, status); 
       await queryClient.refetchQueries({queryKey: ['offer_candidates', Number(offerId)]});
     } catch (error) {
       console.error('Error changing the status of the candidate:', error);
@@ -130,6 +128,137 @@ const CompanyOfferCandidatesPage: React.FC<CompanyOfferCandidatesPageProps>= ({
     setOpenManagement(value);
   };
 
+  const candidateActions = (row: ApplicationOfferDTO) => {
+    const status = row.status;
+    const actions = [
+      {
+        condition: status === ApplicationOfferStatusEnum.REJECTED,
+        buttons: [
+          {
+            title: 'Rechazado',
+            onClickStatus: ApplicationOfferStatusEnum.REJECTED,
+            icon: <CloseOutlined color='error'/>,
+            disabled: true
+          }
+        ]
+      },
+      {
+        condition: status === ApplicationOfferStatusEnum.PENDING,
+        buttons: [
+          {
+            title: 'Rechazar',
+            onClickStatus: ApplicationOfferStatusEnum.REJECTED,
+            icon: <CloseOutlined color='error' />,
+            disabled: false
+          },
+          {
+            title: 'Continuar',
+            onClickStatus: ApplicationOfferStatusEnum.IN_PROCESS,
+            icon: <ArrowForwardOutlined color='warning' />,
+            disabled: false
+          }
+        ]
+      },
+      {
+        condition: status === ApplicationOfferStatusEnum.IN_PROCESS,
+        buttons: [
+          {
+            title: 'Rechazar',
+            onClickStatus: ApplicationOfferStatusEnum.REJECTED,
+            icon: <CloseOutlined color='error' />,
+            disabled: false
+          },
+          {
+            title: 'Aceptar',
+            onClickStatus: ApplicationOfferStatusEnum.ACCEPTED,
+            icon: <PendingOutlined color='warning' />,
+            disabled: false
+          }
+        ]
+      },
+      {
+        condition: status === ApplicationOfferStatusEnum.ACCEPTED,
+        buttons: [
+          {
+            title: 'Aceptado',
+            onClickStatus: ApplicationOfferStatusEnum.ACCEPTED,
+            icon: <CheckCircleOutline color='success'/>,
+            disabled: true
+          }
+        ]
+      }
+    ];
+    return (
+      <>
+        {actions.map((action, index) => (
+          action.condition && action.buttons.map((button, btnIndex) => (
+            <Tooltip key={`${index}-${btnIndex}`} title={button.title} placement='top'>
+              <span>
+                <IconButton 
+                  disabled={button.disabled}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleStatusChange(row, button.onClickStatus);
+                  }}
+                >
+                  {button.icon}
+                </IconButton>
+              </span>
+            </Tooltip>
+          ))
+        ))}
+      </>
+    );
+  }
+
+  const buildTableData = React.useMemo(() => {
+    if (!data) {
+      return [];
+    }
+    const tableData: Record<string, TableAdminDataType>[] = data.map((candidate: ApplicationOfferDTO) => {
+      return {
+        Nombre: {
+          content: candidate.Person?.name,
+          align: 'center'
+        },
+        Apellidos: {
+          content: candidate.Person?.lastname, 
+          align: 'center'
+        },
+        'Fech. Nacimiento': {
+          content: dayjs(candidate.Person?.birthdate).format('DD/MM/YYYY'),
+          align: 'center'
+        },
+        Licencias: {
+          content: candidate.Person?.DriverProfile[0].DriverLicence.filter((licence) => licence.LicenceType?.type === 'CARNET').map((licence) => licence.LicenceType?.name).join(', ') ?? '',
+          align: 'center'
+        },
+        Acciones: {
+          content: candidateActions(candidate),
+          align: 'center'
+        }
+      } as Record<string, TableAdminDataType>;
+    });
+    return tableData;
+  }, [data]);
+
+  useEffect(() => {
+    if (data) {
+      setTableData(buildTableData);
+    }
+  }, [isFetched, data])
+
+  if(isError) {
+    return (
+      <SnackbarCustom
+        open={true}
+        message='Error al cargar los datos'
+        severity='error'
+        handleClose={() => {}}
+      />
+    )
+  }
+
   return (
     <Box component='div'
       sx={{
@@ -141,8 +270,11 @@ const CompanyOfferCandidatesPage: React.FC<CompanyOfferCandidatesPageProps>= ({
           Candidatos a la oferta
         </Typography>
       </Box>
+      {isLoadingData && (
+        <TableSkeleton />
+      )}
       {data && (
-        <TablePaginatedComponent rows={data} handleShow={handleShow} handleStatusChange={handleStatusChange} /> 
+        <TableAdminPanel data={tableData} /> 
       )}
       <CandidateInformationComponentMemo 
         session={session}

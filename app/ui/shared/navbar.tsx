@@ -15,8 +15,8 @@ import DrawerCustom from './drawer';
 import { SessionProvider } from 'next-auth/react';
 import { Session } from 'next-auth';
 import ConectransLogo from './logo/conectransLogo';
-import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import useLogoColors from './hooks/useLogoColors';
 
 
 type NavbarProps = {
@@ -25,17 +25,7 @@ type NavbarProps = {
 }
 
 export default function Navbar({session, bgLogoColor}: NavbarProps) {
-  const pathname = usePathname()
-  const colors = {
-    logoColor: 'white',
-    textColor: 'black',
-    iconColor: 'action'
-  }
-  if (pathname === '/' || pathname === '/home') {
-    colors.logoColor = '#0B2C38';
-    colors.textColor = 'white';
-    colors.iconColor = 'white';
-  }
+  const { color } = useLogoColors();
   const [state, setState] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -75,7 +65,7 @@ export default function Navbar({session, bgLogoColor}: NavbarProps) {
             sx={{ mr: 2, display: { xs: 'none', md: 'flex' } }}
           >
             <Link href='/'>
-              <ConectransLogo width={'100px'} height={'auto'} fill={colors.logoColor} textColor={colors.textColor} />
+              <ConectransLogo width={'140px'} height={'auto'} colors={color} />
             </Link>
               {/* <Image priority src={Logo} alt='Logo conectrans' width={130}/> */}
           </IconButton>
@@ -87,7 +77,7 @@ export default function Navbar({session, bgLogoColor}: NavbarProps) {
             sx={{ mr: 2, display: { xs: 'flex', md: 'none' } }}
           >
             <Link href='/'>
-              <ConectransLogo width={'100px'} height={'auto'} fill={colors.logoColor} textColor={colors.textColor} />
+              <ConectransLogo width={'100px'} height={'auto'} colors={color} />
             </Link>
               {/* <Image priority src={Logo} alt='Logo conectrans' width={130}/> */}
           </IconButton>
@@ -96,14 +86,14 @@ export default function Navbar({session, bgLogoColor}: NavbarProps) {
               display: { xs: 'none', md: 'flex' }  
           }}>
             <Link href='/offers?page=1&limit=10'>
-              <Button sx={{ color: colors.textColor }} variant='outlined'>
+              <Button sx={{ color: color.iconColor }} variant='outlined'>
                 Blog
               </Button>
             </Link>
             <Link href='/offers?page=1&limit=10'>
               <Button 
                 variant="outlined" 
-                sx={{ ml: 2, color: colors.textColor }}
+                sx={{ ml: 2, color: color.iconColor }}
               >
                 Ofertas
               </Button>
@@ -116,7 +106,7 @@ export default function Navbar({session, bgLogoColor}: NavbarProps) {
                 aria-expanded={open ? 'true' : undefined}
                 onClick={handleDrawer(true)}
             >
-                <AccountCircle sx={{ color: colors.iconColor }} />
+                <AccountCircle sx={{ color: color.iconColor }} />
             </IconButton>
             <Drawer
                 anchor='right'
@@ -134,7 +124,7 @@ export default function Navbar({session, bgLogoColor}: NavbarProps) {
               display: { xs: 'flex', md: 'none' },
           }}>
               <IconButton 
-                  sx={{ ml: 3, color: colors.iconColor }}
+                  sx={{ ml: 3, color: color.iconColor }}
                   id="basic-button"
                   aria-controls={open ? 'basic-menu' : undefined}
                   aria-haspopup="true"

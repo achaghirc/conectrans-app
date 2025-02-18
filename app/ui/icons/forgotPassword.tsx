@@ -7,6 +7,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import OutlinedInput from '@mui/material/OutlinedInput';
+import ButtonCustom from '../shared/custom/components/button/ButtonCustom';
 
 interface ForgotPasswordProps {
   open: boolean;
@@ -26,13 +27,13 @@ export default function ForgotPassword({ open, handleClose }: ForgotPasswordProp
         },
       }}
     >
-      <DialogTitle>Reset password</DialogTitle>
+      <DialogTitle>Reestablecer contraseña</DialogTitle>
       <DialogContent
         sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}
       >
         <DialogContentText>
-          Enter your account&apos;s email address, and we&apos;ll send you a link to
-          reset your password.
+          Introduce la cuenta de email de tu cuenta y te enviaremos un enlace para
+          reestablecer tu contraseña.
         </DialogContentText>
         <OutlinedInput
           autoFocus
@@ -47,10 +48,23 @@ export default function ForgotPassword({ open, handleClose }: ForgotPasswordProp
         />
       </DialogContent>
       <DialogActions sx={{ pb: 3, px: 3 }}>
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button variant="contained" type="submit">
-          Continue
-        </Button>
+        <ButtonCustom 
+          title='Cerrar'
+          color='secondary'
+          variant='outlined'
+          onClick={handleClose}
+          loading={false}
+          disable={false}
+        />
+        <ButtonCustom 
+          variant="contained" 
+          type="submit"
+          color="primary"
+          onClick={handleClose}   
+          loading={false}
+          disable={false}
+          title='Continuar'       
+        />
       </DialogActions>
     </Dialog>
   );

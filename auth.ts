@@ -58,7 +58,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 }
               });
             }
-            if(user.roleCode == 'USER') {
+            if(user.roleCode == 'USER' || user.roleCode == 'ADMIN') {
               await getPersonByUserId(user.id!).then((person) => {
                 if(person) {
                   token.personId = person.id;

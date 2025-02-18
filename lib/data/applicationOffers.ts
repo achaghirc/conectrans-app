@@ -171,6 +171,8 @@ export async function getApplicationsOfferUserByFilter(filter: Partial<Applicati
                 Company: {
                   select: {
                     name: true,
+                    phone: true,
+                    landlinePhone: true,
                     Asset: {
                       select: {
                         url: true
@@ -179,7 +181,7 @@ export async function getApplicationsOfferUserByFilter(filter: Partial<Applicati
                   }
                 }
               }
-            }
+            },
           },
         }
       },

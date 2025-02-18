@@ -4,8 +4,8 @@ import Grid  from '@mui/material/Grid2';
 import { OfferDTO } from '@prisma/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Session } from 'next-auth'
-import { notFound } from 'next/navigation';
-import React, { useEffect } from 'react'
+import { notFound, useRouter } from 'next/navigation';
+import React from 'react'
 import DetailsOfferResumeComponent from './DetailsOfferResumeComponent';
 import { Box, Card, CardMedia, Paper, Typography } from '@mui/material';
 import DetailsOfferInformationComponent from './DetailsOfferInformationComponent';
@@ -16,7 +16,7 @@ import DetailsOfferSkeleton from '@/app/ui/shared/custom/components/skeleton/Det
 import EditOfferComponent from '../edit/EditOfferComponent';
 import SnackbarCustom, { SnackbarCustomProps } from '@/app/ui/shared/custom/components/snackbarCustom';
 import UserApplyOffer from '../apply/UserApplyOffer';
-import { existsApplicationOfferByPerson, getApplicationOffersPageableByFilter, getApplicationsOfferUserByFilter } from '@/lib/data/applicationOffers';
+import { getApplicationsOfferUserByFilter } from '@/lib/data/applicationOffers';
 
 const DEFAULT_CENTER = { lat: 38.956600744288735, lng: -5.878132026448462 };
 const DEFAULT_ZOOM = 11; // You can change this according to your needs, or you can also recive this as a prop to make map component more reusable.
@@ -34,9 +34,9 @@ type DetailsOfferComponentProps = {
 const DetailsOfferComponent: React.FC<DetailsOfferComponentProps> = (
   { session, offerId }
 ) => {
+  const router = useRouter();
   const [open, setOpen] = React.useState<boolean>(false);
   const [openApply, setOpenapply] = React.useState<boolean>(false);
-  const queryClient = useQueryClient();
   const [snackbarProps, setSnackbarProps] = React.useState<SnackbarCustomProps>({
     open: false,
     message: '',
@@ -60,7 +60,11 @@ const DetailsOfferComponent: React.FC<DetailsOfferComponentProps> = (
   }
 
   const handleUserApply = () => {
-    setOpenapply(true);
+    if (session){
+      setOpenapply(true);
+    } else {
+      router.push(`/auth/login?redirect=/offers/${offerId}`);
+    }
   }
 
   const handleEditOffer = () => {
