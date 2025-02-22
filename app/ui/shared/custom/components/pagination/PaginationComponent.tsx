@@ -1,4 +1,4 @@
-import { Box, Pagination } from '@mui/material';
+import { Box, MenuItem, Pagination, Select, SelectChangeEvent } from '@mui/material';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React from 'react'
 
@@ -7,7 +7,7 @@ type PaginationComponentProps = {
   currentPage: number;
   rowsPerPage: number;
   rowsPerPageOptions: number[];
-  handleRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  handleRowsPerPageChange: (event: SelectChangeEvent<any>) => void;
 }
 
 
@@ -45,16 +45,23 @@ const PaginationComponent: React.FC<PaginationComponentProps> = (
   return (
     <Box display={countItems > 0 ? 'flex' : 'none'} justifyContent='center' m={2}>
       <Pagination count={countItems}  page={currentPage} variant='outlined' onChange={handlePageChange} />
-      {/* <TablePagination 
-        align='center'
-        component={'div'}
-        count={count}
-        rowsPerPageOptions={rowsPerPageOptions}
-        page={currentPage - 1}
-        onPageChange={(event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => handlePageChange(event, newPage + 1)}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => handleRowsPerPageChange(event)}
-      /> */}
+      <Select 
+        value={rowsPerPage}
+        onChange={handleRowsPerPageChange}
+        variant='outlined'
+        sx={{
+          borderRadius: 10,
+          fontSize: '0.8rem',
+          width: 'auto',
+          height: 30,
+        }}
+        >
+          {rowsPerPageOptions.map((option) => (
+            <MenuItem key={option} value={option} sx={{fontSize: '0.8rem'}}>
+              {Number(option)}
+            </MenuItem>
+          ))}
+      </Select>
     </Box>
   )
 }

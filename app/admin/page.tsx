@@ -3,7 +3,6 @@ import React, { Suspense } from 'react'
 import Grid from '@mui/material/Grid2';
 import { Card, CardContent, CardHeader, Skeleton, Typography } from '@mui/material';
 import { AccountBalanceOutlined, AccountTreeOutlined, BusinessOutlined, CardMembershipOutlined, EuroOutlined, LocalOffer, PaymentOutlined, PeopleOutline, WalletOutlined } from '@mui/icons-material';
-import TableAdminPanel from '../ui/shared/custom/components/table/TableAdminPanel';
 import { getActiveOffers, getActiveSubscriptions, getCompanies, getDrivers, getTotalIncome, getTransactionsPaid } from '@/lib/data/dashboardAdmin';
 import { getTransactionsByFilter } from '@/lib/data/transactions';
 import { FilterTransactionsDTO } from '@/lib/definitions';

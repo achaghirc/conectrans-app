@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { Box, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import ButtonContainerComponent from "./ui/shared/custom/components/button/ButtonContainerComponent";
+import CoockieBanner from "./ui/cookies/CoockieBanner";
 
 export default async function Home() {
   const session = await auth();
@@ -94,6 +95,7 @@ export default async function Home() {
         <SectionCards />
       </Box>
       <Footer />
+
     </main>
   );
 }

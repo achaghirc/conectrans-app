@@ -17,7 +17,13 @@ const BoxIconTextInformation : React.FC<BoxIconTextInformationProps> = ({
   onClick
 }) => {
   return (
-    <Box component={'div'} onClick={() => onClick?.()} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', cursor: 'pointer', justifyContent: 'flex-start', gap: 1 }}>
+    <Box component={'div'} onClick={() => onClick?.()} sx={{ 
+      display: 'flex', 
+      flexDirection: 'row', 
+      alignContent: 'center',
+      alignItems: 'center', 
+      cursor: 'pointer', justifyContent: 'flex-start', gap: 1 }}
+    >
       {icon}
       <Typography variant='subtitle1' fontWeight={fontWeight ?? 400} fontSize={fontSize ?? 26} color='textPrimary'>{text}</Typography>
     </Box>

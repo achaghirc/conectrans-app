@@ -22,7 +22,6 @@ import React, { useEffect } from "react";
 import SnackbarCustom, { SnackbarCustomProps } from "../../shared/custom/components/snackbarCustom";
 import { PAYMENT_TEMPORAL_MESSAGE, PAYMENT_WARN_MESSAGE, PHONE_NUMBER } from "@/lib/constants";
 import SubscriptionTransactionComponent from "../../shared/custom/components/subscription/SubscriptionTransactionComponent";
-import { set } from "nprogress";
 import useLocalStorage from "../../shared/hooks/useLocalStorage";
 import BoxIconTextInformation from "../../shared/custom/components/box/BoxIconTextInformation";
 dayjs.extend(LocalizedFormat);
@@ -337,7 +336,7 @@ const SubscriptionComponent: React.FC<SubscriptionsPageProps> = ({ session }) =>
                     borderRadius: 5,
                     color: 'ButtonText', fontWeight: 'bold'}}
                 >
-                  <a style={{ textDecoration: 'none', color: 'inherit'}} href="mailto:nfo@condupro.es">Contáctanos</a>
+                  <a style={{ textDecoration: 'none', color: 'inherit'}} href="mailto:info@condupro.es">Contáctanos</a>
                 </Button>
                 <Button 
                   startIcon={statusStartIcon()}  

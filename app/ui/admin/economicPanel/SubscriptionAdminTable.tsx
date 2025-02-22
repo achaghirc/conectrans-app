@@ -7,7 +7,7 @@ import { fromValueSubscription, SubscriptionStatusEnum } from '@/lib/enums';
 import { SubscriptionDataDTO } from '@prisma/client';
 import { FormGroup, IconButton } from '@mui/material';
 import { CheckCircleOutline, CheckOutlined, CloseOutlined, MoreVertOutlined, VisibilityOutlined } from '@mui/icons-material';
-import TableAdminPanel, { TableAdminDataType, TableSkeleton } from '../../shared/custom/components/table/TableAdminPanel';
+import TableCustomPanel, { TableCustomDataType, TableSkeleton } from '../../shared/custom/components/table/TableCustomPanel';
 import { DetailsAdminTableInformation } from './DialogInformationTable';
 import dayjs from 'dayjs';
 dayjs.locale('es');
@@ -17,8 +17,8 @@ const filter: SubscriptionFilterDTO = {
 }
 
 const SubscriptionAdminTable: React.FC = () => {
-  const [dataTable, setDataTable] = React.useState<Record<string, TableAdminDataType>[]>([]);
-  const [selected, setSelected] = React.useState<Record<string, TableAdminDataType>[] | null>([]);
+  const [dataTable, setDataTable] = React.useState<Record<string, TableCustomDataType>[]>([]);
+  const [selected, setSelected] = React.useState<Record<string, TableCustomDataType>[] | null>([]);
   const [open, setOpen] = React.useState(false);
   const { data, isLoading, isError, isFetched} = useQuery({
     queryKey: ['subscriptions', filter], 
@@ -46,7 +46,7 @@ const SubscriptionAdminTable: React.FC = () => {
   }
 
   const buildDialogInformation = (data: SubscriptionDataDTO) => {
-    const tableData: Record<string, TableAdminDataType>[] = [{
+    const tableData: Record<string, TableCustomDataType>[] = [{
       ID: {
         content: data.id,
         hidden: true
@@ -93,7 +93,7 @@ const SubscriptionAdminTable: React.FC = () => {
 
   const buildTableData = useCallback(() => {
     if (!data) return [];
-    const tableData: Record<string, TableAdminDataType>[] = data.map((subscription: SubscriptionDataDTO) => {
+    const tableData: Record<string, TableCustomDataType>[] = data.map((subscription: SubscriptionDataDTO) => {
       return {
         ID: {
           content: subscription.id,
@@ -132,7 +132,7 @@ const SubscriptionAdminTable: React.FC = () => {
   
   return (
     <div>
-      <TableAdminPanel data={dataTable} onClick={onAction}/>
+      <TableCustomPanel data={dataTable} onClick={onAction}/>
       <DetailsAdminTableInformation data={selected!} open={open} setOpen={setOpen} />
     </div>
   )

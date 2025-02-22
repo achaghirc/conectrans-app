@@ -127,22 +127,6 @@ const OffersListComponent: React.FC<OffersListComponentProps> = (
           rowsPerPageOptions={[3,5,10,15,20]}
         />
       </Box>
-      
-      {/* <TablePagination 
-        align='center'
-        component={'div'}
-        count={offers.length}
-        rowsPerPageOptions={[3,5,10,15,20]}
-        page={page}
-        onPageChange={(event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => handleOnPageChange(event, newPage)}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={() => {}}
-        style={{
-          position: 'fixed',
-          bottom: 0,
-          right: 0,
-        }}
-      /> */}
       <SnackbarCustom {...snackbarProps}/>
     </>
   )

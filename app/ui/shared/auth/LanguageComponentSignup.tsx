@@ -4,6 +4,7 @@ import { Languages } from "@prisma/client";
 import { useState } from "react";
 import TableLanguageComponent from "../custom/components/table/TableLanguageComponent";
 import { AddCircleOutlineOutlined } from "@mui/icons-material";
+import { usePathname } from "next/navigation";
 
 type LanguagesComponentProps = {
   languages: Languages[];
@@ -19,6 +20,7 @@ const languageLevels = ['Nativo','Avanzado', 'Intermedio', 'Básico'];
 const LanguagesComponentSignUp: React.FC<LanguagesComponentProps> = (
   {languages, selectedLenguages, loadingLanguages, isError, handleAddLanguage, handleDeleteLanguage}
 ) => {
+  const pathname = usePathname();
   const [selectedLanguage, setSelectedLanguage] = useState<PersonLanguageDTO | null>(null);
 
   const addLanguage = () => {
@@ -28,12 +30,12 @@ const LanguagesComponentSignUp: React.FC<LanguagesComponentProps> = (
   }
   return (
     <Box component={'div'} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Box>
+      <Box sx={{ display: pathname?.includes('signup') ? 'block' : 'none' }}>
         <Typography color='primary' component={'h3'} variant='h5' fontWeight={'semibold'}>
           Idiomas
         </Typography>
+        <Divider sx={{ mb: 1 }}/>
       </Box>
-      <Divider sx={{ mb: 1 }}/>
       <TableLanguageComponent languages={selectedLenguages} onAction={handleDeleteLanguage} />
       {loadingLanguages ? 'Cargando...' : isError ? 'Error al cargar los idiomas' : null}
       <Box sx={{ gap: 3, display: 'flex', flexDirection: { xs: 'column', sm: 'row'}}}>

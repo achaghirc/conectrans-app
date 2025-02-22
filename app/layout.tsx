@@ -6,6 +6,7 @@ import { GlobalStyles, ThemeProvider } from '@mui/material';
 import theme from './theme';
 import { ReactQueryClientProvider } from './react-query-provider';
 import NetworkConnectionCheck from './network-connection-check';
+import CoockieBanner from './ui/cookies/CoockieBanner';
 
 const latoFont = Lato({
   weight: ['300', '400', '700', '900'],
@@ -34,6 +35,7 @@ export default function RootLayout({
             >
             <ThemeProvider theme={theme} defaultMode='system'>
             <GlobalStyles styles={{ "*": { scrollbarWidth: "none", msOverflowStyle: "none" }, "*::-webkit-scrollbar": { display: "none" } }} />
+              <CoockieBanner />
               {children}
             </ThemeProvider>
           </AppRouterCacheProvider>

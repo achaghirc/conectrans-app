@@ -5,12 +5,13 @@ import { TransactionDTO } from '@prisma/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { TransactionStatusEnum } from '@/lib/enums';
 import React from 'react';
-import { PAYMENT_CANCEL_MESSAGE, PAYMENT_CANCEL_MESSAGE_CONFIRM, PAYMENT_CANCELED_MESSAGE, PAYMENT_ERROR_MESSAGE, PAYMENT_SUCCESS_TITLE } from '@/lib/constants';
+import { PAYMENT_CANCEL_MESSAGE, PAYMENT_CANCEL_MESSAGE_CONFIRM, PAYMENT_CANCELED_MESSAGE, PAYMENT_ERROR_MESSAGE, PAYMENT_REFOUND_MESSAGE, PAYMENT_SUCCESS_TITLE } from '@/lib/constants';
 import useMediaQueryData from '../../../hooks/useMediaQueryData';
 import { GeneralDialogComponent } from '../dialog/GeneralDialogComponent';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import { SnackbarCustomProps } from '../snackbarCustom';
+import PaginationComponent from '../pagination/PaginationComponent';
 dayjs.locale('es');
 
 type SubscriptionTransactionComponentProps = {
@@ -208,9 +209,9 @@ const TablePaginatedComponent: React.FC<TablePaginatedComponentProps> = (
   };
 
   const handleChangeRowsPerPage = (
-    event: SelectChangeEvent<number>,
+    event: SelectChangeEvent<any>,
   ) => {
-    const targetPageNumber = parseInt(event.target.value.toString(), 10);
+    const targetPageNumber = Number(event.target.value);
     setRowsPerPage(targetPageNumber);
     setPage(0);
   };
@@ -234,10 +235,8 @@ const TablePaginatedComponent: React.FC<TablePaginatedComponentProps> = (
       )
     } else {
       return (
-        <Tooltip title={'Pago Reembolsado'}>
-          <RemoveShoppingCartOutlined color="action" sx={{
-            pointerEvents: 'none',
-          }} />
+        <Tooltip title={PAYMENT_REFOUND_MESSAGE}>
+          <RemoveShoppingCartOutlined color="action" />
         </Tooltip>
       )
     }
@@ -309,7 +308,7 @@ const TablePaginatedComponent: React.FC<TablePaginatedComponentProps> = (
                 onClick={() => handleShow(row)}
               >
                 <TableCell sx={tableCellStyles} component="th" scope="row" align='center'>
-                  <Box component={'span'} sx={cellHeaderMobile}>Nombre</Box>{row.Plan.title ?? ''}
+                  <Box component={'span'} sx={cellHeaderMobile}>Nombre</Box>{row.Plan?.title ?? ''}
                 </TableCell>
                 <TableCell sx={tableCellStyles} align="center">
                   <Box component={'span'} sx={cellHeaderMobile} >Importe</Box>{`${row.amount} ${row.currency}`}
@@ -321,7 +320,7 @@ const TablePaginatedComponent: React.FC<TablePaginatedComponentProps> = (
                   <Box component={'span'} sx={cellHeaderMobile} >Ofertas pagadas</Box>{row.paidOffers}
                 </TableCell>
                 <TableCell sx={tableCellStyles} align="center">
-                  <Box component={'span'} sx={cellHeaderMobile} >Fecha de realización</Box>{row.updatedAt != undefined ? dayjs(row.updatedAt.toISOString()).format('DD/MM/YYYY') : ''}
+                  <Box component={'span'} sx={cellHeaderMobile} >Fecha de realización</Box>{row.updatedAt ? dayjs(row.updatedAt).format('DD/MM/YYYY') : ''}
                 </TableCell>
                 <TableCell sx={tableCellStyles} align="center">
                   <Box component={'span'} sx={cellHeaderMobile} >Acciones</Box>
@@ -348,25 +347,13 @@ const TablePaginatedComponent: React.FC<TablePaginatedComponentProps> = (
           </TableBody>
         </Table>
         <Stack sx={{ p: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }} direction='row' spacing={1}>
-          <Pagination count={Math.floor(rows.length / rowsPerPage)}  page={page} variant='outlined' onChange={handleChangePage} />
-          <Select 
-            value={rowsPerPage}
-            onChange={handleChangeRowsPerPage}
-            variant='outlined'
-            sx={{
-              borderRadius: 10,
-            }}
-            >
-              <MenuItem selected key={5} value={5}>
-                {5}
-              </MenuItem>
-              <MenuItem key={10} value={10}>
-                {10}
-              </MenuItem>
-              <MenuItem key={25} value={25}>
-                {25}
-              </MenuItem>
-          </Select>
+          <PaginationComponent
+            count={Math.ceil(rows.length / rowsPerPage)} 
+            currentPage={page + 1} 
+            rowsPerPage={rowsPerPage}
+            rowsPerPageOptions={[5,10,15,20]}
+            handleRowsPerPageChange={handleChangeRowsPerPage}
+          />
         </Stack>
       </TableContainer>
     </Box>

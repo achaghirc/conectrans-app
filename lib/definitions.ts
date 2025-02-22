@@ -403,3 +403,16 @@ export type SubscriptionFilterDTO = {
   userId?: string;
   status?: string;
 }
+
+//////// TABLES ///////
+export type TableCustomDataType = {
+  content: React.ReactNode;
+  align?: 'left' | 'center' | 'right';
+  hidden?: boolean;
+}
+
+export type TableCustomPanelProps = {
+  // Add props here
+  data: Record<string, TableCustomDataType>[];
+  onClick?: (id: number) => void;
+};

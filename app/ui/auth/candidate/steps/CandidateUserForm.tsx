@@ -3,7 +3,7 @@ import { ControllerTextFieldComponent } from '@/app/ui/shared/custom/components/
 import useUtilsHook from '@/app/ui/shared/hooks/useUtils';
 import { PasswordType, SignUpCandidateFormData, State, ValidationCIFNIFResult } from '@/lib/definitions';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { IconButton, InputAdornment, TextField } from '@mui/material'
+import { IconButton, InputAdornment, TextField, Typography } from '@mui/material'
 import Grid from '@mui/material/Grid2';
 import React, { useState } from 'react'
 import { Control, UseFormSetValue } from 'react-hook-form';
@@ -39,7 +39,7 @@ export default function CadidateUserForm({
   }
 
   return (
-    <Grid container spacing={2}>
+    <Grid container spacing={2} maxWidth={'md'} sx={{mx: 'auto', mt: 2}}>
       <Grid size={{xs:12}}>
         <ControllerTextFieldComponent 
           control={control}
@@ -49,7 +49,7 @@ export default function CadidateUserForm({
 
         />
       </Grid>
-      <Grid size={{xs:12, sm: 6}}>
+      <Grid size={{xs:12}}>
         <ControllerTextFieldComponent
           label='Contraseña'
           control={control}
@@ -60,7 +60,7 @@ export default function CadidateUserForm({
 
         />
       </Grid>
-      <Grid size={{xs:12, sm: 6}}>
+      <Grid size={{xs:12}}>
         <ControllerTextFieldComponent 
           control={control}
           label='Confirmar Contraseña'

@@ -399,7 +399,7 @@ async function saveDriverProfile(formData: SignUpCandidateFormData, personId: nu
     const driverLicence = {
       licenceTypeId: carnet.id,
       driverProfileId: newDriverProfile.id,
-      countryId: countryLicences
+      countryId: Number(countryLicences)
     }
     licenses.push(driverLicence);
   }
@@ -408,7 +408,7 @@ async function saveDriverProfile(formData: SignUpCandidateFormData, personId: nu
     const driverLicence = {
       licenceTypeId: adr.id,
       driverProfileId: newDriverProfile.id,
-      countryId: countryLicences
+      countryId: Number(countryLicences)
     }
     licenses.push(driverLicence);
   }

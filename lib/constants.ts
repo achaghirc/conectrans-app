@@ -22,6 +22,7 @@ export const PAYMENT_ERROR_TITLE = 'Error al realizar el pago';
 export const PAYMENT_SUCCESS_MESSAGE = 'Gracias por contratar los servicios de OfertaVial. Su pago ha sido procesado con éxito. A continuación prodrá acceder a su cuenta y comenzar a disfrutar de los beneficios de nuestra plataforma.';
 export const PAYMENT_ERROR_MESSAGE = 'Error al procesar tu pago, puedes revisar su estado desde la pantalla de gestión de subscripciones y volver a intentarlo de nuevo. Si el error persiste contacte con el administrador o con el soporte técnico.';
 export const PAYMENT_WARN_MESSAGE = 'Tu subscripción no se encuentra activa debido a algún error en el pago, por favor revisa tus transacciones o realiza el pago en caso de haberse producido algún error.';
+export const PAYMENT_REFOUND_MESSAGE = 'Tu subscripción ha sido cancelada y se ha procedido a realizar la devolución del importe pagado. Recibirás el importe en los próximos días hábiles.';
 export const PAYMENT_TEMPORAL_MESSAGE = 'Se te ha asignado la subscripción gratuita debido a algún error con tu transacción de pago por tu subscripción seleccionada. Puedes volver a intentarlo de nuevo. Si tienes alguna duda contáctanos.';
 export const PAYMENT_CANCEL_MESSAGE = 'Cancelar subscripción'
 export const PAYMENT_CANCEL_MESSAGE_CONFIRM = '¿Estás seguro de que deseas cancelar tu subscripción? En caso de cancelarla, perderás todos los beneficios del pack abonado y volverás a la subscripción gratuita, en caso de tener algún otro pack pagado, se te asignará este como el actual.';

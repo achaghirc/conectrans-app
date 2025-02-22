@@ -13,7 +13,7 @@ const countOffersCreatedAfterTransaction = async (transactionId: number) => {
   return await countOffersAfterTransactionCreated(transactionId);
 }
 
-export const createPaymentRefound = async (req: NextApiRequest, res: NextApiResponse) => {
+export default async function createPaymentRefound (req: NextApiRequest, res: NextApiResponse) {
   if(req.method === 'POST') {
     const { transactionId, payment_intent } = req.body;
     const countOffers = await countOffersCreatedAfterTransaction(transactionId);

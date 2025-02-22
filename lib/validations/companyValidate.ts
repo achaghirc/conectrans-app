@@ -43,7 +43,7 @@ const FormContactSchema = z.object({
         required_error: 'La dirección es obligatoria',
     }).min(1, 'La dirección es obligatoria'),
     zip: z.string().min(1, 'El código postal es obligatorio'),
-    country: z.number().min(1, 'El país es obligatorio'),
+    country: z.string().min(1, 'El país es obligatorio'),
     province: z.string().min(1, 'La provincia es obligatoria'),
     locality: z.string().min(1, 'La localidad es obligatoria'),
     mobilePhone: z.string().min(1, 'El teléfono móvil es obligatorio'),

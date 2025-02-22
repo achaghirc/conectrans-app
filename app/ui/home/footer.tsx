@@ -1,12 +1,15 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { Box, Typography, Button, Link } from '@mui/material';
+import { Box, Typography, Button, IconButton } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { styled } from '@mui/material/styles';
 import ConectransLogo from '../shared/logo/conectransLogo';
 import { usePathname } from 'next/navigation';
 import useLogoColors from '../shared/hooks/useLogoColors';
+import useCookieBannerHook from '../shared/hooks/useCookieBannerHook';
+import { AdsClickOutlined, MailOutline, PhoneOutlined } from '@mui/icons-material';
+import Link from 'next/link';
 
 // Estilos para el contenedor del Footer
 const FooterContainer = styled(Box)(({ theme }) => ({
@@ -57,6 +60,7 @@ const FooterButton = styled(Button)(({ theme }) => ({
 
 export default function Footer() {
   const pathname = usePathname()
+  const { removeSessionStorageKey } = useCookieBannerHook();
   const { color, setColor } = useLogoColors();
 
   useEffect(() => {
@@ -95,11 +99,21 @@ export default function Footer() {
 
           {/* Sección Contacto */}
           <Grid size={{xs:12, sm:4}}>
-            <FooterSections>
-              <Typography variant="h6" gutterBottom>Contacto</Typography>
-              <Typography variant="body2">Email: info@condupro.es</Typography>
-              <Typography variant="body2">Teléfono: +34 123 456 789</Typography>
-              <Typography variant="body2">Dirección: Calle Transporte 123, Madrid</Typography>
+            <FooterSections sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start', gap: 0.5}}>
+              <Typography variant="h6" gutterBottom>¿Cómo podemos ayudarte?</Typography>
+              <Box component={'div'} sx={{ display: 'flex', flexDirection: 'row', alignContent: 'center', alignItems: 'center', gap: 1 }}>
+                <MailOutline sx={{ color: 'white' }}/>
+                <Typography variant="body2">info@condupro.es</Typography>
+              </Box>
+              <Box component={'div'} sx={{ display: 'flex', flexDirection: 'row', alignContent: 'center', alignItems: 'center', gap: 1 }}>
+                <PhoneOutlined sx={{ color: 'white' }}/>
+                <Typography variant="body2">+34 123 456 789</Typography>
+              </Box>
+              <Link href={'/'} style={{ display: 'flex', flexDirection: 'row', alignContent: 'center', alignItems: 'center', gap: 5, textDecoration: 'none', color: 'inherit' }}>                
+                <AdsClickOutlined sx={{ color: 'white'}} />
+                <Typography variant='body2'>Formulario de contacto</Typography>
+              </Link>
+              <Typography variant="body2" mt={1}>Lunes a Viernes de 9:00 a 18:00</Typography>
             </FooterSections>
           </Grid>
 
@@ -117,11 +131,23 @@ export default function Footer() {
 
       {/* Fila inferior con botones de texto */}
       <BottomRow>
-        <FooterButton>Aviso Legal</FooterButton>
-        <FooterButton>Política de Cookies</FooterButton>
-        <FooterButton>Condiciones de uso</FooterButton>
-        <FooterButton>Protección de datos</FooterButton>
-        <FooterButton>Configuración de Cookies</FooterButton>
+        <Link href="/legal/legitimate" style={{ textDecoration: 'none', color: 'inherit' }}>  
+          <FooterButton>Aviso Legal</FooterButton>
+        </Link>
+        <Link href="/legal/cookie-policy" style={{ textDecoration: 'none', color: 'inherit' }}>  
+          <FooterButton>Política de Cookies</FooterButton>
+        </Link>
+        <Link href="/legal/use-conditions" style={{ textDecoration: 'none', color: 'inherit' }}>  
+          <FooterButton>Condiciones de uso</FooterButton>
+        </Link>
+        <Link href="/legal/data-protection" style={{ textDecoration: 'none', color: 'inherit' }}>  
+          <FooterButton>Protección de datos</FooterButton>
+        </Link>
+        <FooterButton
+          onClick={() => {
+            removeSessionStorageKey('cookieBannerAccepted');
+          }}
+        >Configuración de Cookies</FooterButton>
       </BottomRow>
     </FooterContainer>
   );
