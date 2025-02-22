@@ -179,7 +179,7 @@ const CompanyOfferCandidatesPage: React.FC<CompanyOfferCandidatesPageProps>= ({
           {
             title: 'Aceptar',
             onClickStatus: ApplicationOfferStatusEnum.ACCEPTED,
-            icon: <PendingOutlined color='warning' />,
+            icon: <ArrowForwardOutlined color='warning' />,
             disabled: false
           }
         ]
