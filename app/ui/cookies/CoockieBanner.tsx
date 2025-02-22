@@ -50,7 +50,7 @@ const CoockieBanner = () => {
             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Utilizamos Cookies</Typography>
           </Box>
           <Typography variant="body1">Este sitio web utiliza cookies y otras tecnologías de seguimiento para mejorar su experiencia de navegación con los siguientes fines: para habilitar la funcionalidad básica del sitio web, para brindar una mejor experiencia en el sitio web, medir su interés en nuestros productos y servicios y personalizar las interacciones de marketing, para mostrar anuncios que sean más relevantes para usted.</Typography>
-          <Typography variant="body1">Puede aceptar todas las cookies haciendo clic en el botón "Aceptar" o rechazar su uso haciendo clic en "Rechazar". Para obtener más información sobre las cookies que utilizamos, consulte nuestra Política de Cookies.</Typography>
+          <Typography variant="body1">Puede aceptar todas las cookies haciendo clic en el botón &quot;Aceptar&quot; o rechazar su uso haciendo clic en `&quot;`Rechazar`&quot;`. Para obtener más información sobre las cookies que utilizamos, consulte nuestra Política de Cookies.</Typography>
           <Box component="div" sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', padding: '1rem', pointerEvents: 'auto' }}>
             <Button variant='contained' onClick={() => handleAccept(true)}>Aceptar</Button>
             <Button variant='outlined' color='error' onClick={() => handleAccept(false)}>Rechazar</Button>

@@ -2,12 +2,12 @@
 import React, { useCallback, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query';
 import { getSubscriptionByFilter } from '@/lib/data/subscriptions';
-import { SubscriptionFilterDTO } from '@/lib/definitions';
-import { fromValueSubscription, SubscriptionStatusEnum } from '@/lib/enums';
+import { SubscriptionFilterDTO, TableCustomDataType } from '@/lib/definitions';
+import { SubscriptionStatusEnum } from '@/lib/enums';
 import { SubscriptionDataDTO } from '@prisma/client';
 import { FormGroup, IconButton } from '@mui/material';
-import { CheckCircleOutline, CheckOutlined, CloseOutlined, MoreVertOutlined, VisibilityOutlined } from '@mui/icons-material';
-import TableCustomPanel, { TableCustomDataType, TableSkeleton } from '../../shared/custom/components/table/TableCustomPanel';
+import { CheckCircleOutline, CloseOutlined } from '@mui/icons-material';
+import TableCustomPanel, { TableSkeleton } from '../../shared/custom/components/table/TableCustomPanel';
 import { DetailsAdminTableInformation } from './DialogInformationTable';
 import dayjs from 'dayjs';
 dayjs.locale('es');

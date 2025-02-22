@@ -10,7 +10,7 @@ export default async function Page() {
         </Typography>
         <div>
           <Typography variant="body1" component={'p'} textAlign={'justify'}>
-            En cumplimiento con el deber de información recogido en el artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y del Comercio Electrónico, se informa a los usuarios de la plataforma CONDUPRO (en adelante, "la Web") de los siguientes datos:
+            En cumplimiento con el deber de información recogido en el artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y del Comercio Electrónico, se informa a los usuarios de la plataforma CONDUPRO (en adelante, &quot;la Web&quot;) de los siguientes datos:
           </Typography>
           <ul>
             <li>Titular: CONDUPRO S.L</li>
