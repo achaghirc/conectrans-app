@@ -3,16 +3,18 @@ import { Box, Card, CardContent, Typography, Button, CardActions, Tooltip } from
 import { AccountBalanceOutlined, CheckCircleOutline, InfoOutlined } from "@mui/icons-material";
 import { PlanDTO } from "@prisma/client";
 import ButtonCustom from "../button/ButtonCustom";
+import { usePathname } from "next/navigation";
 
 export type SubscriptionCardProps = {
     plan: PlanDTO;
     selected: boolean;
     changedPlan?: boolean;
-    onSelectPlan: (plan: PlanDTO) => void;
+    onSelectPlan?: (plan: PlanDTO) => void;
     handlePayNewPlan?: (plan: PlanDTO) => void;
 }
 
 const SubscriptionCard = ({ plan,selected, changedPlan, onSelectPlan, handlePayNewPlan } : SubscriptionCardProps) => {
+  const pathname = usePathname();
   const buttonMarginTop = plan.title.includes('Premium') ? 0 : 3;
   return (
     <Card sx={{ 
@@ -83,7 +85,7 @@ const SubscriptionCard = ({ plan,selected, changedPlan, onSelectPlan, handlePayN
                 mx: 'auto',
                 mt: buttonMarginTop,
               }}
-              onClick={() => onSelectPlan(plan)}
+              onClick={() => onSelectPlan?.(plan)}
               startIcon={selected ? <CheckCircleOutline /> : null}
               >
               {selected ? 'Pack seleccionado' : 'Seleccionar '+plan.title}
@@ -111,7 +113,7 @@ const SubscriptionCard = ({ plan,selected, changedPlan, onSelectPlan, handlePayN
             ))}
           </Box>
         </CardContent>
-        <CardActions sx={{ display: selected ? 'flex': 'none', justifyContent: 'center', alignItems: 'center', height: 60 }}>
+        <CardActions sx={{ display: selected && !pathname?.includes('/signup') ? 'flex': 'none', justifyContent: 'center', alignItems: 'center', height: 60 }}>
           <ButtonCustom
             title={!changedPlan ? "Comprar de nuevo" : "Pagar ahora"}
             variant="contained"

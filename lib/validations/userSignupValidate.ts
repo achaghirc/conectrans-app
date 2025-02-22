@@ -62,7 +62,7 @@ const FormUserProfesionalSchema = z.object({
   }).min(1, 'Campo obligatorio'))
   .nonempty('Debe seleccionar al menos una licencia'),
   adrLicences: z.array(z.string()),
-  countryLicences: z.number({
+  countryLicences: z.string({
     required_error: 'Campo obligatorio',
   }).min(1, 'Campo obligatorio'),
   capCertificate: z.string({

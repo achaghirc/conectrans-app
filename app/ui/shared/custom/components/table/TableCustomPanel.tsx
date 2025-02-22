@@ -104,19 +104,8 @@ const rows = [
   createData('Oreo', 437, 18.0),
 ].sort((a, b) => (a.calories < b.calories ? -1 : 1));
 
-export type TableAdminDataType = {
-  content: React.ReactNode;
-  align?: 'left' | 'center' | 'right';
-  hidden?: boolean;
-}
 
-export type TableAdminPanelProps = {
-  // Add props here
-  data: Record<string, TableAdminDataType>[];
-  onClick?: (id: number) => void;
-};
-
-export default function TableAdminPanel({ data, onClick }: TableAdminPanelProps) {
+export default function TableCustomPanel({ data, onClick }: TableCustomPanelProps) {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
@@ -139,7 +128,7 @@ export default function TableAdminPanel({ data, onClick }: TableAdminPanelProps)
     setPage(0);
   };
 
-  if (!data || data.length == 0) return <div>Loading...</div>;
+  if (!data || data.length == 0) return <div>NO DATA</div>;
 
   const headers = Object.keys(data[0]).map((key) => ({
     key,
@@ -235,8 +224,8 @@ export default function TableAdminPanel({ data, onClick }: TableAdminPanelProps)
         </Table>
         <Box sx={{ p: 2, display: 'flex', justifyContent: {xs: 'center', sm: 'flex-end' } }}>
           <Pagination
-            count={Math.floor(data.length / rowsPerPage)} 
-            page={page} 
+            count={Math.ceil(data.length / rowsPerPage)} 
+            page={page + 1} 
             variant='outlined'
             onChange={handleChangePage} 
             />
@@ -248,6 +237,7 @@ export default function TableAdminPanel({ data, onClick }: TableAdminPanelProps)
 
 
 import Skeleton from '@mui/material/Skeleton';
+import { TableCustomPanelProps } from '@/lib/definitions';
 
 export function TableSkeleton() {
   return (

@@ -13,11 +13,14 @@ import { useRouter } from "next/navigation";
 import { ApplicationOfferStatusEnum } from "@/lib/enums";
 import CandidateDrawerComponent from "./CandidateDrawerComponent";
 import { sendApplicationOfferMail, sendMail } from "@/lib/services/mail/mailsender";
-import TableAdminPanel, { TableAdminDataType, TableSkeleton } from "@/app/ui/shared/custom/components/table/TableAdminPanel";
+import TableCustomPanel, { TableSkeleton } from "@/app/ui/shared/custom/components/table/TableCustomPanel";
 import { ArrowForwardOutlined, CheckCircleOutline, CloseOutlined, PendingOutlined } from "@mui/icons-material";
 import SnackbarCustom from "@/app/ui/shared/custom/components/snackbarCustom";
 
 import dayjs from 'dayjs';
+import { TableCustomDataType } from "@/lib/definitions";
+import useMediaQueryData from "@/app/ui/shared/hooks/useMediaQueryData";
+import TableCustomCardMobile from "@/app/ui/shared/custom/components/table/TableCardMobile";
 dayjs.locale('es');
 
 
@@ -36,6 +39,7 @@ const CompanyOfferCandidatesPage: React.FC<CompanyOfferCandidatesPageProps>= ({
     router.push('/auth/login');
     return null;
   }
+  const { mediaQuery } = useMediaQueryData();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [open, setOpen] = React.useState<boolean>(false);
@@ -44,14 +48,18 @@ const CompanyOfferCandidatesPage: React.FC<CompanyOfferCandidatesPageProps>= ({
   const [isPdfShow, setPdfShow] = React.useState<boolean>(false);
   const [selectedCandidate, setSelectedCandidate] = React.useState<ApplicationOfferDTO | null>(null);
   
-  const [tableData, setTableData] = React.useState<Record<string, TableAdminDataType>[]>([]);
+  const [tableData, setTableData] = React.useState<Record<string, TableCustomDataType>[]>([]);
 
   const {data, isLoading: isLoadingData, isError, isFetched} = useQuery({
     queryKey: ['offer_candidates', Number(offerId)],
     queryFn: () => getApplicationsOfferUserByFilter({offerId: Number(offerId)}, Number(1), 10),
   });
 
-  const handleShow = (candidate: ApplicationOfferDTO) => {
+  const handleShow = (candidateId: number) => {
+    const candidate: ApplicationOfferDTO | undefined= data?.find((candidate) => candidate.id === candidateId);
+    if (!candidate) {
+      return;
+    }
     setSelectedCandidate(candidate);
     setOpen(true);
   }
@@ -215,8 +223,12 @@ const CompanyOfferCandidatesPage: React.FC<CompanyOfferCandidatesPageProps>= ({
     if (!data) {
       return [];
     }
-    const tableData: Record<string, TableAdminDataType>[] = data.map((candidate: ApplicationOfferDTO) => {
+    const tableData: Record<string, TableCustomDataType>[] = data.map((candidate: ApplicationOfferDTO) => {
       return {
+        ID: {
+          content: candidate.id,
+          hidden: true
+        },
         Nombre: {
           content: candidate.Person?.name,
           align: 'center'
@@ -237,7 +249,7 @@ const CompanyOfferCandidatesPage: React.FC<CompanyOfferCandidatesPageProps>= ({
           content: candidateActions(candidate),
           align: 'center'
         }
-      } as Record<string, TableAdminDataType>;
+      } as Record<string, TableCustomDataType>;
     });
     return tableData;
   }, [data]);
@@ -265,7 +277,7 @@ const CompanyOfferCandidatesPage: React.FC<CompanyOfferCandidatesPageProps>= ({
         pt: 2,
       }}
     >
-      <Box sx={{ mb: 2}}>
+      <Box sx={{ mb: 2, display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: {xs: 'center', sm: 'start'} }}>
         <Typography variant='h5' fontWeight={700}>
           Candidatos a la oferta
         </Typography>
@@ -274,7 +286,10 @@ const CompanyOfferCandidatesPage: React.FC<CompanyOfferCandidatesPageProps>= ({
         <TableSkeleton />
       )}
       {data && (
-        <TableAdminPanel data={tableData} /> 
+         mediaQuery ? 
+          <TableCustomPanel data={tableData} onClick={handleShow} /> 
+        :
+          <TableCustomCardMobile data={data} onClick={handleShow} handleStatusChange={handleStatusChange} />
       )}
       <CandidateInformationComponentMemo 
         session={session}

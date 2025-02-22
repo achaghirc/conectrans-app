@@ -1,6 +1,6 @@
 'use client';
 import { FormEvent, Fragment, useLayoutEffect, useState, useTransition } from 'react'
-import { Box, Button, Divider, FormControl, IconButton, InputAdornment, Link, TextField, Typography } from '@mui/material';
+import { Avatar, Box, Button, Divider, FormControl, IconButton, InputAdornment, Link, TextField, Typography } from '@mui/material';
 import Logo from '../../../public/Conectrans_Logo_White.svg';
 import Image from 'next/image';
 import ForgotPassword from '../icons/forgotPassword';
@@ -14,6 +14,8 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { ZodIssue } from 'zod';
 import { ControllerTextFieldComponent } from '../shared/custom/components/form/ControllersReactHForm';
 import { validateSignInData } from '@/lib/validations/loginValidations';
+import ConectransLogo from '../shared/logo/conectransLogo';
+import useLogoColors from '../shared/hooks/useLogoColors';
 
 type LoginForm = {
   email: string;
@@ -52,6 +54,7 @@ export default function LoginModal() {
 
 
 const FormLogin = () => {
+  const { color } = useLogoColors();
   const redirectParam = useSearchParams()?.get('redirect') ?? '/';
   const [loading, setIsLoading] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
@@ -176,16 +179,11 @@ const FormLogin = () => {
 	return (
 		<form onSubmit={handleSubmit(onSubmit)}>
 			<ArrowBack sx={{ display: { sm: 'none' } }} onClick={() => router.back()}/>
-			<Box sx={{ display: 'flex', flexDirection:'column', alignItems: 'center'}}>
-        <Image
-						src={Logo} 
-						alt="Conectrans Logo Black" 
-						width={130} 
-						height={90} 
-						/>   
-				<Box sx={{ display: 'flex', padding: '4px', mt: 1, color:'white', borderRadius: '50%', backgroundColor: '#0B2C38' }} >
-					<LockOutlined />
-				</Box>
+			<Box sx={{ display: 'flex', flexDirection:'column', alignItems: 'center', gap: 0 }}>
+      <ConectransLogo width={'140px'} height={'auto'} colors={color} />
+				<Avatar sx={{ mt: 1 }}>
+					<LockOutlined color='primary'/>
+				</Avatar>
 			</Box>
 			<Box
 				component="div"
@@ -194,6 +192,7 @@ const FormLogin = () => {
 					flexDirection: 'column',
 					width: '100%',
 					gap: 2,
+          mt: 2
 				}}
 			>
         <ControllerTextFieldComponent 
@@ -239,7 +238,6 @@ const FormLogin = () => {
         <Button
           fullWidth
           variant="contained"
-          sx={{ backgroundColor: '#0B2C38', borderColor: '#0B2C38' }}
           startIcon={<BusinessOutlined />}
           onClick={() => router.push('/auth/signup/company')}
           >
@@ -248,7 +246,6 @@ const FormLogin = () => {
 				<Button
 					fullWidth
 					variant="outlined"
-					sx={{ color: '#0B2C38', borderColor: '#0B2C38' }}
 					startIcon={<PeopleOutline />}
           onClick={() => router.push(`/auth/signup/candidate?redirect=${redirectParam}`)}
 				>

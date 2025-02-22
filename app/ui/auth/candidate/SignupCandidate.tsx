@@ -23,24 +23,24 @@ import { Box, Button } from '@mui/material';
 const steps = ['Datos de usuario', 'Datos de candidato', 'Datos Profesionales'];
 
 const initialDataContactInfo: SignUpCandidateContactFormData = {
-  streetAddress: 'Calle Olivo 12',
-  zip: '06400',
+  streetAddress: '',
+  zip: '',
   country: 64,
-  locality: 'Zalamea de la Serena',
-  mobilePhone: '640493049',
-  landlinePhone: '924334003'
+  locality: '',
+  mobilePhone: '',
+  landlinePhone: ''
 } as SignUpCandidateContactFormData
 
 const initialStateData: SignUpCandidateFormData = {
-  email: 'amine102@gmail.com',
-  password: '09092286',
-  confirmPassword: '09092286',
-  cifnif: '09092286H',
-  name: 'Amine',
-  lastname: 'Chaghir',
+  email: '',
+  password: '',
+  confirmPassword: '',
+  cifnif: '',
+  name: '',
+  lastname: '',
   birthdate: new Date('1999-10-10'),
-  workRange: ['Internacional'],
-  employeeType: ['Autónomo'],
+  workRange: [],
+  employeeType: [],
   contactInfo: initialDataContactInfo,
   experiences: [] as ExperienceDTO[],
   licences: [] as string[],
@@ -167,7 +167,6 @@ export default function SignupCandidate(
 				break;
 			case 2:
 				initialState = await validateProfesionalData(initialState, data);
-				console.log(initialState);
 				break;
 			default:
 				break;
@@ -182,6 +181,10 @@ export default function SignupCandidate(
 	}
 	
 	const handleBack = () => {
+    if (activeStep === 0) {
+      router.push('/');
+      return;
+    }
 		setActiveStep((prevActiveStep) => prevActiveStep - 1);
 	}
 	const isLastStep = activeStep === steps.length - 1;

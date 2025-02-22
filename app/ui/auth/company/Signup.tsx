@@ -26,39 +26,6 @@ import { createTransaction } from '@/lib/data/transactions';
 
 const steps = ['Datos de Empresa', 'Datos de Contacto', 'Persona de Contacto', 'Plan de Suscripción', 'Pago'];
 
-const initialDataSingup: SignUpCompanyFormData = {
-  company: {
-    email: 'aminechaghir1999@gmail.com',
-    password: 'contraseña',
-    confirmPassword: 'contraseña',
-    socialName: 'Social Name',
-    comercialName: 'Comercial Name',
-    activityType: 'TRANSPORT',
-    cifnif: '09092286H',
-    logo: null,
-  },
-  contactInfo: {
-    streetAddress: 'Calle Olivo 12',
-    zip: '06400',
-    country: 64,
-    province: 'Badajoz',
-    locality: 'Zalamea de la Serena',
-    mobilePhone: '640493049',
-    landlinePhone: '924334003',
-    website: 'www.empresa.com',
-    contactEmail: 'email@gmail.com',
-    description: 'Esta es una descripción de la empresa',
-  },
-  contactPerson: {
-    name: 'Prueba',
-    lastnames: 'Prueba',
-    companyPosition: 'Directivo',
-    phoneNumber: '987654321',
-    email: 'prueba@gmail.com',
-  },
-  subscriptionPlan: {} as Subscriptions
-}
-
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
 );
@@ -70,7 +37,7 @@ export default function Signup() {
   const [snackbarProps, setSnackbarProps] = useState<SnackbarCustomProps>({} as SnackbarCustomProps);
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState<State>({message: null, errors:[]});
-  const [formData, setFormData] = useState<SignUpCompanyFormData>(initialDataSingup);
+  const [formData, setFormData] = useState<SignUpCompanyFormData>();
 
   const {
     control,
@@ -78,9 +45,7 @@ export default function Signup() {
     watch,
     setValue,
     handleSubmit,
-  } = useForm<Partial<SignUpCompanyFormData>>(
-    { defaultValues: initialDataSingup }
-  );
+  } = useForm<Partial<SignUpCompanyFormData>>();
 
   const onSubmit: SubmitHandler<Partial<SignUpCompanyFormData>> = async(data) => {
     setLoading(true);
@@ -177,7 +142,7 @@ export default function Signup() {
     }
 
   const handleSamePassword = ():ZodIssue | undefined => {
-    if (formData.company.password !== formData.company.confirmPassword) {  
+    if (formData!= undefined && formData.company.password !== formData.company.confirmPassword) {  
       return {code: 'invalid_literal',expected: '', received: '', path: ['confirmPassword'], message: 'Las contraseñas no coinciden, por favor revisa que sean iguales'}
     } else {
       return undefined; 
@@ -245,8 +210,7 @@ export default function Signup() {
           errors={errors}
         />;
       case 1:
-        const MemoizedContactForm = React.memo(ContactForm);
-        return <MemoizedContactForm 
+        return <ContactForm 
           control={control}
           register={register}
           watch={watch}

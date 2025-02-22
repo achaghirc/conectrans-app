@@ -2,7 +2,7 @@
 import { getTransactionsByFilter } from '@/lib/data/transactions';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect } from 'react'
-import TableAdminPanel, { TableAdminDataType, TableSkeleton } from '../../shared/custom/components/table/TableAdminPanel';
+import TableCustomPanel, { TableCustomDataType, TableSkeleton } from '../../shared/custom/components/table/TableCustomPanel';
 import { FormGroup, IconButton, Menu, MenuItem, styled } from '@mui/material';
 import { TransactionDTO } from '@prisma/client';
 import { CheckCircleOutline, CloseOutlined, VisibilityOutlined, WarningOutlined } from '@mui/icons-material';
@@ -12,8 +12,8 @@ import { TransactionStatusEnum } from '@/lib/enums';
 
 
 const TransactionsAdminTable: React.FC = () => {
-  const [dataTable, setDataTable] = React.useState<Record<string, TableAdminDataType>[]>([]);
-  const [selected, setSelected] = React.useState<Record<string, TableAdminDataType>[] | null>([]);
+  const [dataTable, setDataTable] = React.useState<Record<string, TableCustomDataType>[]>([]);
+  const [selected, setSelected] = React.useState<Record<string, TableCustomDataType>[] | null>([]);
   const [open, setOpen] = React.useState(false);
 
   const { formatCurrencyEur } = useUtilsHook();
@@ -78,7 +78,7 @@ const TransactionsAdminTable: React.FC = () => {
   
   const buildTableData = useCallback(() => {
     if (!data) return [];
-    const tableData: Record<string, TableAdminDataType>[] = data.map((transaction: TransactionDTO) => {
+    const tableData: Record<string, TableCustomDataType>[] = data.map((transaction: TransactionDTO) => {
       return {
         ID: {
           content: transaction.id,
@@ -110,7 +110,7 @@ const TransactionsAdminTable: React.FC = () => {
 
   return (
     <div>
-      <TableAdminPanel data={dataTable} onClick={onAction}/>
+      <TableCustomPanel data={dataTable} onClick={onAction}/>
       <DetailsAdminTableInformation data={selected!} open={open} setOpen={setOpen} />
     </div>
   )
