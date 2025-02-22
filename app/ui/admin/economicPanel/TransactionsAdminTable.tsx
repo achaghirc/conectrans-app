@@ -2,13 +2,14 @@
 import { getTransactionsByFilter } from '@/lib/data/transactions';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect } from 'react'
-import TableCustomPanel, { TableCustomDataType, TableSkeleton } from '../../shared/custom/components/table/TableCustomPanel';
+import TableCustomPanel, { TableSkeleton } from '../../shared/custom/components/table/TableCustomPanel';
 import { FormGroup, IconButton, Menu, MenuItem, styled } from '@mui/material';
 import { TransactionDTO } from '@prisma/client';
 import { CheckCircleOutline, CloseOutlined, VisibilityOutlined, WarningOutlined } from '@mui/icons-material';
 import { DetailsAdminTableInformation } from './DialogInformationTable';
 import useUtilsHook from '../../shared/hooks/useUtils';
 import { TransactionStatusEnum } from '@/lib/enums';
+import { TableCustomDataType } from '@/lib/definitions';
 
 
 const TransactionsAdminTable: React.FC = () => {

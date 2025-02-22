@@ -19,7 +19,7 @@ export default function Page() {
             CONDUPRO, S.L., con CIF B-12345678, ubicada en C/ Olivo nº 9 bis 1º, 06400, Don Benito (Badajoz), y con teléfonos de contacto +34 948 154 267 y +34 679 886 590, 
             así como correo electrónico info@condupro.es, ha designado de manera voluntaria y como muestra de su responsabilidad proactiva, un Delegado de Protección de Datos. 
             Esta figura tiene como función garantizar el derecho fundamental a la protección de datos personales y asegurar el cumplimiento de la normativa vigente en esta materia. 
-            Para contactar con el Delegado de Protección de Datos de CONDUPRO, puedes enviar un correo electrónico a info@condupro.es, indicando en el asunto "PROTECCIÓN DE DATOS". 
+            Para contactar con el Delegado de Protección de Datos de CONDUPRO, puedes enviar un correo electrónico a info@condupro.es, indicando en el asunto &quot;PROTECCIÓN DE DATOS&quot;. 
             <br></br>
             <br></br>
             De acuerdo con el artículo 37.1 de la LOPDGDD, puedes dirigirte al Delegado de Protección de Datos antes de presentar una reclamación contra CONDUPRO ante la Agencia Española de Protección de Datos. El Delegado te informará de la decisión tomada respecto a tu reclamación en un plazo máximo de dos meses desde su recepción.

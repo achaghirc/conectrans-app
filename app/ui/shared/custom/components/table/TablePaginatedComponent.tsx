@@ -1,5 +1,5 @@
 import { ArrowForwardOutlined, CheckCircleOutline, CloseOutlined, FirstPageOutlined, KeyboardArrowLeftOutlined, KeyboardArrowRightOutlined, LastPageOutlined, PendingOutlined } from '@mui/icons-material';
-import { Box, FormGroup, IconButton, Paper, SxProps, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, useTheme } from '@mui/material';
+import { Box, FormGroup, IconButton, Paper, SelectChangeEvent, SxProps, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, useTheme } from '@mui/material';
 import { ApplicationOfferDTO } from '@prisma/client';
 import React from 'react'
 import dayjs from 'dayjs';
@@ -26,7 +26,7 @@ const TablePaginatedComponent: React.FC<TablePaginatedComponentProps> = (
 
 
   const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    event: SelectChangeEvent<any>,
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
