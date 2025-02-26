@@ -4,10 +4,7 @@ import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableFooter from '@mui/material/TableFooter';
 import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
 import { SelectChangeEvent, SxProps, TableHead } from '@mui/material';
 import PaginationTableComponent from '../pagination/PaginationTableComponent';
 import { TableCustomDataType, TableCustomPanelProps } from '@/lib/definitions';
@@ -49,8 +46,6 @@ export default function TableCustomPanel({ data, onClick }: TableCustomPanelProp
   if (!data || data.length == 0) return <div>NO DATA</div>;
 
   const rowHeight = 48; // Assuming each row is 48px high
-  const tableHeight = rowsPerPage * rowHeight;
-
   return (
     <Box sx={{ 
       pl: { xs: 1, sm: 0 }, 
@@ -150,3 +145,45 @@ const cellHeaderMobile: SxProps = {
   display: { xs: 'block', sm: 'none' },
   fontWeight: 'bold',
 };
+
+export function TableSkeleton() {
+  return (
+    <Box sx={{ pl: { xs: 1, sm: 0 }, pr: { xs: 1, sm: 0 } }}>
+      <Table sx={{ minWidth: '100%', boxShadow: 1 }} aria-label="custom pagination table">
+        <TableHead
+          sx={{
+            display: { xs: 'none', sm: 'table-header-group' },
+            backgroundColor: theme.palette.primary.main,
+            borderRadius: 5,
+            color: 'white',
+            '& th': {
+              fontWeight: 'bold',
+              color: 'white',
+              padding: '12px 16px',
+              textTransform: 'uppercase',
+            },
+          }}
+        >
+          <TableRow>
+            {[...Array(5)].map((_, index) => (
+              <TableCell key={index} align="left" sx={{ fontWeight: 'bold' }}>
+                <Box sx={{ width: '100%', height: '20px', bgcolor: 'grey.300', borderRadius: 1 }} />
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {[...Array(5)].map((_, rowIndex) => (
+            <TableRow key={rowIndex}>
+              {[...Array(5)].map((_, cellIndex) => (
+                <TableCell key={cellIndex} align="left">
+                  <Box sx={{ width: '100%', height: '20px', bgcolor: 'grey.300', borderRadius: 1 }} />
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Box>
+  );
+}
