@@ -1,14 +1,12 @@
 'use client';
-import { getApplicationOffersPageableByFilter, getApplicationsOfferUserByFilter, handleApplicationOfferStatus } from "@/lib/data/applicationOffers";
+import { getApplicationsOfferUserByFilter, handleApplicationOfferStatus } from "@/lib/data/applicationOffers";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Session } from "next-auth";
 import React, { useEffect } from "react";
-import TablePaginatedComponent from "../../../shared/custom/components/table/TablePaginatedComponent";
-import { Box, Button, IconButton, Skeleton, Tooltip, Typography } from "@mui/material";
+import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import { ApplicationOfferDTO } from "@prisma/client";
 import CandidateInformationComponent from "./CandidateInformationComponent";
 import CandidateFileComponent from "./CandidateFileComponent";
-import { downloadFileFromCloud } from "@/lib/services/cloudinary";
 import { useRouter } from "next/navigation";
 import { ApplicationOfferStatusEnum } from "@/lib/enums";
 import CandidateDrawerComponent from "./CandidateDrawerComponent";
