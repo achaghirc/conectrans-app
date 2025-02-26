@@ -22,7 +22,7 @@ const CountdownComponent:React.FC<CountdownComponentProps> = (
     const diff = target - now;
 
     if (diff <= 0) {
-      return null; // Time's up!
+      return null;
     }
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -46,7 +46,7 @@ const CountdownComponent:React.FC<CountdownComponentProps> = (
   }, [endDate]);
 
   if (!timeRemaining) {
-    return <div>Time`&apos;`s up!</div>;
+    return <div>Time`&apos;`s up!</div>
   }
 
   const { days, hours, minutes, seconds } = timeRemaining;

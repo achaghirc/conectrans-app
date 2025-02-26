@@ -40,8 +40,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = (
     router.push(createPageUrl(newPage))
   }
 
-  const countItems = count == 0 ? 0 : rowsPerPage >= count ? 1 : Math.floor(count / rowsPerPage); 
-
+  const countItems = count == 0 ? 0 : rowsPerPage >= count ? 1 : Math.ceil(count / rowsPerPage); 
   return (
     <Box display={countItems > 0 ? 'flex' : 'none'} justifyContent='center' m={2}>
       <Pagination count={countItems}  page={currentPage} variant='outlined' onChange={handlePageChange} />

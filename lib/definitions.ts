@@ -414,5 +414,5 @@ export type TableCustomDataType = {
 export type TableCustomPanelProps = {
   // Add props here
   data: Record<string, TableCustomDataType>[];
-  onClick?: (id: number) => void;
+  onClick?: (id: any) => void;
 };
