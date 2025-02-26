@@ -15,13 +15,15 @@ export const config = {
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method === 'POST') {
+    if (req.method != 'POST') {
       res.setHeader('Allow', 'POST');
       res.status(405).end('Method Not Allowed');
     }
     let event; 
     const sig = req.headers['stripe-signature'];
-
+    if (!sig) {
+      return res.status(400).send('Missing Stripe signature');
+    }
     try {
       const rawBody = await buffer(req);
       event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
@@ -38,9 +40,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object;
-        console.log('Checkout Session Completed:', session);
         // Aquí puedes manejar el evento como guardar en la base de datos, enviar correos, etc.
-        await updatePaymentTransactionInfo(session);
+        try {
+          await updatePaymentTransactionInfo(session);
+        } catch (error) {
+          console.error('❌ Error updating transaction:', error);
+        }
         break;
       case 'checkout.session.async_payment_succeeded':
         const sessionAsync = event.data.object;
@@ -52,7 +57,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const sessionAsyncFailed = event.data.object;
         console.log('Checkout Session Async Payment Failed:', sessionAsyncFailed);
         // Aquí puedes manejar el evento como guardar en la base de datos, enviar correos, etc.
-        await updatePaymentTransactionInfo(sessionAsyncFailed);
+        try {
+          await updatePaymentTransactionInfo(session);
+        } catch (error) {
+          console.error('❌ Error updating transaction:', error);
+        }
         break;
       case 'checkout.session.expired':
         console.log('Checkout Session Expired:', event.data.object);
