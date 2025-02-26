@@ -23,10 +23,15 @@ const checkOutSessionController = async (req: NextApiRequest, res: NextApiRespon
     }
     const activeStripeProducts = await getActiveStripeProducts();
     const product = activeStripeProducts.find((product: any) => product.name === planProduct.title);
-    const customer = await stripe.customers.list({ email: email });
-    if (!customer) {
-      res.status(400).json({ error: 'Customer not found' });
-      return;
+    let price = null;
+    if (!product) {
+      price = await createProductOnStripe(planProduct);
+    }
+    const prices = await stripe.prices.list({ product: product.id });
+    price = prices.data[0]
+    let customer = await stripe.customers.list({ email: email });
+    if (!customer || customer.data.length === 0) {
+      customer = stripe.customers.create({ email: email });
     }
     
     try {
@@ -36,7 +41,7 @@ const checkOutSessionController = async (req: NextApiRequest, res: NextApiRespon
           customer: customer.data[0].id,
           line_items: [
             {
-              price: product.default_price ,
+              price: price.id,
               quantity: 1,
             },
           ],
@@ -56,6 +61,22 @@ const checkOutSessionController = async (req: NextApiRequest, res: NextApiRespon
       }
     }
   }
+}
+
+async function createProductOnStripe(plan: PlanDTO) {
+  const product = await stripe.products.create({
+    name: plan.title,
+    type: 'service',
+  });
+  const price = await stripe.prices.create({
+    unit_amount: plan.price * 100,
+    currency: 'eur',
+    product: product.id,
+    product_data: {
+      name: plan.title,
+    }
+  });
+  return price;
 }
 
 export default checkOutSessionController;
