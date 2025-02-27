@@ -14,6 +14,8 @@ export const config = {
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
+console.log('webhookSecret', webhookSecret);
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method != 'POST') {
       res.setHeader('Allow', 'POST');
@@ -40,6 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object;
+        console.log('Checkout Session Completed:', session);
         // Aquí puedes manejar el evento como guardar en la base de datos, enviar correos, etc.
         try {
           await updatePaymentTransactionInfo(session);
