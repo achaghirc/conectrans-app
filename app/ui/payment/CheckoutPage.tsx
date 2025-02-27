@@ -1,6 +1,6 @@
 'use client';
 import ButtonCustom from "@/app/ui/shared/custom/components/button/ButtonCustom";
-import ConectransLogo from "@/app/ui/shared/logo/conectransLogo";
+import ConectransLogo from "@/app/ui/shared/svg/conectransLogo";
 import { PAYMENT_ERROR_MESSAGE, PAYMENT_ERROR_TITLE, PAYMENT_SUCCESS_MESSAGE, PAYMENT_SUCCESS_TITLE } from "@/lib/constants";
 import { updateTransactionData } from "@/lib/data/transactions";
 import { Box, Paper, Tooltip, Typography } from "@mui/material";

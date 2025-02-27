@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { Box, Typography, Button, IconButton } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { styled } from '@mui/material/styles';
-import ConectransLogo from '../shared/logo/conectransLogo';
+import ConectransLogo from '../shared/svg/conectransLogo';
 import { usePathname } from 'next/navigation';
 import useLogoColors from '../shared/hooks/useLogoColors';
 import useCookieBannerHook from '../shared/hooks/useCookieBannerHook';

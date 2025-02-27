@@ -9,7 +9,7 @@ import { NavLinksSkeleton } from '../custom/components/skeleton/NavLinksSkeleton
 import { logout } from '@/lib/actions';
 import MobileNavScreen from './MobileNavScreen';
 import { useRouter } from 'next/navigation';
-import ConectransLogo from '../logo/conectransLogo';
+import ConectransLogo from '../svg/conectransLogo';
 import useLogoColors from '../hooks/useLogoColors';
 
 const drawerWidth = 240;
