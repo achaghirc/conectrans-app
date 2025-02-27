@@ -13,6 +13,9 @@ export const config = {
 };
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+if (!webhookSecret) {
+  throw new Error("🚨 STRIPE_WEBHOOK_SECRET is missing! Check your environment variables.");
+}
 
 console.log('webhookSecret', webhookSecret);
 

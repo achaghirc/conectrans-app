@@ -14,7 +14,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { ZodIssue } from 'zod';
 import { ControllerTextFieldComponent } from '../shared/custom/components/form/ControllersReactHForm';
 import { validateSignInData } from '@/lib/validations/loginValidations';
-import ConectransLogo from '../shared/logo/conectransLogo';
+import ConectransLogo from '../shared/svg/conectransLogo';
 import useLogoColors from '../shared/hooks/useLogoColors';
 
 type LoginForm = {

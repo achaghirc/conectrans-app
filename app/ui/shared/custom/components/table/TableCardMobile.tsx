@@ -4,13 +4,16 @@ import Grid from '@mui/material/Grid2'
 import { TableCustomDataType, TableCustomPanelProps } from '@/lib/definitions'
 import { cardMobileStyles, paperStyles } from '../../../styles/styles'
 import BoxIconTextInformation from '../box/BoxIconTextInformation'
-import { ArrowForwardOutlined, BadgeOutlined, BusinessOutlined, CalendarMonthOutlined, CheckCircleOutline, CloseOutlined, ContactsOutlined, PendingOutlined } from '@mui/icons-material'
+import { ArrowBackOutlined, ArrowForwardOutlined, BadgeOutlined, BusinessOutlined, CalendarMonthOutlined, CheckCircleOutline, CloseOutlined, ContactsOutlined, PendingOutlined } from '@mui/icons-material'
 import useMediaQueryData from '../../../hooks/useMediaQueryData'
 import { ApplicationOfferDTO } from '@prisma/client'
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
 import { ApplicationOfferStatusEnum } from '@/lib/enums'
 import PaginationComponent from '../pagination/PaginationComponent'
+import Image from 'next/image'
+import ButtonCustom from '../button/ButtonCustom'
+import NoDataFolder from '../../../svg/noDataFolder'
 
 
 type TableCustomCardMobileProps = {
@@ -128,7 +131,25 @@ const TableCustomCardMobile: React.FC<TableCustomCardMobileProps> = (
     );
   }
   
-  if (!data || data.length == 0) return <div>Loading...</div>;
+  if (!data || data.length == 0) return (
+    <Box component={'div'} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',}}>
+      <NoDataFolder />
+      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 1 }}>
+        <Typography variant='h6' sx={{ fontWeight: 'bold', fontSize: 16 }}>
+          Aún no se ha inscrito ningún candidato
+        </Typography>
+        <ButtonCustom
+          title='Volver'
+          onClick={() => window.history.back()}
+          loading={false}
+          disable={false}
+          type='button'
+          color='primary'
+          startIcon={<ArrowBackOutlined />}
+          />
+      </Box>
+    </Box>
+  );
 
   return (
     <Box component={'div'}>

@@ -14,7 +14,7 @@ import { Button, Drawer } from '@mui/material';
 import DrawerCustom from './drawer';
 import { SessionProvider } from 'next-auth/react';
 import { Session } from 'next-auth';
-import ConectransLogo from './logo/conectransLogo';
+import ConectransLogo from './svg/conectransLogo';
 import Link from 'next/link';
 import useLogoColors from './hooks/useLogoColors';
 

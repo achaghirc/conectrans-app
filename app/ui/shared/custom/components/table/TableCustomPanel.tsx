@@ -5,10 +5,13 @@ import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
-import { SelectChangeEvent, SxProps, TableHead } from '@mui/material';
+import { SelectChangeEvent, SxProps, TableHead, Typography } from '@mui/material';
 import PaginationTableComponent from '../pagination/PaginationTableComponent';
 import { TableCustomDataType, TableCustomPanelProps } from '@/lib/definitions';
 import theme from '@/app/theme';
+import NoDataFolder from '../../../svg/noDataFolder';
+import ButtonCustom from '../button/ButtonCustom';
+import { ArrowBackOutlined } from '@mui/icons-material';
 
 
 export default function TableCustomPanel({ data, onClick }: TableCustomPanelProps) {
@@ -43,7 +46,23 @@ export default function TableCustomPanel({ data, onClick }: TableCustomPanelProp
     setPage(0);
   };
 
-  if (!data || data.length == 0) return <div>NO DATA</div>;
+  if (!data || data.length == 0) return (
+    <Box component={'div'} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 1 }}>
+      <NoDataFolder />
+      <Typography variant='h6' sx={{ fontWeight: 'bold', fontSize: 16 }}>
+        Aún no se ha inscrito ningún candidato
+      </Typography>
+      <ButtonCustom
+        title='Volver'
+        onClick={() => window.history.back()}
+        loading={false}
+        disable={false}
+        type='button'
+        color='primary'
+        startIcon={<ArrowBackOutlined />}
+      />
+    </Box>
+  );
 
   const rowHeight = 48; // Assuming each row is 48px high
   return (

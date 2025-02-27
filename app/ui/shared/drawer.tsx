@@ -9,7 +9,7 @@ import { Session } from 'next-auth';
 import { logout } from '@/lib/actions';
 import { AccountCircleOutlined } from '@mui/icons-material';
 import { Url } from 'next/dist/shared/lib/router/router';
-import ConectransLogo from './logo/conectransLogo';
+import ConectransLogo from './svg/conectransLogo';
 import useLogoColors from './hooks/useLogoColors';
 
 type DrawerProps = {
